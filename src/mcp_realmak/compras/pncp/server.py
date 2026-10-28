@@ -8,6 +8,7 @@ from fastmcp import FastMCP
 from .prompts import alienacoes_imoveis_spu, investigar_fornecedor
 from .resources import modalidades_licitacao
 from .tools import (
+    arquivos_contratacao,
     buscar_atas,
     buscar_atas_atualizadas,
     buscar_contratacoes,
@@ -22,6 +23,10 @@ from .tools import (
     consultar_contratacao_detalhe,
     consultar_fornecedor,
     consultar_orgao,
+    historico_contratacao,
+    itens_contratacao,
+    pesquisar,
+    resultados_item,
 )
 
 mcp = FastMCP("pncp")
@@ -39,6 +44,15 @@ mcp.tool(buscar_contratacoes_atualizadas, tags={"busca", "contratacoes", "atuali
 mcp.tool(buscar_contratos_atualizados, tags={"busca", "contratos", "atualizacao"})
 mcp.tool(buscar_atas_atualizadas, tags={"busca", "atas", "atualizacao"})
 mcp.tool(consultar_contratacao_detalhe, tags={"consulta", "contratacoes", "detalhe"})
+
+# Tools — busca textual do portal (editais, atas, contratos)
+mcp.tool(pesquisar, tags={"busca", "texto", "licitacoes", "contratos", "atas"})
+
+# Tools — leitura de uma contratação
+mcp.tool(itens_contratacao, tags={"consulta", "contratacoes", "itens"})
+mcp.tool(resultados_item, tags={"consulta", "contratacoes", "resultados", "precos"})
+mcp.tool(arquivos_contratacao, tags={"consulta", "contratacoes", "documentos"})
+mcp.tool(historico_contratacao, tags={"consulta", "contratacoes", "historico"})
 
 # Tools — PCA (Plano de Contratações Anual)
 mcp.tool(buscar_pca, tags={"busca", "pca", "planejamento"})

@@ -17,6 +17,7 @@ Usage:
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 from typing import Any
 
@@ -29,6 +30,18 @@ logger = logging.getLogger(__name__)
 
 # Status codes that trigger a retry
 _RETRYABLE_STATUS_CODES = frozenset({429, 500, 502, 503, 504})
+
+
+def _parse_json(response: httpx.Response) -> Any:
+    """Parse JSON tolerating raw control characters inside strings.
+
+    Some government APIs (e.g. PNCP search) return unescaped line breaks
+    inside string values, which the strict parser rejects.
+    """
+    try:
+        return response.json()
+    except json.JSONDecodeError:
+        return json.loads(response.text, strict=False)
 
 
 def create_client(
@@ -71,7 +84,8 @@ async def http_get(
 ) -> Any:
     """Make a GET request with retry + exponential backoff.
 
-    Retries on: HTTP 429/5xx, timeouts, and connection errors.
+    Retries on: HTTP 429/5xx, timeouts, and transport errors (refused or reset
+    connections, which PNCP's firewall does under bursts).
     Does NOT retry on 4xx (except 429) — those are client errors.
 
     Args:
@@ -115,14 +129,14 @@ async def http_get(
                     )
 
                 response.raise_for_status()
-                return response.json()
+                return _parse_json(response)
 
             except httpx.HTTPStatusError as exc:
                 raise HttpClientError(
                     f"HTTP {exc.response.status_code} from {url}: {exc.response.text[:200]}"
                 ) from exc
 
-            except (httpx.TimeoutException, httpx.ConnectError) as exc:
+            except httpx.TransportError as exc:
                 last_error = exc
                 if attempt < retries:
                     wait = HTTP_BACKOFF_BASE * (2**attempt)
@@ -194,14 +208,14 @@ async def http_post(
                     )
 
                 response.raise_for_status()
-                return response.json()
+                return _parse_json(response)
 
             except httpx.HTTPStatusError as exc:
                 raise HttpClientError(
                     f"HTTP {exc.response.status_code} from {url}: {exc.response.text[:200]}"
                 ) from exc
 
-            except (httpx.TimeoutException, httpx.ConnectError) as exc:
+            except httpx.TransportError as exc:
                 last_error = exc
                 if attempt < retries:
                     wait = HTTP_BACKOFF_BASE * (2**attempt)
