@@ -67,7 +67,7 @@ Não use a mesma rota para outra coisa: o `/healthz` não precisa ser exposto fo
 O Caddy costuma rodar em contêiner. Dentro dele, `127.0.0.1` é o próprio contêiner do Caddy,
 não o servidor. O destino precisa ser alcançável de dentro do contêiner do Caddy. Há duas formas.
 
-**Opção A: mesma rede Docker (recomendada).** Ligue o mcp-realmak à rede em que o Caddy está
+**Opção A: mesma rede Docker (recomendada).** Se a borda for a do realmak-crm, ela já cria a rede `mcp-realmak` e o override `compose.vps.yaml` deste repositório entra nela: `docker compose -f compose.yaml -f compose.vps.yaml up -d --build --wait`. Para outro Caddy: Ligue o mcp-realmak à rede em que o Caddy está
 e use o nome do serviço como destino.
 
 1. Descubra a rede do Caddy: `docker inspect <contêiner-do-caddy> --format '{{json .NetworkSettings.Networks}}'`.

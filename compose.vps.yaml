@@ -1,0 +1,10 @@
+# Override para a VPS em que a borda (Caddy) do realmak-crm cria a rede mcp-realmak.
+# Uso: docker compose -f compose.yaml -f compose.vps.yaml up -d --build --wait
+services:
+  mcp-realmak:
+    networks: [default, mcp-realmak]
+
+networks:
+  mcp-realmak:
+    external: true
+    name: mcp-realmak
