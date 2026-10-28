@@ -26,6 +26,11 @@ class TestComposedServer:
                 "pncp_buscar_contratos_atualizados",
                 "pncp_buscar_atas_atualizadas",
                 "pncp_consultar_contratacao_detalhe",
+                "pncp_pesquisar",
+                "pncp_itens_contratacao",
+                "pncp_resultados_item",
+                "pncp_arquivos_contratacao",
+                "pncp_historico_contratacao",
                 "pncp_buscar_pca",
                 "pncp_buscar_pca_atualizacao",
                 "pncp_buscar_pca_usuario",
@@ -70,4 +75,4 @@ class TestComposedServer:
     async def test_total_tools_count(self) -> None:
         async with Client(mcp) as c:
             tool_list = await c.list_tools()
-            assert len(tool_list) == 31, f"Expected 31 tools, got {len(tool_list)}"
+            assert len(tool_list) == 36, f"Expected 36 tools, got {len(tool_list)}"

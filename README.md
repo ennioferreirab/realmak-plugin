@@ -10,7 +10,7 @@ Esta é uma versão de teste (MVP). Veja os [limites](#limites-do-mvp) no fim.
 
 | Grupo | Prefixo | Qtd. | Para quê |
 | --- | --- | --- | --- |
-| Compras públicas | `pncp_*` (14), `dadosabertos_*` (10), `contratosgovbr_*` (7) | 31 | PNCP, Compras.gov.br e Contratos.gov.br: licitações, atas, contratos, fornecedores, CATMAT/CATSER e preços praticados |
+| Compras públicas | `pncp_*` (19), `dadosabertos_*` (10), `contratosgovbr_*` (7) | 36 | PNCP, Compras.gov.br e Contratos.gov.br: busca por texto no PNCP, licitações, itens, vencedores, documentos e histórico de editais, atas, contratos, fornecedores, CATMAT/CATSER e preços praticados |
 | ConLicitação | `conlicitacao_*` | 7 | Achar licitação no site (UASG, edital, processo, órgão, objeto, UF), detalhe com itens e impugnações, filtros, boletins, pregões monitorados e mensagens |
 | Cérebro (Galeed) | `galeed_*` | 5 | `galeed_retrieve`, `galeed_facts` e, para chaves com acesso ao dataset de registros, `galeed_esquema`, `galeed_consulta`, `galeed_provas` |
 

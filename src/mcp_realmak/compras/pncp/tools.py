@@ -14,9 +14,29 @@ from __future__ import annotations
 from fastmcp import Context
 
 from mcp_realmak.compras._shared.formatting import format_brl
+from mcp_realmak.compras.exceptions import HttpClientError
 
 from . import client
-from .constants import MODALIDADES
+from .constants import MODALIDADES, SEARCH_STATUS, SEARCH_STATUS_PADRAO
+from .schemas import ContratacaoResultado
+
+
+def _rodape_contratacoes(
+    resultado: ContratacaoResultado, pagina: int, tamanho_pagina: int, texto: str | None
+) -> list[str]:
+    """Footer with local-filter note and next-page hint for contratações."""
+    lines: list[str] = []
+    total_api = resultado.total_api
+    if texto:
+        de_total = f" de {total_api} registros da consulta" if total_api is not None else ""
+        lines.append(
+            f"*Filtrado localmente por '{texto}': {resultado.total} nesta página{de_total}. "
+            "Para busca por texto em todo o PNCP, use pncp_pesquisar.*"
+        )
+    total = total_api if total_api is not None else resultado.total
+    if total > pagina * client._tamanho_contratacoes(tamanho_pagina, texto):
+        lines.append(f"*Use pagina={pagina + 1} para mais resultados.*")
+    return lines
 
 
 async def buscar_contratacoes(
@@ -27,8 +47,11 @@ async def buscar_contratacoes(
     texto: str | None = None,
     uf: str | None = None,
     cnpj_orgao: str | None = None,
+    codigo_municipio_ibge: str | None = None,
+    codigo_unidade: str | None = None,
     modo_disputa: int | None = None,
     pagina: int = 1,
+    tamanho_pagina: int = 10,
 ) -> str:
     """Busca licitações e contratações públicas no PNCP por período e modalidade.
 
@@ -51,9 +74,14 @@ async def buscar_contratacoes(
             ou fornecedor APÓS buscar os resultados da API.
         uf: UF do órgão contratante (ex: SP, RJ, DF). Opcional.
         cnpj_orgao: CNPJ do órgão contratante (opcional).
+        codigo_municipio_ibge: Código IBGE do município do órgão (opcional,
+            7 dígitos; ex.: 5300108 = Brasília).
+        codigo_unidade: Código da unidade administrativa / UASG (opcional).
         modo_disputa: Código do modo de disputa (opcional).
             1=Aberto, 2=Fechado, 3=Aberto-Fechado, 4=Dispensa com Disputa.
         pagina: Página de resultados (padrão 1).
+        tamanho_pagina: Itens por página, de 10 a 50 (padrão 10). Com 'texto',
+            a busca usa 50 para o filtro local ver mais registros.
 
     Returns:
         Lista de contratações encontradas com objeto, valor e situação.
@@ -69,8 +97,11 @@ async def buscar_contratacoes(
             texto=texto,
             uf=uf,
             cnpj_orgao=cnpj_orgao,
+            codigo_municipio_ibge=codigo_municipio_ibge,
+            codigo_unidade=codigo_unidade,
             modo_disputa=modo_disputa,
             pagina=pagina,
+            tamanho=tamanho_pagina,
         )
     except ValueError as e:
         return f"Erro de validação: {e}"
@@ -93,6 +124,7 @@ async def buscar_contratacoes(
             [
                 f"### {i}. {c.objeto or 'Sem descrição'}",
                 f"**Órgão:** {c.orgao_nome or 'N/A'} ({c.orgao_cnpj or 'N/A'})",
+                f"**Nº controle PNCP:** {c.numero_controle_pncp or 'N/A'}",
                 f"**Modalidade:** {modalidade_desc}",
                 f"**Situação:** {c.situacao_nome or 'N/A'}",
                 f"**Valor estimado:** {valor_est} | **Homologado:** {valor_hom}",
@@ -104,10 +136,7 @@ async def buscar_contratacoes(
             lines.append(f"[Ver no PNCP]({c.link_pncp})")
         lines.append("")
 
-    if texto:
-        lines.append(f"*Filtrado localmente por '{texto}'.*")
-    if resultado.total > len(resultado.contratacoes):
-        lines.append(f"*Use pagina={pagina + 1} para mais resultados.*")
+    lines.extend(_rodape_contratacoes(resultado, pagina, tamanho_pagina, texto))
     return "\n".join(lines)
 
 
@@ -339,7 +368,10 @@ async def buscar_contratacoes_abertas(
     modalidade: int | None = None,
     uf: str | None = None,
     cnpj_orgao: str | None = None,
+    codigo_municipio_ibge: str | None = None,
+    codigo_unidade: str | None = None,
     pagina: int = 1,
+    tamanho_pagina: int = 10,
 ) -> str:
     """Busca licitações com prazo de proposta aberto no PNCP.
 
@@ -354,7 +386,12 @@ async def buscar_contratacoes_abertas(
         modalidade: Código da modalidade (opcional). Ex: 6=Pregão Eletrônico.
         uf: UF do órgão contratante (ex: SP, RJ). Opcional.
         cnpj_orgao: CNPJ do órgão contratante (opcional).
+        codigo_municipio_ibge: Código IBGE do município do órgão (opcional,
+            7 dígitos; ex.: 5300108 = Brasília).
+        codigo_unidade: Código da unidade administrativa / UASG (opcional).
         pagina: Página de resultados (padrão 1).
+        tamanho_pagina: Itens por página, de 10 a 50 (padrão 10). Com 'texto',
+            a busca usa 50 para o filtro local ver mais registros.
 
     Returns:
         Lista de contratações com propostas abertas.
@@ -368,7 +405,10 @@ async def buscar_contratacoes_abertas(
             modalidade=modalidade,
             uf=uf,
             cnpj_orgao=cnpj_orgao,
+            codigo_municipio_ibge=codigo_municipio_ibge,
+            codigo_unidade=codigo_unidade,
             pagina=pagina,
+            tamanho=tamanho_pagina,
         )
     except ValueError as e:
         return f"Erro de validação: {e}"
@@ -387,21 +427,22 @@ async def buscar_contratacoes_abertas(
             [
                 f"### {i}. {c.objeto or 'Sem descrição'}",
                 f"**Órgão:** {c.orgao_nome or 'N/A'} ({c.orgao_cnpj or 'N/A'})",
+                f"**Nº controle PNCP:** {c.numero_controle_pncp or 'N/A'}",
                 f"**Modalidade:** {mod}",
                 f"**Situação:** {c.situacao_nome or 'N/A'}",
                 f"**Valor estimado:** {valor_est}",
-                f"**Abertura propostas:** {c.data_abertura or 'N/A'}",
-                f"**Local:** {c.municipio or 'N/A'}/{c.uf or 'N/A'}",
+                f"**Propostas:** {c.data_abertura or 'N/A'} até {c.data_encerramento or 'N/A'}",
+                f"**Local:** {c.municipio or 'N/A'}/{c.uf or 'N/A'}"
+                + (f" — {c.unidade_nome}" if c.unidade_nome else ""),
             ]
         )
         if c.link_pncp:
             lines.append(f"[Ver no PNCP]({c.link_pncp})")
+        if c.link_origem:
+            lines.append(f"[Sistema de origem]({c.link_origem})")
         lines.append("")
 
-    if texto:
-        lines.append(f"*Filtrado localmente por '{texto}'.*")
-    if resultado.total > len(resultado.contratacoes):
-        lines.append(f"*Use pagina={pagina + 1} para mais resultados.*")
+    lines.extend(_rodape_contratacoes(resultado, pagina, tamanho_pagina, texto))
     return "\n".join(lines)
 
 
@@ -413,8 +454,11 @@ async def buscar_contratacoes_atualizadas(
     texto: str | None = None,
     uf: str | None = None,
     cnpj_orgao: str | None = None,
+    codigo_municipio_ibge: str | None = None,
+    codigo_unidade: str | None = None,
     modo_disputa: int | None = None,
     pagina: int = 1,
+    tamanho_pagina: int = 10,
 ) -> str:
     """Busca contratações atualizadas no PNCP por período de atualização.
 
@@ -430,8 +474,13 @@ async def buscar_contratacoes_atualizadas(
         texto: Filtro textual local (opcional).
         uf: UF do órgão contratante (opcional).
         cnpj_orgao: CNPJ do órgão contratante (opcional).
+        codigo_municipio_ibge: Código IBGE do município do órgão (opcional,
+            7 dígitos; ex.: 5300108 = Brasília).
+        codigo_unidade: Código da unidade administrativa / UASG (opcional).
         modo_disputa: Código do modo de disputa (opcional).
         pagina: Página de resultados (padrão 1).
+        tamanho_pagina: Itens por página, de 10 a 50 (padrão 10). Com 'texto',
+            a busca usa 50 para o filtro local ver mais registros.
 
     Returns:
         Lista de contratações atualizadas no período.
@@ -447,8 +496,11 @@ async def buscar_contratacoes_atualizadas(
             texto=texto,
             uf=uf,
             cnpj_orgao=cnpj_orgao,
+            codigo_municipio_ibge=codigo_municipio_ibge,
+            codigo_unidade=codigo_unidade,
             modo_disputa=modo_disputa,
             pagina=pagina,
+            tamanho=tamanho_pagina,
         )
     except ValueError as e:
         return f"Erro de validação: {e}"
@@ -471,6 +523,7 @@ async def buscar_contratacoes_atualizadas(
             [
                 f"### {i}. {c.objeto or 'Sem descrição'}",
                 f"**Órgão:** {c.orgao_nome or 'N/A'} ({c.orgao_cnpj or 'N/A'})",
+                f"**Nº controle PNCP:** {c.numero_controle_pncp or 'N/A'}",
                 f"**Modalidade:** {modalidade_desc}",
                 f"**Situação:** {c.situacao_nome or 'N/A'}",
                 f"**Valor estimado:** {valor_est} | **Homologado:** {valor_hom}",
@@ -482,10 +535,7 @@ async def buscar_contratacoes_atualizadas(
             lines.append(f"[Ver no PNCP]({c.link_pncp})")
         lines.append("")
 
-    if texto:
-        lines.append(f"*Filtrado localmente por '{texto}'.*")
-    if resultado.total > len(resultado.contratacoes):
-        lines.append(f"*Use pagina={pagina + 1} para mais resultados.*")
+    lines.extend(_rodape_contratacoes(resultado, pagina, tamanho_pagina, texto))
     return "\n".join(lines)
 
 
@@ -877,3 +927,326 @@ async def buscar_instrumentos_cobranca(
     if resultado.total > len(resultado.instrumentos):
         lines.append(f"*Use pagina={pagina + 1} para mais resultados.*")
     return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Busca textual (portal PNCP)
+# ---------------------------------------------------------------------------
+
+_TIPOS_PESQUISA = {"edital": "editais", "ata": "atas", "contrato": "contratos"}
+
+
+def _resumo(texto: str, limite: int) -> str:
+    """Single-line text cut at `limite` characters (objects can be very long)."""
+    texto = " ".join(texto.split())
+    return texto if len(texto) <= limite else texto[: limite - 1].rstrip() + "…"
+
+
+async def pesquisar(
+    texto: str,
+    ctx: Context,
+    tipo: str = "edital",
+    status: str | None = None,
+    ufs: str | None = None,
+    modalidades: str | None = None,
+    data_publicacao_inicio: str | None = None,
+    data_publicacao_fim: str | None = None,
+    pagina: int = 1,
+    tamanho_pagina: int = 20,
+) -> str:
+    """Busca por texto livre no PNCP (editais, atas ou contratos), como no portal.
+
+    É a busca do site pncp.gov.br: procura as palavras no objeto e nos documentos
+    em todo o PNCP, sem exigir período nem modalidade. Use esta ferramenta para
+    perguntas como "pregões abertos de manutenção de gerador no DF", "quem tem
+    contrato vigente de manutenção de nobreak" ou "atas vigentes de ar-condicionado".
+    A busca casa palavras em qualquer parte do texto, então confira o objeto de
+    cada resultado. Para ler itens, arquivos e histórico de um edital, passe o
+    "Nº controle PNCP" às ferramentas de leitura (itens_contratacao etc.).
+
+    Args:
+        texto: Palavras a buscar (ex.: "manutenção grupo gerador").
+        tipo: "edital" (padrão), "ata" ou "contrato".
+        status: Situação. Para edital: "recebendo_proposta" (padrão),
+            "propostas_encerradas" (em julgamento) ou "todos". Para ata e
+            contrato: "vigente" (padrão), "nao_vigente" ou "todos".
+        ufs: Uma ou mais UFs separadas por vírgula (ex.: "DF" ou "DF,GO").
+        modalidades: Códigos de modalidade separados por vírgula
+            (ex.: "6" = Pregão Eletrônico, "6,8" = pregão e dispensa).
+        data_publicacao_inicio: Publicação a partir desta data (YYYYMMDD,
+            YYYY-MM-DD ou DD/MM/YYYY). Opcional.
+        data_publicacao_fim: Publicação até esta data. Opcional.
+        pagina: Página de resultados (padrão 1).
+        tamanho_pagina: Resultados por página, de 1 a 50 (padrão 20).
+
+    Returns:
+        Lista com objeto, órgão, local, situação, prazo ou vigência, valor,
+        fornecedor (contratos), Nº controle PNCP e link do portal.
+    """
+    await ctx.info(f"Buscando '{texto}' no PNCP ({tipo})...")
+    try:
+        resultado = await client.pesquisar(
+            texto,
+            tipo=tipo,
+            status=status,
+            ufs=ufs,
+            modalidades=modalidades,
+            data_publicacao_inicio=data_publicacao_inicio,
+            data_publicacao_fim=data_publicacao_fim,
+            pagina=pagina,
+            tamanho=tamanho_pagina,
+        )
+    except ValueError as e:
+        return f"Erro de validação: {e}"
+    except HttpClientError as e:
+        return f"A busca do PNCP não respondeu: {e}. Tente de novo em alguns segundos."
+
+    tipo_norm = (tipo or "edital").strip().lower()
+    status_norm = (status or SEARCH_STATUS_PADRAO[tipo_norm]).strip().lower()
+    status_desc = SEARCH_STATUS[tipo_norm][status_norm]
+    plural = _TIPOS_PESQUISA[tipo_norm]
+    filtros = f" | UF: {ufs}" if ufs else ""
+    await ctx.info(f"{resultado.total} {plural} encontrados")
+
+    if not resultado.documentos:
+        return f"Nenhum resultado em {plural} ({status_desc}) para '{texto}'{filtros}."
+
+    rotulo_periodo = "Propostas" if tipo_norm == "edital" else "Vigência"
+    lines = [f"**Total:** {resultado.total} {plural} ({status_desc}) para '{texto}'{filtros}\n"]
+    for i, d in enumerate(resultado.documentos, 1):
+        local = f"{d.municipio or 'N/A'}/{d.uf or 'N/A'}"
+        lines.extend(
+            [
+                f"### {i}. {_resumo(d.descricao or d.titulo or 'Sem descrição', 300)}",
+                f"**{d.titulo or 'Documento'}** | **Nº controle PNCP:** {d.numero_controle_pncp or 'N/A'}",
+                f"**Órgão:** {d.orgao_nome or 'N/A'} ({d.orgao_cnpj or 'N/A'})",
+                f"**Unidade:** {d.unidade_nome or 'N/A'} | **Local:** {local}",
+            ]
+        )
+        if d.modalidade_nome:
+            lines.append(f"**Modalidade:** {d.modalidade_nome}")
+        lines.append(f"**Situação:** {d.situacao_nome or 'N/A'}")
+        lines.append(f"**{rotulo_periodo}:** {d.data_inicio or 'N/A'} até {d.data_fim or 'N/A'}")
+        if d.valor_global:
+            lines.append(f"**Valor:** {format_brl(d.valor_global)}")
+        if d.fornecedor_nome:
+            lines.append(f"**Fornecedor:** {d.fornecedor_nome} ({d.fornecedor_ni or 'N/A'})")
+        if d.link_pncp:
+            lines.append(f"[Ver no PNCP]({d.link_pncp})")
+        lines.append("")
+
+    if resultado.total > pagina * tamanho_pagina:
+        lines.append(f"*Use pagina={pagina + 1} para mais resultados.*")
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Leitura de uma contratação (itens, resultados, arquivos, histórico)
+# ---------------------------------------------------------------------------
+
+_ARGS_COMPRA = """
+        numero_controle_pncp: Nº de controle do edital no PNCP, no formato
+            CNPJ-1-SEQUENCIAL/ANO (ex.: 00394494000136-1-001203/2026). Vem nas
+            ferramentas de busca. Use isto OU cnpj + ano + sequencial.
+        cnpj: CNPJ do órgão (14 dígitos).
+        ano: Ano da compra.
+        sequencial: Número sequencial da compra no ano."""
+
+
+def _ler_compra(
+    numero_controle_pncp: str | None,
+    cnpj: str | None,
+    ano: int | None,
+    sequencial: int | None,
+) -> tuple[str, int, int]:
+    return client.resolver_compra(
+        cnpj=cnpj, ano=ano, sequencial=sequencial, numero_controle_pncp=numero_controle_pncp
+    )
+
+
+async def itens_contratacao(
+    ctx: Context,
+    numero_controle_pncp: str | None = None,
+    cnpj: str | None = None,
+    ano: int | None = None,
+    sequencial: int | None = None,
+    pagina: int = 1,
+) -> str:
+    """Lista os itens de um edital no PNCP, com quantidade e valor estimado.
+
+    Mostra descrição, quantidade, unidade, valor unitário estimado, situação do
+    item, critério de julgamento, benefício ME/EPP e se já tem resultado.
+    Para ver quem venceu um item, use resultados_item.
+
+    Args:{args}
+        pagina: Página de itens, 50 por página (padrão 1).
+
+    Returns:
+        Tabela de itens do edital.
+    """
+    try:
+        cnpj_, ano_, seq_ = _ler_compra(numero_controle_pncp, cnpj, ano, sequencial)
+        await ctx.info(f"Lendo itens da compra {cnpj_}/{ano_}/{seq_}...")
+        itens = await client.listar_itens_contratacao(cnpj_, ano_, seq_, pagina=pagina)
+    except ValueError as e:
+        return f"Erro de validação: {e}"
+    except HttpClientError as e:
+        return f"O PNCP não devolveu os itens: {e}"
+
+    if not itens:
+        return f"Nenhum item encontrado para a compra {cnpj_}/{ano_}/{seq_} (página {pagina})."
+
+    lines = [
+        f"**Itens da compra {cnpj_}/{ano_}/{seq_}** (página {pagina})\n",
+        "| Nº | Descrição | Qtd | Unid. | Valor unit. estimado | Valor total | Situação | Resultado |",
+        "|---|---|---|---|---|---|---|---|",
+    ]
+    for it in itens:
+        desc = _resumo((it.descricao or "").replace("|", "/"), 200)
+        unit = format_brl(it.valor_unitario_estimado) if it.valor_unitario_estimado else "N/A"
+        total = format_brl(it.valor_total) if it.valor_total else "N/A"
+        res = "sim" if it.tem_resultado else "não"
+        lines.append(
+            f"| {it.numero_item} | {desc} | {it.quantidade or 'N/A'} | {it.unidade_medida or ''} "
+            f"| {unit} | {total} | {it.situacao or 'N/A'} | {res} |"
+        )
+    extras = {i.beneficio for i in itens if i.beneficio} | {
+        i.criterio_julgamento for i in itens if i.criterio_julgamento
+    }
+    if extras:
+        lines.append(f"\n*Critério/benefício: {'; '.join(sorted(extras))}.*")
+    if len(itens) == 50:
+        lines.append(f"*Use pagina={pagina + 1} para mais itens.*")
+    lines.append(f"[Ver no PNCP]({client.link_portal_edital(cnpj_, ano_, seq_)})")
+    return "\n".join(lines)
+
+
+async def resultados_item(
+    numero_item: int,
+    ctx: Context,
+    numero_controle_pncp: str | None = None,
+    cnpj: str | None = None,
+    ano: int | None = None,
+    sequencial: int | None = None,
+) -> str:
+    """Mostra o resultado de um item do edital: fornecedor vencedor e valor homologado.
+
+    Serve para pesquisa de preço (valor homologado) e para saber quem ganhou.
+    Só há resultado quando itens_contratacao marca "Resultado: sim".
+
+    Args:
+        numero_item: Número do item no edital (coluna Nº de itens_contratacao).{args}
+
+    Returns:
+        Fornecedores com CNPJ, porte, quantidade e valores homologados.
+    """
+    try:
+        cnpj_, ano_, seq_ = _ler_compra(numero_controle_pncp, cnpj, ano, sequencial)
+        await ctx.info(f"Lendo resultado do item {numero_item} da compra {cnpj_}/{ano_}/{seq_}...")
+        resultados = await client.listar_resultados_item(cnpj_, ano_, seq_, numero_item)
+    except ValueError as e:
+        return f"Erro de validação: {e}"
+    except HttpClientError as e:
+        return f"O PNCP não devolveu resultado para o item {numero_item}: {e}"
+
+    if not resultados:
+        return f"O item {numero_item} da compra {cnpj_}/{ano_}/{seq_} ainda não tem resultado."
+
+    lines = [f"**Resultado do item {numero_item}** — compra {cnpj_}/{ano_}/{seq_}\n"]
+    for r in resultados:
+        unit = format_brl(r.valor_unitario_homologado) if r.valor_unitario_homologado else "N/A"
+        total = format_brl(r.valor_total_homologado) if r.valor_total_homologado else "N/A"
+        lines.extend(
+            [
+                f"### {r.fornecedor_nome or 'N/A'} ({r.fornecedor_ni or 'N/A'})",
+                f"**Porte:** {r.porte or 'N/A'} | **Situação:** {r.situacao or 'N/A'}",
+                f"**Quantidade:** {r.quantidade_homologada or 'N/A'} | "
+                f"**Unitário:** {unit} | **Total:** {total}",
+                f"**Data do resultado:** {r.data_resultado or 'N/A'}",
+                "",
+            ]
+        )
+    return "\n".join(lines)
+
+
+async def arquivos_contratacao(
+    ctx: Context,
+    numero_controle_pncp: str | None = None,
+    cnpj: str | None = None,
+    ano: int | None = None,
+    sequencial: int | None = None,
+) -> str:
+    """Lista os documentos publicados de um edital (edital, termo de referência, anexos).
+
+    Devolve tipo, título, data e o link para baixar cada arquivo.
+
+    Args:{args}
+
+    Returns:
+        Lista de documentos com link de download.
+    """
+    try:
+        cnpj_, ano_, seq_ = _ler_compra(numero_controle_pncp, cnpj, ano, sequencial)
+        await ctx.info(f"Listando arquivos da compra {cnpj_}/{ano_}/{seq_}...")
+        arquivos = await client.listar_arquivos_contratacao(cnpj_, ano_, seq_)
+    except ValueError as e:
+        return f"Erro de validação: {e}"
+    except HttpClientError as e:
+        return f"O PNCP não devolveu os arquivos: {e}"
+
+    if not arquivos:
+        return f"Nenhum documento publicado para a compra {cnpj_}/{ano_}/{seq_}."
+
+    lines = [f"**Documentos da compra {cnpj_}/{ano_}/{seq_}**\n"]
+    for a in arquivos:
+        data = (a.data_publicacao or "")[:10] or "N/A"
+        link = f"[baixar]({a.url})" if a.url else "sem link"
+        lines.append(f"- **{a.tipo or 'Documento'}**: {a.titulo or 'sem título'} ({data}) — {link}")
+    return "\n".join(lines)
+
+
+async def historico_contratacao(
+    ctx: Context,
+    numero_controle_pncp: str | None = None,
+    cnpj: str | None = None,
+    ano: int | None = None,
+    sequencial: int | None = None,
+) -> str:
+    """Mostra o histórico de um edital no PNCP: inclusões, retificações e exclusões.
+
+    Use para saber o que mudou no edital (retificação de item, troca de
+    documento, suspensão) e quando. Eventos mais recentes primeiro.
+
+    Args:{args}
+
+    Returns:
+        Lista de eventos com data, tipo, o que foi alterado e justificativa.
+    """
+    try:
+        cnpj_, ano_, seq_ = _ler_compra(numero_controle_pncp, cnpj, ano, sequencial)
+        await ctx.info(f"Lendo histórico da compra {cnpj_}/{ano_}/{seq_}...")
+        eventos = await client.listar_historico_contratacao(cnpj_, ano_, seq_)
+    except ValueError as e:
+        return f"Erro de validação: {e}"
+    except HttpClientError as e:
+        return f"O PNCP não devolveu o histórico: {e}"
+
+    if not eventos:
+        return f"Sem histórico para a compra {cnpj_}/{ano_}/{seq_}."
+
+    lines = [f"**Histórico da compra {cnpj_}/{ano_}/{seq_}** ({len(eventos)} eventos)\n"]
+    for e in eventos:
+        alvo = e.categoria or "N/A"
+        if e.item_numero:
+            alvo += f" {e.item_numero}"
+        if e.documento:
+            alvo += f" ({e.documento})"
+        linha = f"- {(e.data or 'N/A')[:16].replace('T', ' ')} — **{e.tipo or 'N/A'}** de {alvo}"
+        if e.justificativa:
+            linha += f": {e.justificativa}"
+        lines.append(linha)
+    return "\n".join(lines)
+
+
+for _tool in (itens_contratacao, resultados_item, arquivos_contratacao, historico_contratacao):
+    _tool.__doc__ = (_tool.__doc__ or "").replace("{args}", _ARGS_COMPRA)

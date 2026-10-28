@@ -20,7 +20,7 @@ CLIENT_MODULE = "mcp_realmak.compras.pncp.client"
 
 class TestToolsRegistered:
     @pytest.mark.asyncio
-    async def test_all_14_tools_registered(self) -> None:
+    async def test_all_19_tools_registered(self) -> None:
         async with Client(mcp) as c:
             tool_list = await c.list_tools()
             names = {t.name for t in tool_list}
@@ -39,6 +39,11 @@ class TestToolsRegistered:
                 "buscar_pca_atualizacao",
                 "buscar_pca_usuario",
                 "buscar_instrumentos_cobranca",
+                "pesquisar",
+                "itens_contratacao",
+                "resultados_item",
+                "arquivos_contratacao",
+                "historico_contratacao",
             }
             assert expected.issubset(names), f"Missing: {expected - names}"
 

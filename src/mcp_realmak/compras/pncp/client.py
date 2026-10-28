@@ -21,6 +21,8 @@ from typing import Any
 from mcp_realmak.compras._shared.http_client import http_get
 
 from .constants import (
+    ARQUIVO_URL_INTERNA_RE,
+    ARQUIVO_URL_PUBLICA,
     ATAS_ATUALIZACAO_URL,
     ATAS_URL,
     CONTRATACOES_ATUALIZACAO_URL,
@@ -28,28 +30,41 @@ from .constants import (
     CONTRATACOES_URL,
     CONTRATOS_ATUALIZACAO_URL,
     CONTRATOS_URL,
+    ESFERAS,
     FORNECEDORES_URL,
     INSTRUMENTOS_COBRANCA_URL,
     MAX_DATE_RANGE_DAYS,
+    MAX_PAGE_SIZE_CONTRATACOES,
+    MAX_PAGE_SIZE_SEARCH,
     ORGAOS_URL,
     PCA_URL,
+    PORTAL_URL,
+    SEARCH_STATUS,
+    SEARCH_STATUS_PADRAO,
+    SEARCH_URL,
 )
 from .schemas import (
+    ArquivoContratacao,
     AtaRegistroPreco,
     AtaResultado,
     Contratacao,
     ContratacaoResultado,
     Contrato,
     ContratoResultado,
+    DocumentoPesquisa,
+    EventoHistorico,
     Fornecedor,
     FornecedorResultado,
     InstrumentoCobranca,
     InstrumentoCobrancaResultado,
+    ItemContratacao,
     ItemPca,
     OrgaoContratante,
     OrgaoResultado,
     Pca,
     PcaResultado,
+    PesquisaResultado,
+    ResultadoItem,
 )
 
 _DATE_RE = re.compile(r"^\d{8}$")
@@ -134,14 +149,39 @@ def _filtrar_por_texto(items: list[dict[str, Any]], texto: str | None) -> list[d
     return filtered
 
 
+def _tamanho_contratacoes(tamanho: int, texto: str | None) -> int:
+    """Page size for /contratacoes endpoints (API accepts 10 to 50).
+
+    With a local text filter, fetch the largest page so the filter sees more.
+    """
+    if texto:
+        return MAX_PAGE_SIZE_CONTRATACOES
+    return min(max(tamanho, 10), MAX_PAGE_SIZE_CONTRATACOES)
+
+
+def link_portal_edital(cnpj: str | None, ano: int | None, sequencial: int | None) -> str | None:
+    """Build the public portal link for a procurement process."""
+    if not (cnpj and ano and sequencial):
+        return None
+    return f"{PORTAL_URL}/editais/{cnpj}/{ano}/{sequencial}"
+
+
 def _parse_contratacao(item: dict[str, Any]) -> Contratacao:
-    """Parse a raw API response item into a Contratacao model."""
+    """Parse a raw API response item into a Contratacao model.
+
+    UF and município live in `unidadeOrgao`; `orgaoEntidade` only has them in
+    some responses, so it is the fallback.
+    """
     orgao = item.get("orgaoEntidade", {}) or {}
+    unidade = item.get("unidadeOrgao", {}) or {}
+    cnpj = orgao.get("cnpj")
+    ano = item.get("anoCompra")
+    sequencial = item.get("sequencialCompra")
     return Contratacao(
-        orgao_cnpj=orgao.get("cnpj"),
+        orgao_cnpj=cnpj,
         orgao_nome=orgao.get("razaoSocial"),
-        ano=item.get("anoCompra"),
-        numero_sequencial=item.get("sequencialCompra"),
+        ano=ano,
+        numero_sequencial=sequencial,
         numero_controle_pncp=item.get("numeroControlePNCP"),
         objeto=item.get("objetoCompra"),
         modalidade_id=item.get("modalidadeId"),
@@ -152,10 +192,14 @@ def _parse_contratacao(item: dict[str, Any]) -> Contratacao:
         valor_homologado=item.get("valorTotalHomologado"),
         data_publicacao=item.get("dataPublicacaoPncp"),
         data_abertura=item.get("dataAberturaProposta"),
-        uf=orgao.get("ufSigla"),
-        municipio=orgao.get("municipioNome"),
-        esfera=orgao.get("esferaNome"),
-        link_pncp=item.get("linkPncp"),
+        data_encerramento=item.get("dataEncerramentoProposta"),
+        uf=unidade.get("ufSigla") or orgao.get("ufSigla"),
+        municipio=unidade.get("municipioNome") or orgao.get("municipioNome"),
+        unidade_nome=unidade.get("nomeUnidade"),
+        esfera=orgao.get("esferaNome") or ESFERAS.get(orgao.get("esferaId") or ""),
+        srp=item.get("srp"),
+        link_pncp=item.get("linkPncp") or link_portal_edital(cnpj, ano, sequencial),
+        link_origem=item.get("linkSistemaOrigem") or None,
     )
 
 
@@ -207,6 +251,8 @@ async def buscar_contratacoes(
     texto: str | None = None,
     uf: str | None = None,
     cnpj_orgao: str | None = None,
+    codigo_municipio_ibge: str | None = None,
+    codigo_unidade: str | None = None,
     modo_disputa: int | None = None,
     pagina: int = 1,
     tamanho: int = 10,
@@ -225,12 +271,16 @@ async def buscar_contratacoes(
         "dataFinal": data_fim,
         "codigoModalidadeContratacao": str(modalidade),
         "pagina": str(pagina),
-        "tamanhoPagina": str(min(tamanho, 50)),
+        "tamanhoPagina": str(_tamanho_contratacoes(tamanho, texto)),
     }
     if uf:
         params["uf"] = uf
     if cnpj_orgao:
         params["cnpj"] = cnpj_orgao
+    if codigo_municipio_ibge:
+        params["codigoMunicipioIbge"] = codigo_municipio_ibge
+    if codigo_unidade:
+        params["codigoUnidadeAdministrativa"] = codigo_unidade
     if modo_disputa:
         params["codigoModoDisputa"] = str(modo_disputa)
 
@@ -245,6 +295,7 @@ async def buscar_contratacoes(
     contratacoes = [_parse_contratacao(item) for item in items]
     return ContratacaoResultado(
         total=len(contratacoes) if texto else data.get("totalRegistros", len(contratacoes)),
+        total_api=data.get("totalRegistros"),
         contratacoes=contratacoes,
     )
 
@@ -411,6 +462,8 @@ async def buscar_contratacoes_abertas(
     modalidade: int | None = None,
     uf: str | None = None,
     cnpj_orgao: str | None = None,
+    codigo_municipio_ibge: str | None = None,
+    codigo_unidade: str | None = None,
     pagina: int = 1,
     tamanho: int = 10,
 ) -> ContratacaoResultado:
@@ -423,7 +476,7 @@ async def buscar_contratacoes_abertas(
     params: dict[str, str] = {
         "dataFinal": data_fim,
         "pagina": str(pagina),
-        "tamanhoPagina": str(min(max(tamanho, 10), 50)),
+        "tamanhoPagina": str(_tamanho_contratacoes(tamanho, texto)),
     }
     if modalidade:
         params["codigoModalidadeContratacao"] = str(modalidade)
@@ -431,6 +484,10 @@ async def buscar_contratacoes_abertas(
         params["uf"] = uf
     if cnpj_orgao:
         params["cnpj"] = cnpj_orgao
+    if codigo_municipio_ibge:
+        params["codigoMunicipioIbge"] = codigo_municipio_ibge
+    if codigo_unidade:
+        params["codigoUnidadeAdministrativa"] = codigo_unidade
 
     data: dict[str, Any] = await http_get(CONTRATACOES_PROPOSTA_URL, params=params)
     items = data.get("data", data.get("resultado", []))
@@ -440,6 +497,7 @@ async def buscar_contratacoes_abertas(
     contratacoes = [_parse_contratacao(item) for item in items]
     return ContratacaoResultado(
         total=len(contratacoes) if texto else data.get("totalRegistros", len(contratacoes)),
+        total_api=data.get("totalRegistros"),
         contratacoes=contratacoes,
     )
 
@@ -452,6 +510,8 @@ async def buscar_contratacoes_atualizadas(
     texto: str | None = None,
     uf: str | None = None,
     cnpj_orgao: str | None = None,
+    codigo_municipio_ibge: str | None = None,
+    codigo_unidade: str | None = None,
     modo_disputa: int | None = None,
     pagina: int = 1,
     tamanho: int = 10,
@@ -470,12 +530,16 @@ async def buscar_contratacoes_atualizadas(
         "dataFinal": data_fim,
         "codigoModalidadeContratacao": str(modalidade),
         "pagina": str(pagina),
-        "tamanhoPagina": str(min(max(tamanho, 10), 50)),
+        "tamanhoPagina": str(_tamanho_contratacoes(tamanho, texto)),
     }
     if uf:
         params["uf"] = uf
     if cnpj_orgao:
         params["cnpj"] = cnpj_orgao
+    if codigo_municipio_ibge:
+        params["codigoMunicipioIbge"] = codigo_municipio_ibge
+    if codigo_unidade:
+        params["codigoUnidadeAdministrativa"] = codigo_unidade
     if modo_disputa:
         params["codigoModoDisputa"] = str(modo_disputa)
 
@@ -487,6 +551,7 @@ async def buscar_contratacoes_atualizadas(
     contratacoes = [_parse_contratacao(item) for item in items]
     return ContratacaoResultado(
         total=len(contratacoes) if texto else data.get("totalRegistros", len(contratacoes)),
+        total_api=data.get("totalRegistros"),
         contratacoes=contratacoes,
     )
 
@@ -780,3 +845,273 @@ async def buscar_instrumentos_cobranca(
         total=data.get("totalRegistros", len(instrumentos)),
         instrumentos=instrumentos,
     )
+
+
+# ---------------------------------------------------------------------------
+# Busca textual do portal (/api/search) — sem OpenAPI, ver constants.py
+# ---------------------------------------------------------------------------
+
+
+def _lista_busca(valores: str | None, *, maiusculas: bool = False) -> str | None:
+    """Turn 'DF, GO' or 'DF|GO' into the portal's pipe-separated format."""
+    if not valores:
+        return None
+    partes = [v.strip() for v in re.split(r"[|,;]", valores) if v.strip()]
+    if maiusculas:
+        partes = [p.upper() for p in partes]
+    return "|".join(partes) or None
+
+
+def _parse_documento_pesquisa(item: dict[str, Any]) -> DocumentoPesquisa:
+    """Parse a search hit (edital, ata or contrato)."""
+    item_url = item.get("item_url") or ""
+    tipo = item.get("document_type") or item.get("doc_type")
+    is_edital = tipo == "edital"
+    return DocumentoPesquisa(
+        tipo=tipo,
+        titulo=item.get("title"),
+        descricao=item.get("description"),
+        numero_controle_pncp=item.get("numero_controle_pncp"),
+        orgao_cnpj=item.get("orgao_cnpj"),
+        orgao_nome=item.get("orgao_nome"),
+        unidade_nome=item.get("unidade_nome"),
+        ano=_to_int(item.get("ano")),
+        numero_sequencial=_to_int(item.get("numero_sequencial")),
+        municipio=item.get("municipio_nome"),
+        uf=item.get("uf"),
+        modalidade_nome=item.get("modalidade_licitacao_nome"),
+        situacao_nome=item.get("situacao_nome"),
+        data_publicacao=item.get("data_publicacao_pncp"),
+        # Em editais, a vigência do índice é o período de recebimento de propostas.
+        data_inicio=(
+            item.get("data_inicio_recebimento_propostas") if is_edital else None
+        ) or item.get("data_inicio_vigencia"),
+        data_fim=(item.get("data_fim_recebimento_propostas") if is_edital else None)
+        or item.get("data_fim_vigencia"),
+        valor_global=item.get("valor_global"),
+        fornecedor_nome=item.get("fornecedor_nome"),
+        fornecedor_ni=item.get("fornecedor_ni"),
+        tem_resultado=item.get("tem_resultado"),
+        link_pncp=_link_portal_documento(item_url),
+    )
+
+
+def _link_portal_documento(item_url: str) -> str | None:
+    """Portal link from a search hit's item_url.
+
+    The index uses /compras/... for editais, but the portal route is /editais/...
+    """
+    if not item_url.startswith("/"):
+        return None
+    if item_url.startswith("/compras/"):
+        item_url = "/editais/" + item_url[len("/compras/") :]
+    return f"{PORTAL_URL}{item_url}"
+
+
+def _to_int(value: Any) -> int | None:
+    try:
+        return int(value) if value is not None and value != "" else None
+    except (TypeError, ValueError):
+        return None
+
+
+async def pesquisar(
+    texto: str,
+    *,
+    tipo: str = "edital",
+    status: str | None = None,
+    ufs: str | None = None,
+    modalidades: str | None = None,
+    data_publicacao_inicio: str | None = None,
+    data_publicacao_fim: str | None = None,
+    pagina: int = 1,
+    tamanho: int = 20,
+) -> PesquisaResultado:
+    """Full-text search on the PNCP portal index.
+
+    API: GET /api/search/?q=...&tipos_documento=...&status=...
+    Undocumented: an unknown status is silently treated as 'todos', so it is
+    validated here against SEARCH_STATUS.
+    """
+    tipo = (tipo or "edital").strip().lower()
+    if tipo not in SEARCH_STATUS:
+        msg = f"tipo inválido: '{tipo}'. Use um de: {', '.join(SEARCH_STATUS)}."
+        raise ValueError(msg)
+    status = (status or SEARCH_STATUS_PADRAO[tipo]).strip().lower()
+    if status not in SEARCH_STATUS[tipo]:
+        msg = (
+            f"status inválido para {tipo}: '{status}'. "
+            f"Use um de: {', '.join(SEARCH_STATUS[tipo])}."
+        )
+        raise ValueError(msg)
+    if not texto or not texto.strip():
+        raise ValueError("Informe o texto da busca.")
+
+    params: dict[str, str] = {
+        "q": texto.strip(),
+        "tipos_documento": tipo,
+        "status": status,
+        "ordenacao": "-data",
+        "pagina": str(max(pagina, 1)),
+        "tam_pagina": str(min(max(tamanho, 1), MAX_PAGE_SIZE_SEARCH)),
+    }
+    if ufs_param := _lista_busca(ufs, maiusculas=True):
+        params["ufs"] = ufs_param
+    if mod_param := _lista_busca(modalidades):
+        params["modalidades"] = mod_param
+    if data_publicacao_inicio:
+        dt = datetime.strptime(normalizar_data(data_publicacao_inicio), "%Y%m%d")
+        params["data_publicacao_inicio"] = dt.strftime("%Y-%m-%d")
+    if data_publicacao_fim:
+        dt = datetime.strptime(normalizar_data(data_publicacao_fim), "%Y%m%d")
+        params["data_publicacao_fim"] = dt.strftime("%Y-%m-%d")
+
+    # A busca derruba conexões em rajadas; mais tentativas com backoff exponencial.
+    data: dict[str, Any] = await http_get(SEARCH_URL, params=params, max_retries=5)
+    items = data.get("items", []) if isinstance(data, dict) else []
+    if not isinstance(items, list):
+        items = []
+    return PesquisaResultado(
+        total=data.get("total", len(items)) if isinstance(data, dict) else len(items),
+        documentos=[_parse_documento_pesquisa(i) for i in items],
+    )
+
+
+# ---------------------------------------------------------------------------
+# Leitura de uma contratação (/api/pncp/v1/orgaos/{cnpj}/compras/{ano}/{seq})
+# ---------------------------------------------------------------------------
+
+# Só contratações (tipo 1). Contratos usam -2- e atas têm sufixo -NNNNNN.
+_NUMERO_CONTROLE_RE = re.compile(r"^(\d{14})-1-(\d+)/(\d{4})$")
+
+
+def resolver_compra(
+    cnpj: str | None = None,
+    ano: int | None = None,
+    sequencial: int | None = None,
+    numero_controle_pncp: str | None = None,
+) -> tuple[str, int, int]:
+    """Return (cnpj, ano, sequencial) from explicit keys or a PNCP control number.
+
+    Control number format: CNPJ-1-SEQUENCIAL/ANO (e.g. 00394494000136-1-001203/2026).
+    """
+    if numero_controle_pncp:
+        m = _NUMERO_CONTROLE_RE.match(numero_controle_pncp.strip())
+        if not m:
+            msg = (
+                f"numero_controle_pncp inválido: '{numero_controle_pncp}'. "
+                "Formato esperado: CNPJ-1-SEQUENCIAL/ANO (ex.: 00394494000136-1-001203/2026)."
+            )
+            raise ValueError(msg)
+        return m.group(1), int(m.group(3)), int(m.group(2))
+    cnpj_limpo = re.sub(r"\D", "", cnpj or "")
+    if len(cnpj_limpo) != 14 or not ano or not sequencial:
+        msg = "Informe numero_controle_pncp ou cnpj (14 dígitos), ano e sequencial."
+        raise ValueError(msg)
+    return cnpj_limpo, int(ano), int(sequencial)
+
+
+def _compra_url(cnpj: str, ano: int, sequencial: int) -> str:
+    return f"{ORGAOS_URL}/{cnpj}/compras/{ano}/{sequencial}"
+
+
+def _como_lista(data: Any) -> list[dict[str, Any]]:
+    if isinstance(data, list):
+        return data
+    if isinstance(data, dict):
+        items = data.get("data", data.get("resultado", []))
+        return items if isinstance(items, list) else []
+    return []
+
+
+async def listar_itens_contratacao(
+    cnpj: str, ano: int, sequencial: int, *, pagina: int = 1, tamanho: int = 50
+) -> list[ItemContratacao]:
+    """API: GET /orgaos/{cnpj}/compras/{ano}/{sequencial}/itens"""
+    params = {"pagina": str(max(pagina, 1)), "tamanhoPagina": str(min(max(tamanho, 1), 50))}
+    data = await http_get(f"{_compra_url(cnpj, ano, sequencial)}/itens", params=params)
+    return [
+        ItemContratacao(
+            numero_item=i.get("numeroItem"),
+            descricao=i.get("descricao"),
+            material_ou_servico=i.get("materialOuServicoNome"),
+            quantidade=i.get("quantidade"),
+            unidade_medida=i.get("unidadeMedida"),
+            valor_unitario_estimado=i.get("valorUnitarioEstimado"),
+            valor_total=i.get("valorTotal"),
+            situacao=i.get("situacaoCompraItemNome"),
+            criterio_julgamento=i.get("criterioJulgamentoNome"),
+            beneficio=i.get("tipoBeneficioNome"),
+            tem_resultado=i.get("temResultado"),
+        )
+        for i in _como_lista(data)
+    ]
+
+
+async def listar_resultados_item(
+    cnpj: str, ano: int, sequencial: int, numero_item: int
+) -> list[ResultadoItem]:
+    """API: GET /orgaos/{cnpj}/compras/{ano}/{sequencial}/itens/{numeroItem}/resultados"""
+    url = f"{_compra_url(cnpj, ano, sequencial)}/itens/{numero_item}/resultados"
+    data = await http_get(url)
+    return [
+        ResultadoItem(
+            fornecedor_ni=r.get("niFornecedor"),
+            fornecedor_nome=r.get("nomeRazaoSocialFornecedor"),
+            porte=r.get("porteFornecedorNome"),
+            quantidade_homologada=r.get("quantidadeHomologada"),
+            valor_unitario_homologado=r.get("valorUnitarioHomologado"),
+            valor_total_homologado=r.get("valorTotalHomologado"),
+            situacao=r.get("situacaoCompraItemResultadoNome"),
+            data_resultado=r.get("dataResultado"),
+        )
+        for r in _como_lista(data)
+    ]
+
+
+def url_publica_arquivo(url: str | None) -> str | None:
+    """Swap the internal API host returned in file URLs for the public one."""
+    if not url:
+        return url
+    return re.sub(ARQUIVO_URL_INTERNA_RE, ARQUIVO_URL_PUBLICA, url, count=1)
+
+
+async def listar_arquivos_contratacao(
+    cnpj: str, ano: int, sequencial: int
+) -> list[ArquivoContratacao]:
+    """API: GET /orgaos/{cnpj}/compras/{ano}/{sequencial}/arquivos"""
+    params = {"pagina": "1", "tamanhoPagina": "50"}
+    data = await http_get(f"{_compra_url(cnpj, ano, sequencial)}/arquivos", params=params)
+    return [
+        ArquivoContratacao(
+            sequencial=a.get("sequencialDocumento"),
+            tipo=a.get("tipoDocumentoNome") or a.get("tipoDocumentoDescricao"),
+            titulo=a.get("titulo"),
+            data_publicacao=a.get("dataPublicacaoPncp"),
+            url=url_publica_arquivo(a.get("url") or a.get("uri")),
+        )
+        for a in _como_lista(data)
+        if a.get("statusAtivo", True)
+    ]
+
+
+async def listar_historico_contratacao(
+    cnpj: str, ano: int, sequencial: int
+) -> list[EventoHistorico]:
+    """API: GET /orgaos/{cnpj}/compras/{ano}/{sequencial}/historico (newest first)."""
+    params = {"pagina": "1", "tamanhoPagina": "50"}
+    data = await http_get(f"{_compra_url(cnpj, ano, sequencial)}/historico", params=params)
+    eventos = [
+        EventoHistorico(
+            data=h.get("logManutencaoDataInclusao"),
+            tipo=h.get("tipoLogManutencaoNome"),
+            categoria=h.get("categoriaLogManutencaoNome"),
+            documento=h.get("documentoTitulo"),
+            item_numero=h.get("itemNumero"),
+            justificativa=h.get("justificativa"),
+            usuario=h.get("usuarioNome"),
+        )
+        for h in _como_lista(data)
+    ]
+    eventos.sort(key=lambda e: e.data or "", reverse=True)
+    return eventos

@@ -11,7 +11,9 @@ São dados abertos de qualquer órgão do país, não só da Realmak. As ferrame
 
 | Preciso de... | Use | Ferramentas principais |
 | --- | --- | --- |
-| Licitações da Lei 14.133 de qualquer esfera (federal, estadual, municipal), propostas ainda abertas, atas de registro de preço, contratos, plano de contratações anual | `pncp_*` | `pncp_buscar_contratacoes_abertas`, `pncp_buscar_contratacoes`, `pncp_consultar_contratacao_detalhe`, `pncp_buscar_atas`, `pncp_buscar_contratos`, `pncp_buscar_pca` |
+| Buscar por assunto no PNCP: editais com proposta aberta ou em julgamento, contratos e atas vigentes (ex.: "manutenção de gerador no DF") | `pncp_*` | `pncp_pesquisar` |
+| Ler um edital do PNCP: itens e valor estimado, vencedor e valor homologado, documentos para baixar, retificações | `pncp_*` | `pncp_itens_contratacao`, `pncp_resultados_item`, `pncp_arquivos_contratacao`, `pncp_historico_contratacao` |
+| Licitações da Lei 14.133 por período e modalidade, propostas ainda abertas, atas de registro de preço, contratos, plano de contratações anual | `pncp_*` | `pncp_buscar_contratacoes_abertas`, `pncp_buscar_contratacoes`, `pncp_consultar_contratacao_detalhe`, `pncp_buscar_atas`, `pncp_buscar_contratos`, `pncp_buscar_pca` |
 | Quem é o fornecedor ou o órgão (por CNPJ) | `pncp_*` | `pncp_consultar_fornecedor`, `pncp_consultar_orgao` |
 | Compras federais no Compras.gov.br: dispensas, pregões, contratos, UASG, fornecedores | `dadosabertos_*` | `dadosabertos_buscar_dispensas`, `dadosabertos_buscar_pregoes`, `dadosabertos_buscar_contratos`, `dadosabertos_buscar_uasg`, `dadosabertos_consultar_fornecedor` |
 | Código de material ou serviço federal (CATMAT e CATSER) | `dadosabertos_*` | `dadosabertos_buscar_material_catmat`, `dadosabertos_buscar_servico_catser` |
@@ -26,8 +28,11 @@ Regras de bolso:
 
 ## Como pesquisar
 
-- `pncp_buscar_contratacoes` exige período (no máximo 365 dias) e o código da modalidade (6 pregão eletrônico, 8 dispensa, entre outros; a descrição da ferramenta lista os códigos). A API do PNCP não faz busca por texto: o parâmetro `texto` filtra localmente os resultados que vieram, então varra por período e modalidade e filtre por UF ou CNPJ do órgão quando puder.
-- Para achar oportunidades com proposta ainda aberta, use `pncp_buscar_contratacoes_abertas`.
+- Para buscar por assunto, comece por `pncp_pesquisar`. É a busca do site do PNCP: procura as palavras em todo o portal, sem período nem modalidade. Escolha `tipo` (`edital`, `ata` ou `contrato`) e `status`: para edital, `recebendo_proposta` (padrão), `propostas_encerradas` ou `todos`; para ata e contrato, `vigente` (padrão), `nao_vigente` ou `todos`. Filtre por `ufs` (ex.: `DF,GO`) e `modalidades` (ex.: `6`). A busca casa a palavra em qualquer parte do texto (inclusive anexos), então confira o objeto de cada resultado antes de concluir.
+- Contratos vigentes por assunto mostram quem já presta o serviço, por quanto e até quando: bom para conhecer a concorrência e prever nova licitação.
+- Para ler um edital, passe o "Nº controle PNCP" (formato `CNPJ-1-SEQUENCIAL/ANO`, vem nas buscas) a `pncp_itens_contratacao`, `pncp_arquivos_contratacao` e `pncp_historico_contratacao`. Para o vencedor de um item, use `pncp_resultados_item` com o número do item; só há resultado quando a lista de itens marca "Resultado: sim".
+- `pncp_buscar_contratacoes` exige período (no máximo 365 dias) e o código da modalidade (6 pregão eletrônico, 8 dispensa, entre outros; a descrição da ferramenta lista os códigos). Nessas ferramentas de período, o parâmetro `texto` só filtra a página que veio (com `texto`, a página tem 50 itens); para busca por texto use `pncp_pesquisar`.
+- `pncp_buscar_contratacoes_abertas` mostra o período de propostas (abertura e encerramento). Use para varrer por UF, município (código IBGE) ou UASG.
 - As respostas são paginadas. Veja o total e peça a página seguinte em vez de repetir a mesma chamada.
 - Fornecedor e órgão se consultam pelo CNPJ, só com os dígitos.
 - Pesquisa de preço: se souber o código do item, passe-o em `dadosabertos_pesquisar_preco_material` (CATMAT) ou `dadosabertos_pesquisar_preco_servico` (CATSER). Sem o código, a ferramenta aceita o texto do produto. Elas devolvem mínimo, mediana, média e máximo do que a Administração pagou, mais uma amostra das compras. Dá para limitar por período, UF, esfera e UASG. Diga ao analista o período e o tamanho da amostra. Preço de compra pública é referência para a pesquisa de preços, não é cotação de fornecedor.

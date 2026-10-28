@@ -22,17 +22,110 @@ class Contratacao(BaseModel):
     valor_homologado: float | None = None
     data_publicacao: str | None = None
     data_abertura: str | None = None
+    data_encerramento: str | None = None
     uf: str | None = None
     municipio: str | None = None
+    unidade_nome: str | None = None
     esfera: str | None = None
+    srp: bool | None = None
     link_pncp: str | None = None
+    link_origem: str | None = None
 
 
 class ContratacaoResultado(BaseModel):
-    """Resultado paginado de busca de contratações."""
+    """Resultado paginado de busca de contratações.
+
+    Com filtro de texto local, `total` conta só os itens que passaram no filtro
+    e `total_api` guarda o total da consulta, para a paginação continuar.
+    """
 
     total: int = 0
+    total_api: int | None = None
     contratacoes: list[Contratacao] = []
+
+
+class DocumentoPesquisa(BaseModel):
+    """Edital, ata ou contrato vindo da busca textual do portal PNCP."""
+
+    tipo: str | None = None
+    titulo: str | None = None
+    descricao: str | None = None
+    numero_controle_pncp: str | None = None
+    orgao_cnpj: str | None = None
+    orgao_nome: str | None = None
+    unidade_nome: str | None = None
+    ano: int | None = None
+    numero_sequencial: int | None = None
+    municipio: str | None = None
+    uf: str | None = None
+    modalidade_nome: str | None = None
+    situacao_nome: str | None = None
+    data_publicacao: str | None = None
+    data_inicio: str | None = None
+    data_fim: str | None = None
+    valor_global: float | None = None
+    fornecedor_nome: str | None = None
+    fornecedor_ni: str | None = None
+    tem_resultado: bool | None = None
+    link_pncp: str | None = None
+
+
+class PesquisaResultado(BaseModel):
+    """Resultado paginado da busca textual."""
+
+    total: int = 0
+    documentos: list[DocumentoPesquisa] = []
+
+
+class ItemContratacao(BaseModel):
+    """Item de uma contratação (edital)."""
+
+    numero_item: int | None = None
+    descricao: str | None = None
+    material_ou_servico: str | None = None
+    quantidade: float | None = None
+    unidade_medida: str | None = None
+    valor_unitario_estimado: float | None = None
+    valor_total: float | None = None
+    situacao: str | None = None
+    criterio_julgamento: str | None = None
+    beneficio: str | None = None
+    tem_resultado: bool | None = None
+
+
+class ResultadoItem(BaseModel):
+    """Resultado (fornecedor homologado) de um item de contratação."""
+
+    fornecedor_ni: str | None = None
+    fornecedor_nome: str | None = None
+    porte: str | None = None
+    quantidade_homologada: float | None = None
+    valor_unitario_homologado: float | None = None
+    valor_total_homologado: float | None = None
+    situacao: str | None = None
+    data_resultado: str | None = None
+
+
+class ArquivoContratacao(BaseModel):
+    """Documento publicado em uma contratação (edital, TR, anexos)."""
+
+    sequencial: int | None = None
+    tipo: str | None = None
+    titulo: str | None = None
+    data_publicacao: str | None = None
+    url: str | None = None
+
+
+class EventoHistorico(BaseModel):
+    """Evento do histórico de uma contratação (inclusão, retificação, exclusão)."""
+
+    data: str | None = None
+    tipo: str | None = None
+    categoria: str | None = None
+    documento: str | None = None
+    item_numero: int | None = None
+    justificativa: str | None = None
+    usuario: str | None = None
 
 
 class Contrato(BaseModel):

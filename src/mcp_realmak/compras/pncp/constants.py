@@ -21,6 +21,34 @@ CONTRATACAO_DETALHE_URL = f"{PNCP_API_BASE}/orgaos"
 PCA_URL = f"{PNCP_API_BASE}/pca"
 INSTRUMENTOS_COBRANCA_URL = f"{PNCP_API_BASE}/instrumentoscobranca/inclusao"
 
+# Busca do portal (texto livre). Não tem OpenAPI: os parâmetros vêm do código
+# do portal pncp.gov.br/app (buildCurrentQueryParams) e de testes ao vivo.
+SEARCH_URL = "https://pncp.gov.br/api/search/"
+PORTAL_URL = "https://pncp.gov.br/app"
+MAX_PAGE_SIZE_SEARCH = 50
+
+# Status aceitos pela busca, por tipo de documento. Valor fora da lista é
+# ignorado em silêncio pela API (volta tudo), por isso validamos antes.
+SEARCH_STATUS: dict[str, dict[str, str]] = {
+    "edital": {
+        "recebendo_proposta": "A receber/recebendo propostas",
+        "propostas_encerradas": "Em julgamento/propostas encerradas",
+        "todos": "Todos",
+    },
+    "ata": {"vigente": "Vigentes", "nao_vigente": "Não vigentes", "todos": "Todos"},
+    "contrato": {"vigente": "Vigentes", "nao_vigente": "Não vigentes", "todos": "Todos"},
+}
+SEARCH_STATUS_PADRAO: dict[str, str] = {
+    "edital": "recebendo_proposta",
+    "ata": "vigente",
+    "contrato": "vigente",
+}
+
+# Arquivos vêm com o host interno da API (a porta muda a cada resposta, ex.:
+# :41377, :41217); este é o caminho público equivalente, que baixa o arquivo.
+ARQUIVO_URL_INTERNA_RE = r"^https://pncp\.gov\.br:\d+/pncp-api/v1"
+ARQUIVO_URL_PUBLICA = "https://pncp.gov.br/api/pncp/v1"
+
 # Paginação
 DEFAULT_PAGE_SIZE = 10
 MAX_PAGE_SIZE_CONTRATACOES = 50  # max for /contratacoes/publicacao
@@ -51,6 +79,15 @@ MODALIDADES: dict[int, str] = {
     17: "Concorrência - Presencial Internacional",
     18: "Pregão - Eletrônico Internacional",
     19: "Pregão - Presencial Internacional",
+}
+
+# Esferas (orgaoEntidade.esferaId)
+ESFERAS: dict[str, str] = {
+    "F": "Federal",
+    "E": "Estadual",
+    "M": "Municipal",
+    "D": "Distrital",
+    "N": "Não se aplica",
 }
 
 # Modos de disputa
