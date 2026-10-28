@@ -1,7 +1,6 @@
 """Cliente HTTP fino do gateway público /v1 do Galeed (porte do client.ts).
 
 Rotas:
-    POST /ask                 {question, os?}
     POST /retrieve            {query, limit?, include_facts?, os?}
     GET  /facts               ?dim&area&status&as_of&min_confidence&limit&cursor&os
     GET  /consulta/esquema
@@ -42,12 +41,6 @@ class GaleedClient:
         self._token = token
         self._timeout = timeout
         self._transport = transport
-
-    async def ask(self, question: str, os: str | None = None) -> Any:
-        body: dict[str, Any] = {"question": question}
-        if os:
-            body["os"] = os
-        return await self._request("POST", "/ask", json_body=body)
 
     async def retrieve(
         self,

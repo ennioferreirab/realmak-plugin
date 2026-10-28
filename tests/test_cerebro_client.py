@@ -16,7 +16,6 @@ URL = "https://galeed.test/v1"
 
 @respx.mock
 async def test_rotas_e_corpos():
-    ask = respx.post(f"{URL}/ask").mock(return_value=httpx.Response(200, json={"answer": "a"}))
     ret = respx.post(f"{URL}/retrieve").mock(return_value=httpx.Response(200, json={"hits": []}))
     fac = respx.get(f"{URL}/facts").mock(return_value=httpx.Response(200, json={"facts": []}))
     esq = respx.get(f"{URL}/consulta/esquema").mock(return_value=httpx.Response(200, json={}))
@@ -24,8 +23,6 @@ async def test_rotas_e_corpos():
     pro = respx.post(f"{URL}/consulta/provas").mock(return_value=httpx.Response(200, json={}))
     c = GaleedClient(URL + "/", "gld_live_k")
 
-    await c.ask("quem?", "windows")
-    assert json.loads(ask.calls[0].request.content) == {"question": "quem?", "os": "windows"}
     await c.retrieve("q", 5, True, "windows")
     assert json.loads(ret.calls[0].request.content) == {"query": "q", "limit": 5, "include_facts": True, "os": "windows"}
     await c.facts(dim="decisions", limit=10, area=None, cursor="")
@@ -36,7 +33,7 @@ async def test_rotas_e_corpos():
     await c.provas(["a", "b"])
     assert json.loads(pro.calls[0].request.content) == {"ids": ["a", "b"]}
     assert esq.called
-    for rota in (ask, ret, fac, esq, con, pro):
+    for rota in (ret, fac, esq, con, pro):
         assert rota.calls[0].request.headers["authorization"] == "Bearer gld_live_k"
 
 
@@ -61,7 +58,7 @@ async def test_falha_de_rede_vira_status_zero():
 
 @pytest.mark.parametrize(
     ("status", "trecho"),
-    [(401, "chave inválida"), (402, "galeed_retrieve"), (429, "Aguarde"), (403, "permissão")],
+    [(401, "chave inválida"), (402, "limite diário"), (429, "Aguarde"), (403, "permissão")],
 )
 def test_mensagens_acionaveis(status, trecho):
     assert trecho in explicar_erro(GaleedApiError(status, "m", "corpo"))

@@ -2,13 +2,13 @@
   "name": "realmak",
   "displayName": "Realmak",
   "version": "0.2.0",
-  "description": "Skills de licitação para a equipe da Realmak: analisar edital e conferir habilitação, com o conector do servidor MCP da Realmak.",
+  "description": "Skills de licitação para a equipe da Realmak: consultar o cérebro, analisar edital, conferir habilitação, buscar no ConLicitação e pesquisar compras públicas, com o conector do servidor MCP da Realmak.",
   "author": {
     "name": "Equipe Realmak"
   },
   "repository": "https://github.com/ennioferreirab/realmak-plugin",
   "license": "MIT",
-  "keywords": ["licitacao", "edital", "habilitacao", "conlicitacao", "mcp"],
+  "keywords": ["licitacao", "edital", "habilitacao", "conlicitacao", "compras-publicas", "mcp"],
   "userConfig": {
     "galeed_token": {
       "type": "string",

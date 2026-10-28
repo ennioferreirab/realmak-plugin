@@ -6,13 +6,13 @@ Esta é uma versão de teste (MVP). Veja os [limites](#limites-do-mvp) no fim.
 
 ## Ferramentas
 
-44 ferramentas, em três grupos.
+43 ferramentas, em três grupos.
 
 | Grupo | Prefixo | Qtd. | Para quê |
 | --- | --- | --- | --- |
 | Compras públicas | `pncp_*` (14), `dadosabertos_*` (10), `contratosgovbr_*` (7) | 31 | PNCP, Compras.gov.br e Contratos.gov.br: licitações, atas, contratos, fornecedores, CATMAT/CATSER e preços praticados |
 | ConLicitação | `conlicitacao_*` | 7 | Achar licitação no site (UASG, edital, processo, órgão, objeto, UF), detalhe com itens e impugnações, filtros, boletins, pregões monitorados e mensagens |
-| Cérebro (Galeed) | `galeed_*` | 6 | `galeed_retrieve`, `galeed_facts`, `galeed_ask` e, para chaves com acesso ao dataset de registros, `galeed_esquema`, `galeed_consulta`, `galeed_provas` |
+| Cérebro (Galeed) | `galeed_*` | 5 | `galeed_retrieve`, `galeed_facts` e, para chaves com acesso ao dataset de registros, `galeed_esquema`, `galeed_consulta`, `galeed_provas` |
 
 As ferramentas de compras foram extraídas do projeto [mcp-brasil](https://github.com/Mcp-Brasil/mcp-brasil) (MIT). Veja [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
@@ -40,7 +40,7 @@ Uma chave válida libera todas as ferramentas (compras, ConLicitação e cérebr
 
 ## Instalar o plugin
 
-O plugin `realmak` traz as skills `analisar-edital` e `conferir-habilitacao` e declara o conector do servidor. Você precisa da sua chave do Galeed. O endereço do servidor já vem preenchido (`https://realmak.duckdns.org/mcp`).
+O plugin `realmak` traz as skills (`cerebro`, `analisar-edital`, `conferir-habilitacao`, `conlicitacao`, `compras-publicas`) e declara o conector do servidor. Você precisa da sua chave do Galeed. O endereço do servidor já vem preenchido (`https://realmak.duckdns.org/mcp`).
 
 ### Claude Code
 

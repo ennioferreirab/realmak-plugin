@@ -47,9 +47,8 @@ def explicar_erro(exc: Exception) -> str:
                 return "Cérebro: chave inválida ou revogada (401). Peça uma chave nova a quem administra o cérebro."
             case 402:
                 return (
-                    "Cérebro: o limite diário de custo de LLM deste cérebro foi atingido (402). "
-                    "galeed_ask fica indisponível hoje. Use galeed_retrieve ou galeed_facts, "
-                    "que não gastam LLM, ou tente amanhã."
+                    "Cérebro: o limite diário de custo deste cérebro foi atingido (402). "
+                    "Tente amanhã ou avise quem administra o cérebro."
                 )
             case 403:
                 return f"Cérebro: esta chave não tem permissão para isso (403): {corpo}"
@@ -104,7 +103,7 @@ async def galeed_retrieve(
     include_facts: Annotated[bool | None, Field(description="Se verdadeiro, anexa os fatos tipados relacionados à busca.")] = None,
     os: Annotated[Sistema | None, Field(description=OS_DESC)] = None,
 ) -> str:
-    """Busca no cérebro da Realmak (texto e semântica) e devolve trechos com fonte e link do arquivo original, sem redigir resposta. Use para qualquer pergunta sobre funcionários, responsáveis técnicos, atestados, CATs, ARTs, contratos, licitações e atas. Não gasta LLM e é mais rápida que galeed_ask. Monte a resposta a partir dos trechos e diga o que ficou sem confirmação."""
+    """Busca no cérebro da Realmak (texto e semântica) e devolve trechos com fonte e link do arquivo original, sem redigir resposta. Use para qualquer pergunta sobre funcionários, responsáveis técnicos, atestados, CATs, ARTs, contratos, licitações e atas. Não gasta LLM. Monte a resposta a partir dos trechos e diga o que ficou sem confirmação."""
     try:
         return dumps(await client_for_request().retrieve(query, limit, include_facts, os))
     except GaleedApiError as exc:
@@ -128,17 +127,6 @@ async def galeed_facts(
             limit=limit, cursor=cursor, os=os,
         )
         return dumps(data)
-    except GaleedApiError as exc:
-        raise ToolError(explicar_erro(exc)) from None
-
-
-async def galeed_ask(
-    question: Annotated[str, Field(description="A pergunta em linguagem natural.")],
-    os: Annotated[Sistema | None, Field(description=OS_DESC)] = None,
-) -> str:
-    """Pergunta ao cérebro e recebe uma resposta pronta, sintetizada por LLM, com fatos e evidências. É a mais lenta e gasta o limite diário de LLM do cérebro. Prefira galeed_retrieve e galeed_facts e use esta só quando precisar de uma resposta já redigida."""
-    try:
-        return dumps(await client_for_request().ask(question, os))
     except GaleedApiError as exc:
         raise ToolError(explicar_erro(exc)) from None
 
@@ -180,7 +168,8 @@ INSTRUCOES = (
     "- Pergunta que precisa de todos os casos (contar, somar, listar): galeed_esquema uma vez, "
     "depois galeed_consulta e galeed_provas, quando essas ferramentas estiverem disponíveis.\n"
     "- Passe os='windows' nas leituras: os analistas usam Windows.\n"
-    "- galeed_ask sintetiza com LLM e é a mais lenta; prefira galeed_retrieve e galeed_facts.\n"
+    "- Resultado com 'original': termine a resposta com a seção Arquivos (nome, os_open_link exatamente "
+    "como veio, file_path), um item por sha256. Sem 'original', a fonte é só texto indexado: não monte link.\n"
     "- Erro do cérebro diz o que mudar; não repita a mesma chamada sem mudar nada."
 )
 
@@ -190,7 +179,6 @@ def build_cerebro_server() -> FastMCP:
     ro: dict[str, Any] = {"readOnlyHint": True, "openWorldHint": False}
     mcp.tool(galeed_retrieve, tags={"cerebro"}, annotations=ro)
     mcp.tool(galeed_facts, tags={"cerebro"}, annotations=ro)
-    mcp.tool(galeed_ask, tags={"cerebro"}, annotations=ro)
     mcp.tool(galeed_esquema, tags={"cerebro", REGISTROS_TAG}, annotations=ro)
     mcp.tool(galeed_consulta, tags={"cerebro", REGISTROS_TAG}, annotations=ro)
     mcp.tool(galeed_provas, tags={"cerebro", REGISTROS_TAG}, annotations=ro)
