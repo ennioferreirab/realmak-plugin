@@ -1,6 +1,6 @@
 ---
 name: conlicitacao
-description: Use para consultar o ConLicitação da Realmak pelas ferramentas conlicitacao_* do servidor mcp-realmak. Acha uma licitação (por UASG com número do edital, processo, órgão, objeto ou UF), mostra itens, datas, situação, impugnações e esclarecimentos, lê boletins do filtro e acompanha pregões monitorados e suas mensagens. Somente leitura.
+description: Use para consultar o ConLicitação da Realmak pelas ferramentas conlicitacao_* do servidor MCP da Realmak. Acha uma licitação (por UASG com número do edital, processo, órgão, objeto ou UF), mostra itens, datas, situação, impugnações e esclarecimentos, lê boletins do filtro e acompanha pregões monitorados e suas mensagens. Somente leitura.
 ---
 
 # Consultar o ConLicitação

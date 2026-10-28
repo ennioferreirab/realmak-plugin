@@ -18,8 +18,8 @@ O resultado é uma lista de conferência para a analista. A skill não declara a
 Procure nesta ordem e anote de onde veio cada documento.
 
 1. **Anexos da conversa.** Leia o documento para confirmar o que é, de quem é (CNPJ da Realmak) e a validade. A validade costuma estar no nome do arquivo ou no corpo do documento. Sem data legível, a validade fica como "não confirmada".
-2. **Cérebro Galeed** (skill `cerebro`), para achar atestados e CATs por serviço, sistema e quantidade, além de responsáveis técnicos e contratos. Use as duas formas: as ferramentas de registros (`galeed_esquema`, `galeed_consulta`, `galeed_provas`), quando estiverem disponíveis, e `galeed_retrieve` por texto ("atestado VRF", "CAT limpeza de dutos"), sempre com `os="windows"`. As tabelas podem não ter todos os atestados: nunca diga "não tem" só porque o cérebro não achou. Diga "não achei no cérebro nem nos anexos".
-3. **Arquivos originais** que o cérebro apontar: entregue o link na seção Arquivos, como na skill `cerebro`, para o analista abrir e anexar quando precisar.
+2. **Cérebro Galeed** (ferramentas `galeed_*`), para achar atestados e CATs por serviço, sistema e quantidade, além de responsáveis técnicos e contratos. Use as duas formas: as ferramentas de registros (`galeed_esquema`, `galeed_consulta`, `galeed_provas`), quando estiverem disponíveis, e `galeed_retrieve` por texto ("atestado VRF", "CAT limpeza de dutos"), sempre com `os="windows"`. As tabelas podem não ter todos os atestados: nunca diga "não tem" só porque o cérebro não achou. Diga "não achei no cérebro nem nos anexos".
+3. **Arquivos originais** que o cérebro apontar: quando o resultado trouxer `original`, liste na seção Arquivos o nome, o `os_open_link` exatamente como veio e o `file_path`, para o analista abrir e anexar quando precisar. Liste cada arquivo uma vez (mesmo `sha256` é o mesmo arquivo). Sem `original`, diga que a fonte é só texto indexado. Nunca invente caminho nem link.
 
 Documentos que o analista não anexou e o cérebro não tem ficam como **Falta**, com a indicação de onde costumam estar (pasta de documentos da empresa).
 

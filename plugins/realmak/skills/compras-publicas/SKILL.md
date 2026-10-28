@@ -1,6 +1,6 @@
 ---
 name: compras-publicas
-description: Use para pesquisar compras públicas de qualquer órgão pelas ferramentas pncp_*, dadosabertos_* e contratosgovbr_* do servidor mcp-realmak. Serve para achar licitações abertas no PNCP, atas de registro de preço, contratos, fornecedores, catálogo CATMAT/CATSER e preços praticados (pesquisa de preço). Explica quando usar cada grupo.
+description: Use para pesquisar compras públicas de qualquer órgão pelas ferramentas pncp_*, dadosabertos_* e contratosgovbr_* do servidor MCP da Realmak. Serve para achar licitações abertas no PNCP, atas de registro de preço, contratos, fornecedores, catálogo CATMAT/CATSER e preços praticados (pesquisa de preço). Explica quando usar cada grupo.
 ---
 
 # Compras públicas (PNCP, Compras.gov.br, Contratos.gov.br)

@@ -1,6 +1,6 @@
 ---
 name: cerebro
-description: Use para qualquer pergunta sobre a Realmak (funcionários, responsáveis técnicos, atestados, CATs, ARTs, contratos, licitações, atas, documentos da empresa). Consulta o cérebro Galeed pelas ferramentas galeed_* do servidor mcp-realmak e entrega as respostas com a fonte e o link do arquivo original.
+description: Use para qualquer pergunta sobre a Realmak (funcionários, responsáveis técnicos, atestados, CATs, ARTs, contratos, licitações, atas, documentos da empresa). Consulta o cérebro Galeed pelas ferramentas galeed_* do servidor MCP da Realmak e entrega as respostas com a fonte e o link do arquivo original.
 ---
 
 # Consultar o cérebro (Galeed)
@@ -13,7 +13,7 @@ As ferramentas `galeed_*` vêm do servidor `realmak`. O nome completo pode ter u
 
 - Use `galeed_retrieve` com os termos da pergunta. Peça `include_facts=true` quando quiser os fatos consolidados junto dos trechos. Use `galeed_facts` para listar fatos por dimensão, área ou data.
 - Passe sempre `os="windows"`: os analistas usam Windows, e o parâmetro define o link do arquivo original.
-- Monte a resposta você mesmo, a partir dos trechos. Não use `galeed_ask`, a não ser que o analista peça uma resposta já redigida pelo cérebro: ela é lenta e gasta o limite diário de LLM.
+- Monte a resposta você mesmo, a partir dos trechos.
 - Se a busca vier fraca, tente de novo com variações do nome (nome completo, sobrenome, apelido) antes de dizer que não há resultado.
 - Responda só com o que os resultados sustentam e diga o que ficou sem confirmação. Nomes parecidos não provam que é a mesma pessoa ou empresa: confira CPF, CNPJ ou número de registro.
 - Se o cérebro der erro ou demorar, diga isso. Não complete a resposta com suposição.
