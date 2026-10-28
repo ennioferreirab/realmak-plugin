@@ -32,10 +32,13 @@ packages = ["src/mcp_realmak"]
 [tool.ruff]
 target-version = "py312"
 line-length = 99
+extend-exclude = ["src/mcp_realmak/compras", "tests/compras"]  # extraído do mcp-brasil, mantido como está
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["E501", "SIM117"]  # descrições de ferramentas em português são longas de propósito
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
