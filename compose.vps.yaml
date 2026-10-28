@@ -3,6 +3,8 @@
 services:
   mcp-realmak:
     networks: [default, mcp-realmak]
+    # A VPS controla o orçamento de memória de cada serviço; em uso o servidor fica perto de 70 MiB.
+    mem_limit: 256m
 
 networks:
   mcp-realmak:
