@@ -1,4 +1,4 @@
-# mcp-realmak
+# realmak-plugin
 
 Servidor MCP remoto (Streamable HTTP, caminho `/mcp`) que dá aos analistas de licitação da Realmak, dentro do Claude Desktop, três grupos de ferramentas, e um plugin do Claude com as skills que ensinam a usá-las. Todas as ferramentas são somente leitura.
 
@@ -40,22 +40,23 @@ Uma chave válida libera todas as ferramentas (compras, ConLicitação e cérebr
 
 ## Instalar o plugin
 
-O plugin `realmak-licitacao` traz as skills (`cerebro`, `analisar-edital`, `conferir-habilitacao`, `conlicitacao`, `compras-publicas`) e declara o conector do servidor. Você precisa de duas informações: o endereço do servidor (termina em `/mcp`, quem administra informa) e a sua chave do Galeed.
+O plugin `realmak` traz as skills `analisar-edital` e `conferir-habilitacao` e declara o conector do servidor. Você precisa da sua chave do Galeed. O endereço do servidor já vem preenchido (`https://realmak.duckdns.org/mcp`).
 
 ### Claude Code
 
 ```bash
-claude plugin marketplace add ennioferreirab/mcp-realmak
-claude plugin install realmak-licitacao@mcp-realmak
+claude plugin marketplace add ennioferreirab/realmak-plugin
+claude plugin install realmak@realmak
 ```
 
-Na instalação o Claude Code pergunta o endereço do servidor e a chave. A chave é guardada no cofre de credenciais do sistema, não em arquivo de configuração. Para testar sem instalar, use `claude --plugin-dir ./plugins/realmak-licitacao`.
+Na instalação o Claude Code pergunta a chave (e o endereço, já preenchido). A chave é guardada no cofre de credenciais do sistema, não em arquivo de configuração. Para testar sem instalar, use `claude --plugin-dir ./plugins/realmak`.
 
 ### Claude Desktop (chat)
 
-1. Abra Customize, Plugins, Add, Add marketplace, e informe a URL do repositório no GitHub (`https://github.com/ennioferreirab/mcp-realmak`). Instale o plugin `realmak-licitacao`. Isso traz as skills.
+1. Abra Customize, Plugins, Add, Add marketplace, e informe a URL do repositório no GitHub (`https://github.com/ennioferreirab/realmak-plugin`). Instale o plugin `realmak`. Isso traz as skills.
 2. Adicione o conector à mão, porque o chat e o Cowork ignoram servidores de plugin que dependem de `user_config` (a URL e a chave vêm da configuração do plugin, que esses aplicativos não pedem): Customize, Connectors, `+`, Add custom connector. Preencha:
-   - URL: o endereço do servidor (`https://<dominio>/mcp`);
+   - URL: `https://realmak.duckdns.org/mcp`;
+   - Authentication: No sign-in;
    - Request headers: `Authorization: Bearer <sua chave gld_live_...>`.
 
    Fonte: [Getting started with custom connectors using remote MCP](https://support.claude.com/en/articles/11175166-getting-started-with-custom-connectors-using-remote-mcp).

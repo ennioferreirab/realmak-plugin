@@ -13,7 +13,7 @@ O analista fornece um ou mais destes itens:
 
 - **Arquivos anexados à conversa:** edital, termo de referência (Anexo I), ETP, relatório de vistoria, minuta de contrato e minuta de ata, em PDF, Word ou texto. Nesta versão o servidor não lê pastas nem baixa o edital: o analista anexa os arquivos.
 - **Texto colado** de partes do edital.
-- **Identificação no ConLicitação:** ID, UASG com número do edital, ou processo. Use a skill `conlicitacao` para achar a licitação e ver o detalhe. Se o edital não estiver anexado, peça ao analista que o baixe pelo link do ConLicitação ou pelo portal de origem e anexe aqui.
+- **Identificação no ConLicitação:** ID, UASG com número do edital, ou processo. Ache a licitação com `conlicitacao_buscar_licitacao` (comece por `uasg` + `numero_edital`, com a barra, como `112/2026`; depois `processo` ou `id_conlicitacao`) e veja o detalhe com `conlicitacao_detalhe_licitacao`. Ao citar a licitação, entregue o campo `link`. Se o edital não estiver anexado, peça ao analista que o baixe pelo link do ConLicitação ou pelo portal de origem e anexe aqui.
 
 Se nada do edital estiver na conversa, diga o que falta e pare. Não analise só pelo resumo do ConLicitação.
 

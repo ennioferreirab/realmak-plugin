@@ -1,14 +1,14 @@
 {
-  "name": "mcp-realmak",
-  "description": "Plugins de licitações da Realmak para o Claude: skills e conector MCP",
+  "name": "realmak",
+  "description": "Plugin da Realmak para o Claude: skills de licitação e conector MCP",
   "owner": {
-    "name": "Equipe mcp-realmak"
+    "name": "Equipe Realmak"
   },
   "plugins": [
     {
-      "name": "realmak-licitacao",
-      "source": "./plugins/realmak-licitacao",
-      "description": "Skills de licitação (cérebro, análise de edital, habilitação, ConLicitação, compras públicas) e conector para o servidor mcp-realmak"
+      "name": "realmak",
+      "source": "./plugins/realmak",
+      "description": "Skills de licitação (análise de edital e conferência de habilitação) e conector para o servidor MCP da Realmak"
     }
   ]
 }

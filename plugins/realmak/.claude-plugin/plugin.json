@@ -1,0 +1,27 @@
+{
+  "name": "realmak",
+  "displayName": "Realmak",
+  "version": "0.2.0",
+  "description": "Skills de licitação para a equipe da Realmak: analisar edital e conferir habilitação, com o conector do servidor MCP da Realmak.",
+  "author": {
+    "name": "Equipe Realmak"
+  },
+  "repository": "https://github.com/ennioferreirab/realmak-plugin",
+  "license": "MIT",
+  "keywords": ["licitacao", "edital", "habilitacao", "conlicitacao", "mcp"],
+  "userConfig": {
+    "galeed_token": {
+      "type": "string",
+      "title": "Chave do Galeed",
+      "description": "Sua chave de bot do Galeed (começa com gld_live_). É pessoal: cada chave abre um único cérebro.",
+      "sensitive": true,
+      "required": true
+    },
+    "mcp_url": {
+      "type": "string",
+      "title": "Endereço do servidor MCP",
+      "description": "URL do servidor MCP da Realmak, terminando em /mcp. Mantenha o padrão, salvo orientação de quem administra o servidor.",
+      "default": "https://realmak.duckdns.org/mcp"
+    }
+  }
+}
