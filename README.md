@@ -12,7 +12,7 @@ Esta é uma versão de teste (MVP). Veja os [limites](#limites-do-mvp) no fim.
 | --- | --- | --- | --- |
 | Compras públicas | `pncp_*` (19), `dadosabertos_*` (10), `contratosgovbr_*` (7) | 36 | PNCP, Compras.gov.br e Contratos.gov.br: busca por texto no PNCP, licitações, itens, vencedores, documentos e histórico de editais, atas, contratos, fornecedores, CATMAT/CATSER e preços praticados |
 | ConLicitação | `conlicitacao_*` | 7 | Achar licitação no site (UASG, edital, processo, órgão, objeto, UF), detalhe com itens e impugnações, filtros, boletins, pregões monitorados e mensagens |
-| Cérebro (Galeed) | `galeed_*` | 5 | `galeed_retrieve`, `galeed_facts` e, para chaves com acesso ao dataset de registros, `galeed_esquema`, `galeed_consulta`, `galeed_provas` |
+| Cérebro | `cerebro_*` | 5 | `cerebro_buscar`, `cerebro_fatos` e, para chaves com acesso ao dataset de registros, `cerebro_esquema`, `cerebro_consulta`, `cerebro_provas` |
 
 As ferramentas de compras foram extraídas do projeto [mcp-brasil](https://github.com/Mcp-Brasil/mcp-brasil) (MIT). Veja [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
@@ -20,7 +20,7 @@ Resultados grandes são cortados em cerca de 100 mil caracteres, com um aviso pa
 
 ### Ferramentas de registros do cérebro
 
-`galeed_esquema`, `galeed_consulta` e `galeed_provas` só aparecem na lista para chaves que o gateway deixa usar: o servidor consulta `GET /consulta/esquema` com a chave de quem listou e mostra as três ferramentas apenas se a resposta for 200 (ou 503, módulo ligado mas dataset ainda indisponível). A resposta definitiva fica em cache por 5 minutos. Se um cliente guardar a lista de ferramentas, pode ser preciso reconectar para vê-las. Quando uma chave sem acesso chama uma delas mesmo assim, o servidor devolve a mensagem do gateway (403) de forma clara.
+`cerebro_esquema`, `cerebro_consulta` e `cerebro_provas` só aparecem na lista para chaves que o gateway deixa usar: o servidor consulta `GET /consulta/esquema` com a chave de quem listou e mostra as três ferramentas apenas se a resposta for 200 (ou 503, módulo ligado mas dataset ainda indisponível). A resposta definitiva fica em cache por 5 minutos. Se um cliente guardar a lista de ferramentas, pode ser preciso reconectar para vê-las. Quando uma chave sem acesso chama uma delas mesmo assim, o servidor devolve a mensagem do gateway (403) de forma clara.
 
 ## Como funciona a autenticação
 
@@ -30,7 +30,7 @@ A chave de bot do Galeed (`gld_live_...`) é o token Bearer. Não existe outra s
 2. Na primeira vez que vê uma chave, o servidor chama `GET {GALEED_API_URL}/facts?limit=1` com ela. `200` vale; `401` e `403` não valem.
 3. O resultado, válido ou inválido, fica em cache por 5 minutos, indexado pelo sha256 da chave. A chave nunca é gravada em disco nem em log.
 4. Se o Galeed não responder, o servidor recusa o acesso com `503` e uma mensagem clara (falha fechada). Ele nunca libera sem conferir.
-5. A mesma chave é repassada às ferramentas `galeed_*`. Cada chave está presa a um único cérebro, então cada analista vê só o que a própria chave enxerga.
+5. A mesma chave é repassada às ferramentas `cerebro_*`. Cada chave está presa a um único cérebro, então cada analista vê só o que a própria chave enxerga.
 
 Uma chave válida libera todas as ferramentas (compras, ConLicitação e cérebro). O login do site e o token da API do ConLicitação ficam só no servidor.
 
@@ -40,7 +40,7 @@ Uma chave válida libera todas as ferramentas (compras, ConLicitação e cérebr
 
 ## Instalar o plugin
 
-O plugin `realmak` traz as skills (`cerebro`, `analisar-edital`, `conferir-habilitacao`, `conlicitacao`, `compras-publicas`) e declara o conector do servidor. Você precisa da sua chave do Galeed. O endereço do servidor já vem preenchido (`https://realmak.duckdns.org/mcp`).
+O plugin `realmak` traz as skills (`cerebro`, `analisar-edital`, `conferir-habilitacao`, `conlicitacao`, `compras-publicas`) e declara o conector do servidor. Você precisa do seu `CEREBRO_TOKEN` (a chave pessoal `gld_live_...`). O endereço do servidor já vem preenchido (`https://realmak.duckdns.org/mcp`).
 
 ### Claude Code
 
@@ -61,7 +61,7 @@ Na instalação o Claude Code pergunta a chave (e o endereço, já preenchido). 
 
    Fonte: [Getting started with custom connectors using remote MCP](https://support.claude.com/en/articles/11175166-getting-started-with-custom-connectors-using-remote-mcp).
 
-As skills chamam as ferramentas pelo nome (`galeed_retrieve`, `conlicitacao_buscar_licitacao`...). O nome completo pode ter prefixo conforme o aplicativo.
+As skills chamam as ferramentas pelo nome (`cerebro_buscar`, `conlicitacao_buscar_licitacao`...). O nome completo pode ter prefixo conforme o aplicativo.
 
 ## Configuração do servidor
 

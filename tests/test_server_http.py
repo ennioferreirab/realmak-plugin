@@ -76,7 +76,7 @@ async def test_galeed_fora_do_ar_devolve_503_claro(servidor):
     servidor.galeed.get(f"{GALEED}/facts").mock(side_effect=httpx.ConnectError("sem rota"))
     r = await rpc(servidor, "tools/list", token="gld_live_nova")
     assert r.status_code == 503
-    assert "Galeed não respondeu" in r.json()["message"]
+    assert "cérebro não respondeu" in r.json()["message"]
 
 
 @com_servidor
@@ -88,8 +88,8 @@ async def test_header_estatico_funciona_sem_fluxo_oauth(servidor):
         n.startswith("dadosabertos_") for n in nomes
     )
     assert any(n.startswith("contratosgovbr_") for n in nomes)
-    assert {"conlicitacao_buscar_licitacao", "conlicitacao_ler_boletim", "galeed_retrieve"} <= nomes
-    assert "galeed_consulta" in nomes  # esquema respondeu 200
+    assert {"conlicitacao_buscar_licitacao", "conlicitacao_ler_boletim", "cerebro_buscar"} <= nomes
+    assert "cerebro_consulta" in nomes  # esquema respondeu 200
 
 
 @com_servidor
@@ -99,8 +99,8 @@ async def test_ferramentas_de_registros_somem_quando_o_gateway_nega(servidor):
     )
     r = await rpc(servidor, "tools/list", token="gld_live_outra")
     nomes = {t["name"] for t in parse_body(r)["result"]["tools"]}
-    assert "galeed_retrieve" in nomes
-    assert not {"galeed_esquema", "galeed_consulta", "galeed_provas"} & nomes
+    assert "cerebro_buscar" in nomes
+    assert not {"cerebro_esquema", "cerebro_consulta", "cerebro_provas"} & nomes
 
 
 @com_servidor
@@ -108,8 +108,8 @@ async def test_cada_chamada_usa_a_chave_do_proprio_usuario(servidor):
     rota = servidor.galeed.post(f"{GALEED}/retrieve").mock(
         return_value=httpx.Response(200, json={"hits": [{"trecho": "x"}]})
     )
-    await call_tool(servidor, "galeed_retrieve", {"query": "atestado", "os": "windows"}, "gld_live_boa")
-    await call_tool(servidor, "galeed_retrieve", {"query": "atestado"}, "gld_live_outra")
+    await call_tool(servidor, "cerebro_buscar", {"query": "atestado", "os": "windows"}, "gld_live_boa")
+    await call_tool(servidor, "cerebro_buscar", {"query": "atestado"}, "gld_live_outra")
     chaves = [c.request.headers["authorization"] for c in rota.calls]
     assert chaves == ["Bearer gld_live_boa", "Bearer gld_live_outra"]
     corpo = rota.calls[0].request.content.decode()
@@ -121,7 +121,7 @@ async def test_cada_chamada_usa_a_chave_do_proprio_usuario(servidor):
 async def test_resultado_enorme_e_cortado_no_teto(servidor):
     grande = {"hits": [{"trecho": "a" * 1000} for _ in range(300)]}
     servidor.galeed.post(f"{GALEED}/retrieve").mock(return_value=httpx.Response(200, json=grande))
-    r = await call_tool(servidor, "galeed_retrieve", {"query": "x"})
+    r = await call_tool(servidor, "cerebro_buscar", {"query": "x"})
     texto = r["content"][0]["text"]
     assert len(texto) < 100_000 + 300
     assert "Resultado cortado" in texto
@@ -136,7 +136,7 @@ async def test_erros_de_registros_sao_claros(servidor, status, trecho):
     servidor.galeed.post(f"{GALEED}/consulta").mock(
         return_value=httpx.Response(status, json={"error": "detalhe do gateway"})
     )
-    r = await call_tool(servidor, "galeed_consulta", {"sql": "select 1"})
+    r = await call_tool(servidor, "cerebro_consulta", {"sql": "select 1"})
     assert r["isError"] is True
     assert trecho in r["content"][0]["text"]
 
@@ -146,6 +146,6 @@ async def test_consulta_400_aponta_o_esquema(servidor):
     servidor.galeed.post(f"{GALEED}/consulta").mock(
         return_value=httpx.Response(400, json={"error": "coluna x não existe"})
     )
-    r = await call_tool(servidor, "galeed_consulta", {"sql": "select x from y"})
-    assert "galeed_esquema" in r["content"][0]["text"]
+    r = await call_tool(servidor, "cerebro_consulta", {"sql": "select x from y"})
+    assert "cerebro_esquema" in r["content"][0]["text"]
     assert "coluna x não existe" in r["content"][0]["text"]

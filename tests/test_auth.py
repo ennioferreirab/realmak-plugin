@@ -78,7 +78,7 @@ async def test_galeed_fora_do_ar_falha_fechada():
     v, _ = verificador(cai)
     with pytest.raises(GaleedUnavailableError) as exc:
         await v.verify_token("gld_live_x")
-    assert "Galeed não respondeu" in str(exc.value)
+    assert "cérebro não respondeu" in str(exc.value)
 
 
 async def test_erro_5xx_nao_libera_e_nao_entra_no_cache():

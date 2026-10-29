@@ -1,17 +1,17 @@
 ---
 name: cerebro
-description: Use para qualquer pergunta sobre a Realmak (funcionários, responsáveis técnicos, atestados, CATs, ARTs, contratos, licitações, atas, documentos da empresa). Consulta o cérebro Galeed pelas ferramentas galeed_* do servidor MCP da Realmak e entrega as respostas com a fonte e o link do arquivo original.
+description: Use para qualquer pergunta sobre a Realmak (funcionários, responsáveis técnicos, atestados, CATs, ARTs, contratos, licitações, atas, documentos da empresa). Consulta o cérebro pelas ferramentas cerebro_* do servidor MCP da Realmak e entrega as respostas com a fonte e o link do arquivo original.
 ---
 
-# Consultar o cérebro (Galeed)
+# Consultar o cérebro
 
 O cérebro guarda o que a Realmak sabe sobre si mesma: pessoas, atestados, ARTs, contratos, licitações, atas e documentos. Perguntas sobre a empresa são respondidas consultando o cérebro antes de qualquer outra fonte.
 
-As ferramentas `galeed_*` vêm do servidor `realmak`. O nome completo pode ter um prefixo, conforme o aplicativo. Elas usam a chave Galeed de quem está conversando, e cada chave abre um único cérebro.
+As ferramentas `cerebro_*` vêm do servidor `realmak`. O nome completo pode ter um prefixo, conforme o aplicativo. Elas usam a chave de quem está conversando, e cada chave abre um único cérebro.
 
 ## 1. Como consultar
 
-- Use `galeed_retrieve` com os termos da pergunta. Peça `include_facts=true` quando quiser os fatos consolidados junto dos trechos. Use `galeed_facts` para listar fatos por dimensão, área ou data.
+- Use `cerebro_buscar` com os termos da pergunta. Peça `include_facts=true` quando quiser os fatos consolidados junto dos trechos. Use `cerebro_fatos` para listar fatos por dimensão, área ou data.
 - Passe sempre `os="windows"`: os analistas usam Windows, e o parâmetro define o link do arquivo original.
 - Monte a resposta você mesmo, a partir dos trechos.
 - Se a busca vier fraca, tente de novo com variações do nome (nome completo, sobrenome, apelido) antes de dizer que não há resultado.
@@ -21,15 +21,15 @@ As ferramentas `galeed_*` vêm do servidor `realmak`. O nome completo pode ter u
 
 ## 2. Perguntas que precisam de todos os casos
 
-Quando a pergunta pede contar, somar, listar ou comparar (quantos atestados, quais contratos, qual a média), ou o papel de uma pessoa nos documentos, use o dataset de registros, se as ferramentas estiverem disponíveis na lista (`galeed_esquema`, `galeed_consulta`, `galeed_provas`). Elas só aparecem para chaves com acesso total a um cérebro com esse módulo.
+Quando a pergunta pede contar, somar, listar ou comparar (quantos atestados, quais contratos, qual a média), ou o papel de uma pessoa nos documentos, use o dataset de registros, se as ferramentas estiverem disponíveis na lista (`cerebro_esquema`, `cerebro_consulta`, `cerebro_provas`). Elas só aparecem para chaves com acesso total a um cérebro com esse módulo.
 
-1. `galeed_esquema` uma vez por conversa, antes do primeiro SQL. Traz as tabelas, as colunas, as regras de leitura e exemplos. Não adivinhe nome de coluna.
-2. `galeed_consulta` com um `SELECT` ou `WITH` por vez, com tabelas e colunas escritas como o esquema mostra. `information_schema` e `pg_catalog` são recusados.
-3. `galeed_provas` com os ids dos registros usados na resposta. Os arquivos originais das provas entram na seção **Arquivos**.
+1. `cerebro_esquema` uma vez por conversa, antes do primeiro SQL. Traz as tabelas, as colunas, as regras de leitura e exemplos. Não adivinhe nome de coluna.
+2. `cerebro_consulta` com um `SELECT` ou `WITH` por vez, com tabelas e colunas escritas como o esquema mostra. `information_schema` e `pg_catalog` são recusados.
+3. `cerebro_provas` com os ids dos registros usados na resposta. Os arquivos originais das provas entram na seção **Arquivos**.
 
 Se a consulta voltar com erro 400, leia a mensagem, confira os nomes no esquema e corrija. Não repita a mesma consulta.
 
-As tabelas podem não ter todos os casos. Nunca diga "não tem" só porque o dataset não achou: faça também a busca por texto com `galeed_retrieve`.
+As tabelas podem não ter todos os casos. Nunca diga "não tem" só porque o dataset não achou: faça também a busca por texto com `cerebro_buscar`.
 
 ## 3. Entregar os arquivos
 
@@ -58,8 +58,8 @@ Regras da seção:
 | Sintoma | O que fazer |
 | --- | --- |
 | Erro 401 | A chave está errada, foi revogada ou é de outro cérebro. O analista pede uma chave nova a quem administra o cérebro e atualiza a configuração do plugin ou do conector |
-| Erro 503 ao conectar | O servidor não alcançou o Galeed. Tente de novo em instantes e avise quem administra se continuar |
+| Erro 503 ao conectar | O servidor não alcançou o cérebro. Tente de novo em instantes e avise quem administra se continuar |
 | Respostas vazias ou muita coisa retida (`withheld`) | A chave não tem acesso total às áreas ou ao nível de sigilo necessário. Quem administra o cérebro ajusta o acesso do bot |
-| `galeed_consulta` com 400 | Nome de tabela ou coluna adivinhado. Chame `galeed_esquema` e corrija |
-| Erro 403 em `galeed_consulta`, `galeed_esquema` ou `galeed_provas` | A chave não lê o dataset de registros. Use `galeed_retrieve` e `galeed_facts` |
+| `cerebro_consulta` com 400 | Nome de tabela ou coluna adivinhado. Chame `cerebro_esquema` e corrija |
+| Erro 403 em `cerebro_consulta`, `cerebro_esquema` ou `cerebro_provas` | A chave não lê o dataset de registros. Use `cerebro_buscar` e `cerebro_fatos` |
 | Erro 429 | Muitas chamadas seguidas. Espere alguns segundos e não dispare consultas em paralelo |

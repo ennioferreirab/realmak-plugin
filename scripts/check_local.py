@@ -5,7 +5,7 @@ Sobe um Galeed falso e o mcp-realmak em 127.0.0.1 (portas livres), e confere:
   2. POST /mcp sem Authorization devolve 401;
   3. chave que o Galeed falso recusa devolve 401;
   4. tools/list com chave válida, pelo cliente MCP (Streamable HTTP), traz as ferramentas;
-  5. uma chamada de galeed_retrieve chega ao Galeed falso com a chave do próprio usuário.
+  5. uma chamada de cerebro_buscar chega ao Galeed falso com a chave do próprio usuário.
 
 Uso: uv run python scripts/check_local.py
 """
@@ -109,9 +109,9 @@ async def principal() -> None:
             grupos[n.split("_")[0]] = grupos.get(n.split("_")[0], 0) + 1
         print(f"tools/list: {len(nomes)} ferramentas, por grupo: {grupos}")
         conferir(len(nomes) >= 40, "tools/list com chave válida trouxe as ferramentas")
-        conferir("galeed_consulta" in nomes, "ferramentas de registros listadas (esquema respondeu 200)")
-        resultado = await cliente.call_tool("galeed_retrieve", {"query": "teste", "os": "windows"})
-        conferir("exemplo" in str(resultado.content), "galeed_retrieve devolveu o trecho do Galeed falso")
+        conferir("cerebro_consulta" in nomes, "ferramentas de registros listadas (esquema respondeu 200)")
+        resultado = await cliente.call_tool("cerebro_buscar", {"query": "teste", "os": "windows"})
+        conferir("exemplo" in str(resultado.content), "cerebro_buscar devolveu o trecho do Galeed falso")
 
     chaves = {c for p, c in recebidas if p.endswith("/retrieve")}
     conferir(chaves == {CHAVE_VALIDA}, "o Galeed recebeu a chave do próprio usuário na chamada")

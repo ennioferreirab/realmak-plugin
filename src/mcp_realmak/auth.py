@@ -107,7 +107,7 @@ class GaleedTokenVerifier(TokenVerifier):
         except httpx.HTTPError as exc:
             log.warning("Galeed inacessível ao validar chave: %s", type(exc).__name__)
             raise GaleedUnavailableError(
-                "Não foi possível conferir a chave porque o Galeed não respondeu. "
+                "Não foi possível conferir a chave porque o cérebro não respondeu. "
                 "Tente de novo em instantes."
             ) from None
         if resp.status_code == 200:
@@ -116,7 +116,7 @@ class GaleedTokenVerifier(TokenVerifier):
             return False
         log.warning("Galeed respondeu HTTP %s ao validar chave", resp.status_code)
         raise GaleedUnavailableError(
-            f"O Galeed respondeu HTTP {resp.status_code} ao conferir a chave. "
+            f"O cérebro respondeu HTTP {resp.status_code} ao conferir a chave. "
             "Tente de novo em instantes."
         )
 
@@ -136,7 +136,7 @@ class GaleedTokenVerifier(TokenVerifier):
 def _on_auth_error(conn: HTTPConnection, exc: Exception) -> Response:
     if isinstance(exc, GaleedUnavailableError):
         return JSONResponse(
-            {"error": "galeed_indisponivel", "message": str(exc)},
+            {"error": "cerebro_indisponivel", "message": str(exc)},
             status_code=503,
             headers={"Retry-After": "10"},
         )

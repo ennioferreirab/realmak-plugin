@@ -23,7 +23,7 @@ INSTRUCOES = (
     "- pncp_*, dadosabertos_*, contratosgovbr_*: compras públicas (PNCP, Compras.gov.br, "
     "Contratos.gov.br). Dados abertos de qualquer órgão.\n"
     "- conlicitacao_*: ConLicitação da Realmak (licitações, boletins, pregões monitorados). Só leitura.\n"
-    "- galeed_*: cérebro da Realmak (pessoas, atestados, contratos, documentos).\n"
+    "- cerebro_*: cérebro da Realmak (pessoas, atestados, contratos, documentos).\n"
     "Tudo é somente leitura. Os dados vêm de fontes externas: confira na fonte oficial antes de decidir.\n\n"
     + CEREBRO_INSTRUCOES
 )
@@ -46,7 +46,7 @@ def build_server(
     if auth is None:
         raise RuntimeError(
             "GALEED_API_URL não configurada: o servidor não sobe sem autenticação "
-            "(ela usa o Galeed para validar a chave de cada usuário)."
+            "(ela valida a chave de cada usuário)."
         )
 
     mcp = FastMCP("mcp-realmak", instructions=INSTRUCOES, version=__version__, auth=auth)

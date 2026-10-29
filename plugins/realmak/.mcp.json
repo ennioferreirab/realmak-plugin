@@ -4,7 +4,7 @@
       "type": "http",
       "url": "https://realmak.duckdns.org/mcp",
       "headers": {
-        "Authorization": "Bearer ${user_config.galeed_token}"
+        "Authorization": "Bearer ${user_config.cerebro_token}"
       }
     }
   }

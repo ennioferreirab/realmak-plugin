@@ -1,7 +1,7 @@
 {
   "name": "realmak",
   "displayName": "Realmak",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Skills de licitação para a equipe da Realmak: consultar o cérebro, analisar edital, conferir habilitação, buscar no ConLicitação e pesquisar compras públicas, com o conector do servidor MCP da Realmak.",
   "author": {
     "name": "Equipe Realmak"
@@ -17,10 +17,10 @@
     "mcp"
   ],
   "userConfig": {
-    "galeed_token": {
+    "cerebro_token": {
       "type": "string",
-      "title": "Chave do Galeed",
-      "description": "Sua chave de bot do Galeed (começa com gld_live_). É pessoal: cada chave abre um único cérebro.",
+      "title": "CEREBRO_TOKEN",
+      "description": "Sua chave pessoal do cérebro (começa com gld_live_). Cada chave abre um único cérebro.",
       "sensitive": true,
       "required": true
     }

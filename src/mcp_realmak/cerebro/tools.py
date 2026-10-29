@@ -70,24 +70,24 @@ def explicar_erro_registros(exc: Exception, ferramenta: str) -> str:
     if isinstance(exc, GaleedApiError):
         corpo = exc.body or str(exc)
         match exc.status:
-            case 400 if ferramenta == "galeed_consulta":
+            case 400 if ferramenta == "cerebro_consulta":
                 return (
                     f"Cérebro: consulta recusada (400): {corpo}. As tabelas e colunas estão em "
-                    "galeed_esquema (information_schema e pg_catalog não estão disponíveis). "
+                    "cerebro_esquema (information_schema e pg_catalog não estão disponíveis). "
                     "Confira os nomes lá e tente de novo."
                 )
             case 403:
                 return (
                     "Cérebro: esta chave não lê o dataset de registros (403). Ele exige uma chave "
                     "com acesso total a um cérebro com o módulo de registros ligado. "
-                    "Use galeed_facts ou galeed_retrieve."
+                    "Use cerebro_fatos ou cerebro_buscar."
                 )
             case 404:
-                return "Cérebro: este servidor não tem o dataset de registros (404). Use galeed_facts ou galeed_retrieve."
+                return "Cérebro: este servidor não tem o dataset de registros (404). Use cerebro_fatos ou cerebro_buscar."
             case 503:
                 return (
                     f"Cérebro: o dataset de registros ainda não está disponível (503): {corpo}. "
-                    "Tente mais tarde ou use galeed_facts."
+                    "Tente mais tarde ou use cerebro_fatos."
                 )
             case 429:
                 return (
@@ -97,7 +97,7 @@ def explicar_erro_registros(exc: Exception, ferramenta: str) -> str:
     return explicar_erro(exc)
 
 
-async def galeed_retrieve(
+async def cerebro_buscar(
     query: Annotated[str, Field(description="A busca em linguagem natural. Use nomes, números e termos do documento.")],
     limit: Annotated[int | None, Field(ge=1, le=20, description="Máximo de trechos (padrão 8, teto 20).")] = None,
     include_facts: Annotated[bool | None, Field(description="Se verdadeiro, anexa os fatos tipados relacionados à busca.")] = None,
@@ -110,7 +110,7 @@ async def galeed_retrieve(
         raise ToolError(explicar_erro(exc)) from None
 
 
-async def galeed_facts(
+async def cerebro_fatos(
     dim: Annotated[str | None, Field(description="Dimensão dos fatos (ex.: decisions, action_items, precos). Padrão: decisions.")] = None,
     area: Annotated[str | None, Field(description="Filtra por área de conhecimento (trecho do nome).")] = None,
     status: Annotated[Literal["fact", "archived"] | None, Field(description="fact = vigente; archived = superado.")] = None,
@@ -131,42 +131,42 @@ async def galeed_facts(
         raise ToolError(explicar_erro(exc)) from None
 
 
-async def galeed_esquema() -> str:
-    """Esquema do dataset de registros tipados: tabelas, colunas, domínios de valor, regras de leitura, cobertura e exemplos de SQL. Chame uma vez por conversa, antes do primeiro galeed_consulta. Não gasta LLM."""
+async def cerebro_esquema() -> str:
+    """Esquema do dataset de registros tipados: tabelas, colunas, domínios de valor, regras de leitura, cobertura e exemplos de SQL. Chame uma vez por conversa, antes do primeiro cerebro_consulta. Não gasta LLM."""
     try:
         return dumps(await client_for_request().esquema())
     except GaleedApiError as exc:
-        raise ToolError(explicar_erro_registros(exc, "galeed_esquema")) from None
+        raise ToolError(explicar_erro_registros(exc, "cerebro_esquema")) from None
 
 
-async def galeed_consulta(
-    sql: Annotated[str, Field(description="Um SELECT ou WITH (PostgreSQL). Tabelas e colunas como o galeed_esquema mostra.")],
+async def cerebro_consulta(
+    sql: Annotated[str, Field(description="Um SELECT ou WITH (PostgreSQL). Tabelas e colunas como o cerebro_esquema mostra.")],
     limite: Annotated[int | None, Field(ge=1, le=5000, description="Máximo de linhas (padrão 500, teto 5000).")] = None,
 ) -> str:
-    """Executa uma consulta SQL de leitura sobre o dataset de registros e devolve as linhas e a cobertura das tabelas. Use para perguntas que precisam de todos os casos: contar, somar, tirar média, listar. Chame galeed_esquema antes: os nomes vêm de lá, e information_schema e pg_catalog são recusados. Guarde os ids dos registros usados e cite as provas com galeed_provas. Não gasta LLM."""
+    """Executa uma consulta SQL de leitura sobre o dataset de registros e devolve as linhas e a cobertura das tabelas. Use para perguntas que precisam de todos os casos: contar, somar, tirar média, listar. Chame cerebro_esquema antes: os nomes vêm de lá, e information_schema e pg_catalog são recusados. Guarde os ids dos registros usados e cite as provas com cerebro_provas. Não gasta LLM."""
     try:
         return dumps(await client_for_request().consulta(sql, limite))
     except GaleedApiError as exc:
-        raise ToolError(explicar_erro_registros(exc, "galeed_consulta")) from None
+        raise ToolError(explicar_erro_registros(exc, "cerebro_consulta")) from None
 
 
-async def galeed_provas(
-    ids: Annotated[list[str], Field(max_length=200, description="Ids de registro devolvidos por galeed_consulta (até 200).")],
+async def cerebro_provas(
+    ids: Annotated[list[str], Field(max_length=200, description="Ids de registro devolvidos por cerebro_consulta (até 200).")],
     os: Annotated[Sistema | None, Field(description=OS_DESC)] = None,
 ) -> str:
-    """Provas dos registros: para cada id devolvido por galeed_consulta, o documento, a posição e o trecho literal de cada valor, com o arquivo original (original.file_path e original.os_open_link). Não gasta LLM."""
+    """Provas dos registros: para cada id devolvido por cerebro_consulta, o documento, a posição e o trecho literal de cada valor, com o arquivo original (original.file_path e original.os_open_link). Não gasta LLM."""
     try:
         return dumps(await client_for_request().provas(list(ids), os))
     except GaleedApiError as exc:
-        raise ToolError(explicar_erro_registros(exc, "galeed_provas")) from None
+        raise ToolError(explicar_erro_registros(exc, "cerebro_provas")) from None
 
 
 INSTRUCOES = (
-    "Cérebro da Realmak (Galeed):\n"
-    "- Pergunta sobre pessoa, assunto ou documento: galeed_retrieve (include_facts=true anexa os "
-    "fatos) e galeed_facts. Monte a resposta a partir dos trechos.\n"
-    "- Pergunta que precisa de todos os casos (contar, somar, listar): galeed_esquema uma vez, "
-    "depois galeed_consulta e galeed_provas, quando essas ferramentas estiverem disponíveis.\n"
+    "Cérebro da Realmak:\n"
+    "- Pergunta sobre pessoa, assunto ou documento: cerebro_buscar (include_facts=true anexa os "
+    "fatos) e cerebro_fatos. Monte a resposta a partir dos trechos.\n"
+    "- Pergunta que precisa de todos os casos (contar, somar, listar): cerebro_esquema uma vez, "
+    "depois cerebro_consulta e cerebro_provas, quando essas ferramentas estiverem disponíveis.\n"
     "- Passe os='windows' nas leituras: os analistas usam Windows.\n"
     "- Resultado com 'original': termine a resposta com a seção Arquivos (nome, os_open_link exatamente "
     "como veio, file_path), um item por sha256. Sem 'original', a fonte é só texto indexado: não monte link.\n"
@@ -177,9 +177,9 @@ INSTRUCOES = (
 def build_cerebro_server() -> FastMCP:
     mcp = FastMCP("cerebro")
     ro: dict[str, Any] = {"readOnlyHint": True, "openWorldHint": False}
-    mcp.tool(galeed_retrieve, tags={"cerebro"}, annotations=ro)
-    mcp.tool(galeed_facts, tags={"cerebro"}, annotations=ro)
-    mcp.tool(galeed_esquema, tags={"cerebro", REGISTROS_TAG}, annotations=ro)
-    mcp.tool(galeed_consulta, tags={"cerebro", REGISTROS_TAG}, annotations=ro)
-    mcp.tool(galeed_provas, tags={"cerebro", REGISTROS_TAG}, annotations=ro)
+    mcp.tool(cerebro_buscar, tags={"cerebro"}, annotations=ro)
+    mcp.tool(cerebro_fatos, tags={"cerebro"}, annotations=ro)
+    mcp.tool(cerebro_esquema, tags={"cerebro", REGISTROS_TAG}, annotations=ro)
+    mcp.tool(cerebro_consulta, tags={"cerebro", REGISTROS_TAG}, annotations=ro)
+    mcp.tool(cerebro_provas, tags={"cerebro", REGISTROS_TAG}, annotations=ro)
     return mcp
