@@ -242,6 +242,10 @@ async def test_refresh_renova_e_para_quando_o_acesso_e_retirado(ambiente, monkey
 async def test_token_de_pessoa_adulterado_e_recusado(ambiente):
     async with servidor() as c:
         assert (await rpc(c, "tools/list", token="rmk_lixo")).status_code == 401
+        client_id, r = await login_galeed(c)
+        access = (await trocar(c, client_id, codigo_do_redirect(r))).json()["access_token"]
+        assert (await rpc(c, "tools/list", token=access)).status_code == 200
+        assert (await rpc(c, "tools/list", token=access + "x")).status_code == 401  # lixo após o "="
 
 
 # --- código por e-mail --------------------------------------------------------

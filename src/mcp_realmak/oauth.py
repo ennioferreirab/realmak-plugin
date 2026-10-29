@@ -22,6 +22,7 @@ import hmac
 import html
 import json
 import logging
+import re
 import secrets
 import smtplib
 import ssl
@@ -89,6 +90,9 @@ def _b64d(text: str) -> bytes:
     return base64.urlsafe_b64decode(text + "=" * (-len(text) % 4))
 
 
+_FERNET_RE = re.compile(r"[A-Za-z0-9_-]+={0,2}")
+
+
 def pkce_s256(verifier: str) -> str:
     return _b64e(hashlib.sha256(verifier.encode("ascii")).digest())
 
@@ -130,6 +134,9 @@ class OAuthServer:
         return self._fernet.encrypt(json.dumps(blob, separators=(",", ":")).encode()).decode()
 
     def unseal(self, kind: str, token: str) -> dict | None:
+        # O base64 ignora o que vem depois do "=" final; aceite só a forma exata que emitimos.
+        if len(token) % 4 or not _FERNET_RE.fullmatch(token):
+            return None
         try:
             blob = json.loads(self._fernet.decrypt(token.encode()))
         except (InvalidToken, ValueError, json.JSONDecodeError):
