@@ -36,9 +36,11 @@ class GaleedClient:
         token: str,
         timeout: float = 30.0,
         transport: httpx.AsyncBaseTransport | None = None,
+        act_as: str = "",
     ) -> None:
         self._base = base_url.rstrip("/")
         self._token = token
+        self._act_as = act_as
         self._timeout = timeout
         self._transport = transport
 
@@ -95,7 +97,10 @@ class GaleedClient:
                     url,
                     json=json_body,
                     params=params,
-                    headers={"Authorization": f"Bearer {self._token}"},
+                    headers={
+                        "Authorization": f"Bearer {self._token}",
+                        **({"X-Galeed-Act-As": self._act_as} if self._act_as else {}),
+                    },
                 )
         except httpx.TimeoutException:
             raise GaleedApiError(

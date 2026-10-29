@@ -59,6 +59,15 @@ handle /mcp* {
 `flush_interval -1` desliga o buffer: o MCP por HTTP responde em fluxo (SSE) e o buffer
 travaria as respostas. Depois recarregue: `caddy reload` (ou reinicie o contêiner do Caddy).
 
+Com o login de pessoa ligado (seção 6), repasse também os metadados do OAuth, que ficam na raiz
+do domínio. As outras rotas do login (`/mcp/oauth/...`) já passam pelo `handle /mcp*`:
+
+```caddy
+handle /.well-known/oauth-* {
+    reverse_proxy <destino>:8095
+}
+```
+
 Se o site já tiver outras regras dentro do bloco, mantenha o `handle /mcp*` junto delas.
 Não use a mesma rota para outra coisa: o `/healthz` não precisa ser exposto fora do servidor.
 
@@ -124,4 +133,30 @@ fora do ar, o servidor responde 503 (ele nunca libera sem conferir a chave).
 | 401 com chave certa | chave de outro cérebro, revogada, ou `GALEED_API_URL` sem `/v1` |
 | 503 ao conectar | o servidor não alcançou o Galeed (rede, URL, gateway fora do ar) |
 | ConLicitação: "recusou o token (401)" | IP de saída do servidor não cadastrado, ou token trocado |
+| Connect: "Sem acesso ao cérebro" | o e-mail não é um principal humano ativo com grant no Galeed, ou há dois com o mesmo e-mail |
+| Connect: "chave de serviço recusada" | `GALEED_SERVICE_KEY` revogada, ou o agente fora de `GALEED_ACT_AS_PRINCIPALS` no Galeed |
+| Connect abre e volta com erro de redirect | o aplicativo usa um redirect fora da lista; acrescente o host em `MCP_REALMAK_OAUTH_REDIRECT_HOSTS` |
 | ConLicitação: "recusou o login" | login ou senha do site mudou; atualize o `.env`, apague o arquivo de sessão e reinicie |
+
+## 6. Login de pessoa (botão Connect)
+
+Opcional. Sem isto, só a chave de bot funciona (Claude Code, pi agent, scripts).
+
+1. **No Galeed**, crie um agente para o servidor (painel, Acesso), gere uma chave `gld_live_` para ele e
+   acrescente `<brain>:<id do agente>` a `GALEED_ACT_AS_PRINCIPALS` no `.env` do Galeed. Reinicie o
+   gateway. Essa chave só age em nome de pessoas que tenham acesso concedido no mesmo cérebro, e só leitura.
+2. **No `.env` daqui:** `MCP_REALMAK_PUBLIC_URL=https://<dominio>`, `MCP_REALMAK_OAUTH_SECRET` (gere com
+   `openssl rand -hex 32`) e `GALEED_SERVICE_KEY` com a chave do passo 1.
+3. **Formas de login.** Configure as que quiser; a página mostra só as configuradas.
+   - **Google Workspace:** no Google Cloud Console, crie um cliente OAuth do tipo "Aplicativo da Web",
+     tela de consentimento interna, com o URI de redirecionamento `https://<dominio>/mcp/oauth/login/google/callback`.
+     Preencha `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` e `GOOGLE_WORKSPACE_DOMAIN`.
+   - **Conta do Galeed:** `GALEED_LOGIN_URL` com a raiz do painel do Galeed (onde responde `/auth/login`),
+     alcançável a partir deste servidor. O Galeed limita 10 tentativas por minuto por IP, e aqui todas
+     saem do mesmo IP.
+   - **Código por e-mail:** `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` e `SMTP_FROM`. No
+     Workspace, `smtp.gmail.com` com uma senha de app, ou o relay SMTP do Workspace.
+4. Acrescente os metadados do OAuth no Caddy (seção 3) e reinicie o serviço.
+5. Confira: `curl -s https://<dominio>/.well-known/oauth-authorization-server` devolve o JSON com
+   `authorization_endpoint`. No Claude Desktop, Customize, Connectors, clique em Connect no conector da
+   Realmak e faça o login.

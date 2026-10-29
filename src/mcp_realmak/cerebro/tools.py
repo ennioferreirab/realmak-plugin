@@ -1,20 +1,24 @@
 """Ferramentas do cérebro (Galeed), só leitura.
 
 A chave usada em cada chamada é a do próprio usuário, tirada do token Bearer
-verificado na requisição. Cada chave está presa a exatamente um cérebro.
+verificado na requisição. Cada chave está presa a exatamente um cérebro. Para quem
+entrou pelo login de pessoa (OAuth), vai a chave de serviço do servidor com o
+e-mail da pessoa no header X-Galeed-Act-As, e vale o grant dela.
 """
 
 from __future__ import annotations
 
 from typing import Annotated, Any, Literal
 
+import httpx
 from fastmcp import FastMCP
 from fastmcp.exceptions import ToolError
+from fastmcp.server.auth import AccessToken
 from fastmcp.server.dependencies import get_access_token
 from pydantic import Field
 
 from ..capping import dumps
-from ..config import load_settings
+from ..config import Settings, load_settings
 from .client import GaleedApiError, GaleedClient
 
 Sistema = Literal["macos", "linux", "windows"]
@@ -28,6 +32,18 @@ OS_DESC = (
 REGISTROS_TAG = "registros"
 
 
+def client_for_access(
+    access: AccessToken, settings: Settings, transport: httpx.AsyncBaseTransport | None = None
+) -> GaleedClient:
+    email = (access.claims or {}).get("email") if isinstance(access, AccessToken) else None
+    if email:
+        return GaleedClient(
+            settings.galeed_api_url, settings.galeed_service_key, timeout=settings.galeed_timeout_s,
+            transport=transport, act_as=email,
+        )
+    return GaleedClient(settings.galeed_api_url, access.token, timeout=settings.galeed_timeout_s, transport=transport)
+
+
 def client_for_request() -> GaleedClient:
     settings = load_settings()
     if not settings.galeed_configured:
@@ -35,7 +51,7 @@ def client_for_request() -> GaleedClient:
     access = get_access_token()
     if access is None or not access.token:
         raise ToolError("Cérebro: requisição sem chave. Envie o cabeçalho Authorization: Bearer <chave>.")
-    return GaleedClient(settings.galeed_api_url, access.token, timeout=settings.galeed_timeout_s)
+    return client_for_access(access, settings)
 
 
 def explicar_erro(exc: Exception) -> str:
