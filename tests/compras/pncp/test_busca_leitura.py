@@ -62,6 +62,18 @@ class TestHttpClientRobustez:
         assert route.call_count == 3
 
     @respx.mock
+    async def test_short_capped_backoff(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        sleep = AsyncMock()
+        monkeypatch.setattr(http_client.asyncio, "sleep", sleep)
+        respx.get("https://example.test/x").mock(
+            side_effect=[httpx.ReadError("reset")] * 6 + [httpx.Response(200, json={})]
+        )
+        await http_client.http_get(
+            "https://example.test/x", max_retries=8, backoff_base=0.5, max_wait=3.0
+        )
+        assert [c.args[0] for c in sleep.await_args_list] == [0.5, 1.0, 2.0, 3.0, 3.0, 3.0]
+
+    @respx.mock
     async def test_parses_json_with_raw_control_characters(self) -> None:
         respx.get("https://example.test/x").mock(
             return_value=httpx.Response(
@@ -231,6 +243,16 @@ class TestPesquisarClient:
         assert (d.ano, d.numero_sequencial) == (2026, 1203)
         assert d.data_fim == "2026-11-06T09:00"
         assert d.link_pncp == "https://pncp.gov.br/app/editais/00394494000136/2026/1203"
+
+    @respx.mock
+    async def test_survives_many_resets(self) -> None:
+        route = respx.get(SEARCH_URL).mock(
+            side_effect=[httpx.ReadError("Connection reset by peer")] * 7
+            + [httpx.Response(200, json={"total": 1, "items": [HIT_EDITAL]})]
+        )
+        r = await client.pesquisar("grupo gerador")
+        assert r.total == 1
+        assert route.call_count == 8
 
     @respx.mock
     async def test_contract_defaults_to_vigente(self) -> None:

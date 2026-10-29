@@ -26,6 +26,7 @@ INSTRUMENTOS_COBRANCA_URL = f"{PNCP_API_BASE}/instrumentoscobranca/inclusao"
 SEARCH_URL = "https://pncp.gov.br/api/search/"
 PORTAL_URL = "https://pncp.gov.br/app"
 MAX_PAGE_SIZE_SEARCH = 50
+SEARCH_MAX_RETRIES = 8
 
 # Status aceitos pela busca, por tipo de documento. Valor fora da lista é
 # ignorado em silêncio pela API (volta tudo), por isso validamos antes.
