@@ -23,7 +23,7 @@ As ferramentas `cerebro_*` vêm do servidor `realmak`. O nome completo pode ter 
 
 Quando a pergunta pede contar, somar, listar ou comparar (quantos atestados, quais contratos, qual a média), ou o papel de uma pessoa nos documentos, use o dataset de registros, se as ferramentas estiverem disponíveis na lista (`cerebro_esquema`, `cerebro_consulta`, `cerebro_provas`). Elas só aparecem para chaves com acesso total a um cérebro com esse módulo.
 
-1. `cerebro_esquema` uma vez por conversa, antes do primeiro SQL. Traz as tabelas, as colunas, as regras de leitura e exemplos. Não adivinhe nome de coluna.
+1. `cerebro_esquema` uma vez por conversa, antes do primeiro SQL. Traz as tabelas, as views `vw_*`, as colunas, as regras de leitura e exemplos. Não adivinhe nome de coluna. As views já juntam as tabelas (habilitação de pessoas, atestados, contratos vigentes, custo por função, fornecedores por categoria) e trazem o caminho do arquivo no servidor; prefira-as quando cobrirem a pergunta.
 2. `cerebro_consulta` com um `SELECT` ou `WITH` por vez, com tabelas e colunas escritas como o esquema mostra. `information_schema` e `pg_catalog` são recusados.
 3. `cerebro_provas` com os ids dos registros usados na resposta. Os arquivos originais das provas entram na seção **Arquivos**.
 
