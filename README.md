@@ -24,7 +24,12 @@ Resultados grandes são cortados em cerca de 100 mil caracteres, com um aviso pa
 
 ## Como funciona a autenticação
 
-A chave de bot do Galeed (`gld_live_...`) é o token Bearer. Não existe outra senha.
+Há duas portas de entrada:
+
+- **Bots e Claude Code:** a chave de bot do Galeed (`gld_live_...`) vai como token Bearer.
+- **Pessoas pelo botão Connect (Claude Desktop, Cowork):** login OAuth na página do próprio servidor, com Google Workspace, conta do Galeed ou código por e-mail. Veja "Login de pessoa" abaixo.
+
+### Chave de bot
 
 1. O cliente envia `Authorization: Bearer <chave>` em cada requisição.
 2. Na primeira vez que vê uma chave, o servidor chama `GET {GALEED_API_URL}/facts?limit=1` com ela. `200` vale; `401` e `403` não valem.
@@ -36,7 +41,19 @@ Uma chave válida libera todas as ferramentas (compras, ConLicitação e cérebr
 
 **Como pegar a chave.** No painel do Galeed do seu cérebro, em Acesso, crie um bot com acesso a todas as áreas, vá em Conectar, Chaves do cérebro, e clique em Gerar chave. A chave inteira aparece uma única vez; copie na hora. Quem administra o cérebro faz isso. Trate a chave como senha: não vai para chat, print nem Git.
 
-**Sobre OAuth.** O servidor usa um verificador de token simples, sem configurar `base_url` nem provedor OAuth. Por isso o FastMCP não publica metadados OAuth (`/.well-known/oauth-protected-resource`), e o `401` volta com `WWW-Authenticate: Bearer`, sem `resource_metadata`. Os testes conferem isso. O cliente não tenta abrir fluxo OAuth e usa o cabeçalho estático. Se um dia o servidor passar a usar `RemoteAuthProvider` ou um provedor OAuth, o Claude pode tentar descobrir OAuth e ignorar o cabeçalho fixo: não faça isso sem rever a instalação.
+### Login de pessoa (OAuth)
+
+Fica desligado até o `.env` ter `MCP_REALMAK_PUBLIC_URL`, `MCP_REALMAK_OAUTH_SECRET`, `GALEED_SERVICE_KEY` e ao menos uma forma de login. Desligado, o servidor não publica metadados OAuth e o `401` volta sem `resource_metadata`, como antes.
+
+1. O aplicativo descobre o OAuth pelo `401` (`/.well-known/oauth-protected-resource/mcp`), se registra em `/register` (só redirects para `claude.ai`, `claude.com` e `localhost`, mais os de `MCP_REALMAK_OAUTH_REDIRECT_HOSTS`) e abre `/authorize` com PKCE S256.
+2. A página mostra as formas de login configuradas: Google Workspace (restrito a `GOOGLE_WORKSPACE_DOMAIN`), conta do Galeed (o servidor confere a senha no `/auth/login` do Galeed e encerra a sessão) ou código de 6 dígitos por e-mail (10 minutos, 5 tentativas; a página não revela se o e-mail tem acesso).
+3. Com o e-mail provado, o servidor pergunta ao Galeed se ele tem acesso: `GET /v1/facts` com a chave de serviço e `X-Galeed-Act-As: <email>`. Sem acesso, a página diz isso e não emite nada.
+4. O aplicativo recebe um access token `rmk_...` (1 hora) e um refresh token `rmkr_...` (30 dias). O refresh confere o acesso de novo.
+5. Cada ferramenta `cerebro_*` chama o Galeed com a chave de serviço e o e-mail da pessoa. Vale o grant dela no Galeed: tirar o acesso no painel corta em até 5 minutos (cache), e o refresh seguinte falha.
+
+Nada fica em banco: códigos, tokens e cadastros de cliente vão cifrados com `MCP_REALMAK_OAUTH_SECRET`. Trocar o segredo desconecta todo mundo. No Claude Code, quando o header `Authorization` está configurado, o cliente não tenta OAuth, então a chave de bot continua valendo como antes.
+
+Uma pessoa com acesso de leitura só a algumas áreas recebe 403 em `cerebro_esquema`, `cerebro_consulta` e `cerebro_provas`: o Galeed exige escopo total no dataset de registros.
 
 ## Instalar o plugin
 
@@ -54,10 +71,9 @@ Na instalação o Claude Code pergunta a chave (e o endereço, já preenchido). 
 ### Claude Desktop (chat)
 
 1. Abra Customize, Plugins, Add, Add marketplace, e informe a URL do repositório no GitHub (`https://github.com/ennioferreirab/realmak-plugin`). Instale o plugin `realmak`. Isso traz as skills.
-2. Adicione o conector à mão, porque o chat e o Cowork ignoram servidores de plugin que dependem de `user_config` (a URL e a chave vêm da configuração do plugin, que esses aplicativos não pedem): Customize, Connectors, `+`, Add custom connector. Preencha:
-   - URL: `https://realmak.duckdns.org/mcp`;
-   - Authentication: No sign-in;
-   - Request headers: `Authorization: Bearer <sua chave gld_live_...>`.
+2. Conecte o servidor. Com o login de pessoa ligado no servidor, clique em Connect e entre com Google, conta do Galeed ou código por e-mail, sem chave. Se o Connect do plugin não aparecer, adicione o conector à mão (o chat e o Cowork ignoram servidores de plugin que dependem de `user_config`): Customize, Connectors, `+`, Add custom connector, com a URL `https://realmak.duckdns.org/mcp`, e clique em Connect.
+
+   Sem o login de pessoa, o conector manual leva Authentication: No sign-in e o header `Authorization: Bearer <chave gld_live_...>`.
 
    Fonte: [Getting started with custom connectors using remote MCP](https://support.claude.com/en/articles/11175166-getting-started-with-custom-connectors-using-remote-mcp).
 

@@ -14,14 +14,15 @@ import time
 from collections.abc import Sequence
 
 import httpx
+from fastmcp.server.auth import AccessToken
 from fastmcp.server.dependencies import get_access_token
 from fastmcp.server.middleware import Middleware, MiddlewareContext
 from mcp import types as mt
 
 from ..auth import token_hash
 from ..config import load_settings
-from .client import GaleedApiError, GaleedClient
-from .tools import REGISTROS_TAG
+from .client import GaleedApiError
+from .tools import REGISTROS_TAG, client_for_access
 
 log = logging.getLogger("mcp_realmak.cerebro")
 
@@ -32,17 +33,15 @@ class RegistrosVisibilityMiddleware(Middleware):
         self._transport = transport
         self._cache: dict[str, tuple[float, bool]] = {}
 
-    async def _visivel(self, token: str) -> bool:
-        key = token_hash(token)
+    async def _visivel(self, access: AccessToken) -> bool:
+        key = token_hash(access.token)
         hit = self._cache.get(key)
         if hit and hit[0] > time.monotonic():
             return hit[1]
         settings = load_settings()
         if not settings.galeed_configured:
             return False
-        client = GaleedClient(
-            settings.galeed_api_url, token, timeout=settings.galeed_timeout_s, transport=self._transport
-        )
+        client = client_for_access(access, settings, self._transport)
         try:
             await client.esquema()
             visivel, definitivo = True, True
@@ -62,7 +61,7 @@ class RegistrosVisibilityMiddleware(Middleware):
     async def on_list_tools(self, context: MiddlewareContext[mt.ListToolsRequest], call_next):
         tools: Sequence = await call_next(context)
         access = get_access_token()
-        mostrar = bool(access and access.token and await self._visivel(access.token))
+        mostrar = bool(access and access.token and await self._visivel(access))
         if mostrar:
             return tools
         return [t for t in tools if REGISTROS_TAG not in (t.tags or set())]

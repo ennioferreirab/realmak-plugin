@@ -17,6 +17,7 @@ from .cerebro.visibility import RegistrosVisibilityMiddleware
 from .compras.server import mcp as compras_mcp
 from .config import Settings, load_settings
 from .conlicitacao.tools import build_conlicitacao_server
+from .oauth import GoogleLogin, OAuthServer, SmtpConfig
 
 INSTRUCOES = (
     "Servidor de licitações da Realmak. Grupos de ferramentas:\n"
@@ -29,20 +30,49 @@ INSTRUCOES = (
 )
 
 
+def build_oauth(
+    settings: Settings, verifier: GaleedTokenVerifier, transport: httpx.AsyncBaseTransport | None = None
+) -> OAuthServer:
+    return OAuthServer(
+        settings.oauth_public_url,
+        settings.oauth_secret,
+        verify_person=verifier.check_person,
+        google=(
+            GoogleLogin(settings.google_client_id, settings.google_client_secret, settings.google_domain)
+            if settings.google_configured
+            else None
+        ),
+        galeed_login_url=settings.galeed_login_url,
+        smtp=(
+            SmtpConfig(settings.smtp_host, settings.smtp_port, settings.smtp_user, settings.smtp_password, settings.smtp_from)
+            if settings.smtp_configured
+            else None
+        ),
+        extra_redirect_hosts=settings.oauth_redirect_hosts,
+        transport=transport,
+    )
+
+
 def build_server(
     settings: Settings | None = None,
     *,
     galeed_transport: httpx.AsyncBaseTransport | None = None,
     auth: TokenVerifier | None = None,
+    oauth_transport: httpx.AsyncBaseTransport | None = None,
 ) -> FastMCP:
     settings = settings or load_settings()
     if auth is None and settings.galeed_configured:
-        auth = GaleedTokenVerifier(
+        verifier = GaleedTokenVerifier(
             settings.galeed_api_url,
             ttl_seconds=settings.token_cache_ttl_s,
             timeout_seconds=min(settings.galeed_timeout_s, 15.0),
             transport=galeed_transport,
+            public_url=settings.oauth_public_url if settings.oauth_configured else "",
+            service_key=settings.galeed_service_key,
         )
+        if settings.oauth_configured:
+            verifier.attach_oauth(build_oauth(settings, verifier, oauth_transport))
+        auth = verifier
     if auth is None:
         raise RuntimeError(
             "GALEED_API_URL não configurada: o servidor não sobe sem autenticação "
