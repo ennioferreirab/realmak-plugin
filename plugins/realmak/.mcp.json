@@ -2,7 +2,7 @@
   "mcpServers": {
     "realmak": {
       "type": "http",
-      "url": "${user_config.mcp_url}",
+      "url": "https://realmak.duckdns.org/mcp",
       "headers": {
         "Authorization": "Bearer ${user_config.galeed_token}"
       }
