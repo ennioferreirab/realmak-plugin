@@ -59,11 +59,11 @@ handle /mcp* {
 `flush_interval -1` desliga o buffer: o MCP por HTTP responde em fluxo (SSE) e o buffer
 travaria as respostas. Depois recarregue: `caddy reload` (ou reinicie o contêiner do Caddy).
 
-Com o login de pessoa ligado (seção 6), repasse também as rotas do OAuth:
+Com o login de pessoa ligado (seção 6), repasse também os metadados do OAuth, que ficam na raiz
+do domínio. As outras rotas do login (`/mcp/oauth/...`) já passam pelo `handle /mcp*`:
 
 ```caddy
-@oauth path /.well-known/oauth-protected-resource* /.well-known/oauth-authorization-server /register /authorize /token /login/*
-handle @oauth {
+handle /.well-known/oauth-* {
     reverse_proxy <destino>:8095
 }
 ```
@@ -149,14 +149,14 @@ Opcional. Sem isto, só a chave de bot funciona (Claude Code, pi agent, scripts)
    `openssl rand -hex 32`) e `GALEED_SERVICE_KEY` com a chave do passo 1.
 3. **Formas de login.** Configure as que quiser; a página mostra só as configuradas.
    - **Google Workspace:** no Google Cloud Console, crie um cliente OAuth do tipo "Aplicativo da Web",
-     tela de consentimento interna, com o URI de redirecionamento `https://<dominio>/login/google/callback`.
+     tela de consentimento interna, com o URI de redirecionamento `https://<dominio>/mcp/oauth/login/google/callback`.
      Preencha `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` e `GOOGLE_WORKSPACE_DOMAIN`.
    - **Conta do Galeed:** `GALEED_LOGIN_URL` com a raiz do painel do Galeed (onde responde `/auth/login`),
      alcançável a partir deste servidor. O Galeed limita 10 tentativas por minuto por IP, e aqui todas
      saem do mesmo IP.
    - **Código por e-mail:** `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` e `SMTP_FROM`. No
      Workspace, `smtp.gmail.com` com uma senha de app, ou o relay SMTP do Workspace.
-4. Acrescente as rotas do OAuth no Caddy (seção 3) e reinicie o serviço.
+4. Acrescente os metadados do OAuth no Caddy (seção 3) e reinicie o serviço.
 5. Confira: `curl -s https://<dominio>/.well-known/oauth-authorization-server` devolve o JSON com
    `authorization_endpoint`. No Claude Desktop, Customize, Connectors, clique em Connect no conector da
    Realmak e faça o login.

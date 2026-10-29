@@ -57,6 +57,9 @@ GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 GOOGLE_ISSUERS = ("https://accounts.google.com", "accounts.google.com")
 GOOGLE_COOKIE = "rmk_google"
+# Rotas operacionais sob /mcp: a borda já repassa /mcp* e o resto do domínio pode ser de outro app.
+# Só os metadados /.well-known/oauth-* ficam na raiz, como pedem as RFC 8414 e 9728.
+BASE = "/mcp/oauth"
 
 # Confere se o e-mail tem acesso ao cérebro. True/False; AuthenticationError se o Galeed não responder.
 VerifyPerson = Callable[[str], Awaitable[bool]]
@@ -252,7 +255,7 @@ class OAuthServer:
         state = self.seal("gst", {"p": p, "n": nonce}, TXN_TTL)
         params = {
             "client_id": self.google.client_id,
-            "redirect_uri": f"{self.public_url}/login/google/callback",
+            "redirect_uri": f"{self.public_url}{BASE}/login/google/callback",
             "response_type": "code",
             "scope": "openid email",
             "state": state,
@@ -261,7 +264,7 @@ class OAuthServer:
         if self.google.domain:
             params["hd"] = self.google.domain
         resp = RedirectResponse(f"{GOOGLE_AUTH_URL}?{urlencode(params)}", status_code=302, headers=_NO_STORE)
-        resp.set_cookie(GOOGLE_COOKIE, nonce, max_age=TXN_TTL, path="/login/google", secure=self.public_url.startswith("https://"), httponly=True, samesite="lax")
+        resp.set_cookie(GOOGLE_COOKIE, nonce, max_age=TXN_TTL, path=f"{BASE}/login/google", secure=self.public_url.startswith("https://"), httponly=True, samesite="lax")
         return resp
 
     async def _google_callback(self, request: Request) -> Response:
@@ -279,7 +282,7 @@ class OAuthServer:
                     "code": request.query_params["code"],
                     "client_id": g.client_id,
                     "client_secret": g.client_secret,
-                    "redirect_uri": f"{self.public_url}/login/google/callback",
+                    "redirect_uri": f"{self.public_url}{BASE}/login/google/callback",
                     "grant_type": "authorization_code",
                 })
             id_token = r.json().get("id_token", "") if r.status_code == 200 else ""
@@ -290,7 +293,7 @@ class OAuthServer:
             dominio = f" do domínio {g.domain}" if g.domain else ""
             return self._chooser(self.seal("txn", p, TXN_TTL), p, f"Não deu para confirmar o e-mail pelo Google. Use uma conta Google{dominio}.")
         resp = await self._finish(email, p)
-        resp.delete_cookie(GOOGLE_COOKIE, path="/login/google")
+        resp.delete_cookie(GOOGLE_COOKIE, path=f"{BASE}/login/google")
         return resp
 
     # --- conta do Galeed ---------------------------------------------------
@@ -405,9 +408,9 @@ class OAuthServer:
         async def metadata(request: Request) -> Response:
             return _json({
                 "issuer": self.public_url,
-                "authorization_endpoint": f"{self.public_url}/authorize",
-                "token_endpoint": f"{self.public_url}/token",
-                "registration_endpoint": f"{self.public_url}/register",
+                "authorization_endpoint": f"{self.public_url}{BASE}/authorize",
+                "token_endpoint": f"{self.public_url}{BASE}/token",
+                "registration_endpoint": f"{self.public_url}{BASE}/register",
                 "response_types_supported": ["code"],
                 "grant_types_supported": ["authorization_code", "refresh_token"],
                 "code_challenge_methods_supported": ["S256"],
@@ -491,14 +494,14 @@ class OAuthServer:
         return [
             *resource_routes,
             Route("/.well-known/oauth-authorization-server", metadata, methods=["GET", "OPTIONS"]),
-            Route("/register", register, methods=["POST", "OPTIONS"]),
-            Route("/authorize", authorize, methods=["GET"]),
-            Route("/login/google", self._google_start, methods=["GET"]),
-            Route("/login/google/callback", self._google_callback, methods=["GET"]),
-            Route("/login/galeed", galeed_login, methods=["POST"]),
-            Route("/login/email", email_start, methods=["POST"]),
-            Route("/login/email/verify", email_verify, methods=["POST"]),
-            Route("/token", token, methods=["POST", "OPTIONS"]),
+            Route(f"{BASE}/register", register, methods=["POST", "OPTIONS"]),
+            Route(f"{BASE}/authorize", authorize, methods=["GET"]),
+            Route(f"{BASE}/login/google", self._google_start, methods=["GET"]),
+            Route(f"{BASE}/login/google/callback", self._google_callback, methods=["GET"]),
+            Route(f"{BASE}/login/galeed", galeed_login, methods=["POST"]),
+            Route(f"{BASE}/login/email", email_start, methods=["POST"]),
+            Route(f"{BASE}/login/email/verify", email_verify, methods=["POST"]),
+            Route(f"{BASE}/token", token, methods=["POST", "OPTIONS"]),
         ]
 
 
@@ -595,10 +598,10 @@ def _chooser_html(txn: str, client_name: str, host: str, methods: list[str], err
     t = html.escape(txn)
     partes: list[str] = []
     if "google" in methods:
-        partes.append(f'<a class="btn" href="/login/google?{html.escape(urlencode({"txn": txn}))}">Entrar com Google</a>')
+        partes.append(f'<a class="btn" href="{BASE}/login/google?{html.escape(urlencode({"txn": txn}))}">Entrar com Google</a>')
     if "galeed" in methods:
         partes.append(
-            '<h2>Conta do Galeed</h2><form method="post" action="/login/galeed">'
+            f'<h2>Conta do Galeed</h2><form method="post" action="{BASE}/login/galeed">'
             f'<input type="hidden" name="txn" value="{t}">'
             '<label for="ge">E-mail</label><input id="ge" name="email" type="email" autocomplete="username" required>'
             '<label for="gs">Senha</label><input id="gs" name="password" type="password" autocomplete="current-password" required>'
@@ -606,7 +609,7 @@ def _chooser_html(txn: str, client_name: str, host: str, methods: list[str], err
         )
     if "email" in methods:
         partes.append(
-            '<h2>Código por e-mail</h2><form method="post" action="/login/email">'
+            f'<h2>Código por e-mail</h2><form method="post" action="{BASE}/login/email">'
             f'<input type="hidden" name="txn" value="{t}">'
             '<label for="ce">E-mail</label><input id="ce" name="email" type="email" autocomplete="email" required>'
             "<button type=\"submit\">Enviar código</button></form>"
@@ -625,7 +628,7 @@ def _code_html(etxn: str, email: str, erro: str = "") -> str:
     return _shell(
         "<h1>Digite o código</h1>"
         f"<p>Se {html.escape(email)} tiver acesso ao cérebro, enviamos um código de 6 dígitos. Ele vale por 10 minutos.</p>"
-        f'{aviso}<form method="post" action="/login/email/verify">'
+        f'{aviso}<form method="post" action="{BASE}/login/email/verify">'
         f'<input type="hidden" name="etxn" value="{html.escape(etxn)}">'
         '<label for="cd">Código</label><input id="cd" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="8" required autofocus>'
         "<button type=\"submit\">Conectar</button></form>"

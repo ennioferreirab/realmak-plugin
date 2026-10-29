@@ -78,13 +78,13 @@ async def servidor():
 
 
 async def registrar(c, uris=(REDIRECT,)) -> httpx.Response:
-    return await c.post("/register", json={"client_name": "Claude", "redirect_uris": list(uris)})
+    return await c.post("/mcp/oauth/register", json={"client_name": "Claude", "redirect_uris": list(uris)})
 
 
 async def abrir_login(c) -> tuple[str, str]:
     client_id = (await registrar(c)).json()["client_id"]
     r = await c.get(
-        "/authorize",
+        "/mcp/oauth/authorize",
         params={
             "response_type": "code", "client_id": client_id, "redirect_uri": REDIRECT,
             "code_challenge": pkce_s256(VERIFIER), "code_challenge_method": "S256", "state": "xyz",
@@ -104,7 +104,7 @@ def codigo_do_redirect(r: httpx.Response) -> str:
 
 
 async def trocar(c, client_id: str, code: str, verifier: str = VERIFIER) -> httpx.Response:
-    return await c.post("/token", data={
+    return await c.post("/mcp/oauth/token", data={
         "grant_type": "authorization_code", "code": code, "client_id": client_id,
         "redirect_uri": REDIRECT, "code_verifier": verifier,
     })
@@ -116,7 +116,7 @@ async def login_galeed(c, email=ANA) -> tuple[str, httpx.Response]:
     )
     c.mock.post(f"{LOGIN}/auth/logout").mock(return_value=httpx.Response(200, json={"ok": True}))
     client_id, txn = await abrir_login(c)
-    r = await c.post("/login/galeed", data={"txn": txn, "email": email, "password": "senha"})
+    r = await c.post("/mcp/oauth/login/galeed", data={"txn": txn, "email": email, "password": "senha"})
     return client_id, r
 
 
@@ -131,7 +131,7 @@ async def test_com_oauth_o_401_aponta_os_metadados(ambiente):
         prm = (await c.get("/.well-known/oauth-protected-resource/mcp")).json()
         assert prm["resource"] == f"{PUBLIC}/mcp" and prm["authorization_servers"] == [f"{PUBLIC}/"]
         asm = (await c.get("/.well-known/oauth-authorization-server")).json()
-        assert asm["token_endpoint"] == f"{PUBLIC}/token"
+        assert asm["token_endpoint"] == f"{PUBLIC}/mcp/oauth/token"
         assert asm["code_challenge_methods_supported"] == ["S256"]
 
 
@@ -157,7 +157,7 @@ async def test_registro_recusa_redirect_fora_da_lista(ambiente):
 async def test_authorize_recusa_redirect_diferente_do_cadastro(ambiente):
     async with servidor() as c:
         client_id = (await registrar(c)).json()["client_id"]
-        r = await c.get("/authorize", params={
+        r = await c.get("/mcp/oauth/authorize", params={
             "response_type": "code", "client_id": client_id, "redirect_uri": "https://claude.ai/outro",
             "code_challenge": "x", "code_challenge_method": "S256",
         })
@@ -171,16 +171,16 @@ async def test_pagina_mostra_as_tres_formas(ambiente, monkeypatch):
             "response_type": "code", "client_id": client_id, "redirect_uri": REDIRECT,
             "code_challenge": "x", "code_challenge_method": "S256",
         }
-        pagina = (await c.get("/authorize", params=params)).text
-        assert all(m in pagina for m in ('href="/login/google?', 'action="/login/galeed"', 'action="/login/email"'))
-        assert (await c.get("/authorize", params={})).status_code == 400
+        pagina = (await c.get("/mcp/oauth/authorize", params=params)).text
+        assert all(m in pagina for m in ('href="/mcp/oauth/login/google?', 'action="/mcp/oauth/login/galeed"', 'action="/mcp/oauth/login/email"'))
+        assert (await c.get("/mcp/oauth/authorize", params={})).status_code == 400
     monkeypatch.delenv("SMTP_HOST")
     monkeypatch.delenv("GOOGLE_CLIENT_ID")
     async with servidor() as c:
         params["client_id"] = (await registrar(c)).json()["client_id"]
-        pagina = (await c.get("/authorize", params=params)).text
-        assert 'action="/login/galeed"' in pagina
-        assert "/login/google" not in pagina and 'action="/login/email"' not in pagina
+        pagina = (await c.get("/mcp/oauth/authorize", params=params)).text
+        assert 'action="/mcp/oauth/login/galeed"' in pagina
+        assert "/mcp/oauth/login/google" not in pagina and 'action="/mcp/oauth/login/email"' not in pagina
 
 
 # --- login pela conta do Galeed -----------------------------------------------
@@ -203,7 +203,7 @@ async def test_login_galeed_senha_errada(ambiente):
     async with servidor() as c:
         c.mock.post(f"{LOGIN}/auth/login").mock(return_value=httpx.Response(401, json={}))
         _, txn = await abrir_login(c)
-        r = await c.post("/login/galeed", data={"txn": txn, "email": ANA, "password": "x"})
+        r = await c.post("/mcp/oauth/login/galeed", data={"txn": txn, "email": ANA, "password": "x"})
         assert r.status_code == 401 and "inválidos" in r.text
 
 
@@ -226,13 +226,13 @@ async def test_refresh_renova_e_para_quando_o_acesso_e_retirado(ambiente, monkey
     async with servidor() as c:
         client_id, r = await login_galeed(c)
         tokens = (await trocar(c, client_id, codigo_do_redirect(r))).json()
-        novo = await c.post("/token", data={
+        novo = await c.post("/mcp/oauth/token", data={
             "grant_type": "refresh_token", "refresh_token": tokens["refresh_token"], "client_id": client_id,
         })
         assert novo.status_code == 200 and novo.json()["access_token"].startswith("rmk_")
         c.mock.get(f"{GALEED}/facts").mock(return_value=httpx.Response(403, json={}))
         time.sleep(1.1)
-        negado = await c.post("/token", data={
+        negado = await c.post("/mcp/oauth/token", data={
             "grant_type": "refresh_token", "refresh_token": tokens["refresh_token"], "client_id": client_id,
         })
         assert negado.json()["error"] == "invalid_grant"
@@ -250,37 +250,37 @@ async def test_token_de_pessoa_adulterado_e_recusado(ambiente):
 async def test_codigo_por_email(ambiente):
     async with servidor() as c:
         client_id, txn = await abrir_login(c)
-        r = await c.post("/login/email", data={"txn": txn, "email": ANA})
+        r = await c.post("/mcp/oauth/login/email", data={"txn": txn, "email": ANA})
         assert r.status_code == 200
         (para, code), = ambiente
         assert para == ANA
         etxn = re.search(r'name="etxn" value="([^"]+)"', r.text).group(1)
-        errado = await c.post("/login/email/verify", data={"etxn": etxn, "code": "000000" if code != "000000" else "111111"})
+        errado = await c.post("/mcp/oauth/login/email/verify", data={"etxn": etxn, "code": "000000" if code != "000000" else "111111"})
         assert errado.status_code == 401
-        ok = await c.post("/login/email/verify", data={"etxn": etxn, "code": code})
+        ok = await c.post("/mcp/oauth/login/email/verify", data={"etxn": etxn, "code": code})
         assert (await trocar(c, client_id, codigo_do_redirect(ok))).status_code == 200
 
 
 async def test_codigo_por_email_nao_revela_quem_tem_acesso(ambiente):
     async with servidor() as c:
         _, txn = await abrir_login(c)
-        r = await c.post("/login/email", data={"txn": txn, "email": "fulano@realmak.com.br"})
+        r = await c.post("/mcp/oauth/login/email", data={"txn": txn, "email": "fulano@realmak.com.br"})
         assert r.status_code == 200 and "Se fulano@realmak.com.br tiver acesso" in r.text
         assert ambiente == []  # nada enviado
         etxn = re.search(r'name="etxn" value="([^"]+)"', r.text).group(1)
-        assert (await c.post("/login/email/verify", data={"etxn": etxn, "code": "123456"})).status_code == 401
+        assert (await c.post("/mcp/oauth/login/email/verify", data={"etxn": etxn, "code": "123456"})).status_code == 401
 
 
 async def test_codigo_por_email_limita_tentativas(ambiente):
     async with servidor() as c:
         _, txn = await abrir_login(c)
-        r = await c.post("/login/email", data={"txn": txn, "email": ANA})
+        r = await c.post("/mcp/oauth/login/email", data={"txn": txn, "email": ANA})
         etxn = re.search(r'name="etxn" value="([^"]+)"', r.text).group(1)
         code = ambiente[0][1]
         errado = "000000" if code != "000000" else "111111"
         for _ in range(5):
-            await c.post("/login/email/verify", data={"etxn": etxn, "code": errado})
-        assert (await c.post("/login/email/verify", data={"etxn": etxn, "code": code})).status_code == 429
+            await c.post("/mcp/oauth/login/email/verify", data={"etxn": etxn, "code": errado})
+        assert (await c.post("/mcp/oauth/login/email/verify", data={"etxn": etxn, "code": code})).status_code == 429
 
 
 # --- Google ---------------------------------------------------------------------
@@ -297,7 +297,7 @@ def id_token(**claims) -> str:
 
 async def login_google(c, token: str) -> tuple[str, httpx.Response]:
     client_id, txn = await abrir_login(c)
-    ida = await c.get("/login/google", params={"txn": txn})
+    ida = await c.get("/mcp/oauth/login/google", params={"txn": txn})
     assert ida.status_code == 302
     google = urlsplit(ida.headers["location"])
     q = parse_qs(google.query)
@@ -305,7 +305,7 @@ async def login_google(c, token: str) -> tuple[str, httpx.Response]:
     c.mock.post("https://oauth2.googleapis.com/token").mock(
         return_value=httpx.Response(200, json={"id_token": token})
     )
-    volta = await c.get("/login/google/callback", params={"state": q["state"][0], "code": "gcode"})
+    volta = await c.get("/mcp/oauth/login/google/callback", params={"state": q["state"][0], "code": "gcode"})
     return client_id, volta
 
 
@@ -324,10 +324,10 @@ async def test_login_google_de_outro_dominio_e_recusado(ambiente):
 async def test_login_google_sem_o_cookie_do_navegador_e_recusado(ambiente):
     async with servidor() as c:
         _, txn = await abrir_login(c)
-        ida = await c.get("/login/google", params={"txn": txn})
+        ida = await c.get("/mcp/oauth/login/google", params={"txn": txn})
         state = parse_qs(urlsplit(ida.headers["location"]).query)["state"][0]
         c.cookies.clear()
-        r = await c.get("/login/google/callback", params={"state": state, "code": "gcode"})
+        r = await c.get("/mcp/oauth/login/google/callback", params={"state": state, "code": "gcode"})
         assert r.status_code == 400
 
 
