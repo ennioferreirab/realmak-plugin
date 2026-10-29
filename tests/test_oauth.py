@@ -132,6 +132,7 @@ async def test_com_oauth_o_401_aponta_os_metadados(ambiente):
         assert prm["resource"] == f"{PUBLIC}/mcp" and prm["authorization_servers"] == [f"{PUBLIC}/"]
         asm = (await c.get("/.well-known/oauth-authorization-server")).json()
         assert asm["token_endpoint"] == f"{PUBLIC}/mcp/oauth/token"
+        assert asm["issuer"] in prm["authorization_servers"]
         assert asm["code_challenge_methods_supported"] == ["S256"]
 
 

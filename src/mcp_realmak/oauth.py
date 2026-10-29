@@ -414,7 +414,8 @@ class OAuthServer:
     def routes(self, resource_routes: list[Route]) -> list[Route]:
         async def metadata(request: Request) -> Response:
             return _json({
-                "issuer": self.public_url,
+                # Igual ao authorization_servers da RFC 9728 (o pydantic normaliza com "/" no fim).
+                "issuer": f"{self.public_url}/",
                 "authorization_endpoint": f"{self.public_url}{BASE}/authorize",
                 "token_endpoint": f"{self.public_url}{BASE}/token",
                 "registration_endpoint": f"{self.public_url}{BASE}/register",
