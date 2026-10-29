@@ -81,12 +81,13 @@ async def http_get(
     headers: dict[str, str] | None = None,
     timeout: float | None = None,
     max_retries: int | None = None,
+    backoff_base: float | None = None,
+    max_wait: float | None = None,
 ) -> Any:
     """Make a GET request with retry + exponential backoff.
 
     Retries on: HTTP 429/5xx, timeouts, and transport errors (refused or reset
-    connections, which PNCP's firewall does under bursts).
-    Does NOT retry on 4xx (except 429) — those are client errors.
+    connections). Does NOT retry on 4xx (except 429) — those are client errors.
 
     Args:
         url: Full URL to request.
@@ -94,6 +95,11 @@ async def http_get(
         headers: Extra headers (merged with defaults).
         timeout: Request timeout in seconds.
         max_retries: Max retry attempts. Default: settings.HTTP_MAX_RETRIES.
+        backoff_base: First wait in seconds, doubled each retry.
+            Default: settings.HTTP_BACKOFF_BASE.
+        max_wait: Cap for a single wait in seconds. Default: no cap. Useful for
+            APIs that fail fast and at random, where many short retries beat
+            few long ones.
 
     Returns:
         Parsed JSON response.
@@ -102,7 +108,12 @@ async def http_get(
         HttpClientError: On non-retryable errors or exhausted retries.
     """
     retries = max_retries if max_retries is not None else HTTP_MAX_RETRIES
+    base = backoff_base if backoff_base is not None else HTTP_BACKOFF_BASE
     last_error: Exception | None = None
+
+    def _wait(attempt: int) -> float:
+        wait = base * (2**attempt)
+        return min(wait, max_wait) if max_wait is not None else wait
 
     async with create_client(timeout=timeout, headers=headers) as client:
         for attempt in range(retries + 1):
@@ -111,7 +122,7 @@ async def http_get(
 
                 if response.status_code in _RETRYABLE_STATUS_CODES:
                     if attempt < retries:
-                        wait = HTTP_BACKOFF_BASE * (2**attempt)
+                        wait = _wait(attempt)
                         logger.warning(
                             "Retry %d/%d for %s (HTTP %d), waiting %.1fs",
                             attempt + 1,
@@ -139,7 +150,7 @@ async def http_get(
             except httpx.TransportError as exc:
                 last_error = exc
                 if attempt < retries:
-                    wait = HTTP_BACKOFF_BASE * (2**attempt)
+                    wait = _wait(attempt)
                     logger.warning(
                         "Request to %s failed (attempt %d/%d): %s, waiting %.1fs",
                         url,

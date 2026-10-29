@@ -39,6 +39,7 @@ from .constants import (
     ORGAOS_URL,
     PCA_URL,
     PORTAL_URL,
+    SEARCH_MAX_RETRIES,
     SEARCH_STATUS,
     SEARCH_STATUS_PADRAO,
     SEARCH_URL,
@@ -966,8 +967,18 @@ async def pesquisar(
         dt = datetime.strptime(normalizar_data(data_publicacao_fim), "%Y%m%d")
         params["data_publicacao_fim"] = dt.strftime("%Y-%m-%d")
 
-    # A busca derruba conexões em rajadas; mais tentativas com backoff exponencial.
-    data: dict[str, Any] = await http_get(SEARCH_URL, params=params, max_retries=5)
+    # A busca do PNCP derruba cerca de metade das conexões (reset logo após o
+    # TLS, em menos de 0,5 s), de qualquer IP e mesmo sem rajada. Como a falha
+    # é rápida e às vezes vem em blocos de alguns segundos, compensa tentar
+    # muitas vezes com esperas curtas: 0,5 s, 1 s, 2 s e depois 3 s (~20 s no
+    # pior caso), em vez do backoff longo padrão.
+    data: dict[str, Any] = await http_get(
+        SEARCH_URL,
+        params=params,
+        max_retries=SEARCH_MAX_RETRIES,
+        backoff_base=0.5,
+        max_wait=3.0,
+    )
     items = data.get("items", []) if isinstance(data, dict) else []
     if not isinstance(items, list):
         items = []
