@@ -238,8 +238,9 @@ class OAuthServer:
         if not ok:
             return _page(
                 _msg_html(
-                    "Sem acesso ao cérebro",
-                    f"O e-mail {email} não tem acesso ao cérebro da Realmak. Peça acesso a quem administra o Galeed.",
+                    "Sem acesso",
+                    f"O e-mail {email} não tem acesso ao cérebro nem às licitações da Realmak. "
+                    "Peça acesso a quem administra o Galeed ou o Odoo.",
                 ),
                 403,
             )

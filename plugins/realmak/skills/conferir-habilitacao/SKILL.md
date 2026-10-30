@@ -10,7 +10,8 @@ O resultado é uma lista de conferência para a analista. A skill não declara a
 ## Entrada
 
 - **Exigências:** a análise do edital feita na conversa (skill `analisar-edital`). Se ela não existir, rode antes essa skill, ou peça ao analista o edital e o TR anexados. Confira cada exigência no TR ou no edital, porque a análise pode ter resumido demais.
-- **Documentos da Realmak:** o analista anexa à conversa os que tiver à mão (certidões, balanço, contrato social, registros no CREA, atestados, ARTs, declarações). Nesta versão o servidor não lê pastas.
+- **Documentos da Realmak:** o analista anexa à conversa os que tiver à mão (certidões, balanço, contrato social, registros no CREA, atestados, ARTs, declarações).
+- **Licitação da plataforma:** com as ferramentas `licitacao_*` disponíveis, a análise do edital e as entregas dos agentes estão em `licitacao_pasta` (skill `licitacao`). Registre o que falta como `pendencia` com `licitacao_registrar`.
 - **Data da sessão:** os prazos de validade se contam a partir dela. Se não souber, pergunte.
 
 ## Onde procurar

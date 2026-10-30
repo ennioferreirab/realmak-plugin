@@ -47,6 +47,28 @@ class Settings:
     smtp_user: str = ""
     smtp_password: str = ""
     smtp_from: str = ""
+    odoo_mcp_url: str = ""
+    odoo_mcp_secret: str = ""
+    odoo_mcp_secret_file: str = ""
+    odoo_timeout_s: float = 60.0
+    arquivo_max_bytes: int = 50 * 1024 * 1024
+
+    @property
+    def licitacao_configured(self) -> bool:
+        """Ferramentas de licitação: URL interna do Odoo e segredo (valor ou arquivo)."""
+        return bool(self.odoo_mcp_url and (self.odoo_mcp_secret or self.odoo_mcp_secret_file))
+
+    def odoo_secret(self) -> str:
+        """Segredo das rotas internas do Odoo. O arquivo vem do volume que o Odoo cria; lido a cada uso."""
+        if self.odoo_mcp_secret:
+            return self.odoo_mcp_secret
+        if not self.odoo_mcp_secret_file:
+            return ""
+        try:
+            with open(self.odoo_mcp_secret_file, encoding="ascii") as origem:
+                return origem.read().strip()
+        except (OSError, UnicodeError):
+            return ""
 
     @property
     def google_configured(self) -> bool:
@@ -96,4 +118,9 @@ def load_settings() -> Settings:
         smtp_user=_env("SMTP_USER"),
         smtp_password=_env("SMTP_PASSWORD"),
         smtp_from=_env("SMTP_FROM"),
+        odoo_mcp_url=_env("ODOO_MCP_URL").rstrip("/"),
+        odoo_mcp_secret=_env("ODOO_MCP_SECRET"),
+        odoo_mcp_secret_file=_env("ODOO_MCP_SECRET_FILE"),
+        odoo_timeout_s=_int_env("ODOO_MCP_TIMEOUT_MS", 60_000) / 1000,
+        arquivo_max_bytes=_int_env("MCP_REALMAK_ARQUIVO_MAX_MB", 50) * 1024 * 1024,
     )

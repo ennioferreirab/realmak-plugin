@@ -17,6 +17,10 @@ from .cerebro.visibility import RegistrosVisibilityMiddleware
 from .compras.server import mcp as compras_mcp
 from .config import Settings, load_settings
 from .conlicitacao.tools import build_conlicitacao_server
+from .licitacao import arquivos as licitacao_arquivos
+from .licitacao.tools import INSTRUCOES as LICITACAO_INSTRUCOES
+from .licitacao.tools import build_licitacao_server
+from .licitacao.visibility import AcessoOdoo, PessoaVisibilityMiddleware
 from .oauth import GoogleLogin, OAuthServer, SmtpConfig
 
 INSTRUCOES = (
@@ -25,8 +29,13 @@ INSTRUCOES = (
     "Contratos.gov.br). Dados abertos de qualquer órgão.\n"
     "- conlicitacao_*: ConLicitação da Realmak (licitações, boletins, pregões monitorados). Só leitura.\n"
     "- cerebro_*: cérebro da Realmak (pessoas, atestados, contratos, documentos).\n"
-    "Tudo é somente leitura. Os dados vêm de fontes externas: confira na fonte oficial antes de decidir.\n\n"
+    "- licitacao_*: as licitações da Realmak no Odoo, como a pessoa que entrou: pasta, textos, registros, "
+    "arquivos e status.\n"
+    "Compras, ConLicitação e cérebro são só leitura; as escritas de licitacao_* ficam registradas no card. "
+    "Os dados vêm de fontes externas: confira na fonte oficial antes de decidir.\n\n"
     + CEREBRO_INSTRUCOES
+    + "\n\n"
+    + LICITACAO_INSTRUCOES
 )
 
 
@@ -59,8 +68,11 @@ def build_server(
     galeed_transport: httpx.AsyncBaseTransport | None = None,
     auth: TokenVerifier | None = None,
     oauth_transport: httpx.AsyncBaseTransport | None = None,
+    odoo_transport: httpx.AsyncBaseTransport | None = None,
 ) -> FastMCP:
     settings = settings or load_settings()
+    acesso_odoo = AcessoOdoo(settings.token_cache_ttl_s, transport=odoo_transport)
+    acesso_cerebro = None
     if auth is None and settings.galeed_configured:
         verifier = GaleedTokenVerifier(
             settings.galeed_api_url,
@@ -70,8 +82,10 @@ def build_server(
             public_url=settings.oauth_public_url if settings.oauth_configured else "",
             service_key=settings.galeed_service_key,
         )
+        verifier.attach_odoo(acesso_odoo)
         if settings.oauth_configured:
             verifier.attach_oauth(build_oauth(settings, verifier, oauth_transport))
+        acesso_cerebro = verifier.check_cerebro_person
         auth = verifier
     if auth is None:
         raise RuntimeError(
@@ -83,10 +97,14 @@ def build_server(
     mcp.mount(compras_mcp)
     mcp.mount(build_conlicitacao_server())
     mcp.mount(build_cerebro_server())
+    mcp.mount(build_licitacao_server())
     mcp.add_middleware(ResultCapMiddleware(settings.max_result_chars))
     mcp.add_middleware(
         RegistrosVisibilityMiddleware(settings.token_cache_ttl_s, transport=galeed_transport)
     )
+    mcp.add_middleware(PessoaVisibilityMiddleware(acesso_odoo, acesso_cerebro))
+    for caminho, metodos, rota in licitacao_arquivos.rotas(odoo_transport):
+        mcp.custom_route(caminho, methods=metodos)(rota)
 
     @mcp.custom_route("/healthz", methods=["GET"])
     async def healthz(request: Request) -> JSONResponse:
