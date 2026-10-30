@@ -38,8 +38,8 @@ Resultados grandes são cortados em cerca de 100 mil caracteres, com um aviso pa
 
 Há duas portas de entrada:
 
-- **Bots e Claude Code:** a chave de bot do Galeed (`gld_live_...`) vai como token Bearer.
-- **Pessoas pelo botão Connect (Claude Desktop, Cowork):** login OAuth na página do próprio servidor, com Google Workspace, conta do Galeed ou código por e-mail. Veja "Login de pessoa" abaixo.
+- **Pessoas (plugin no Claude Desktop, Cowork e Claude Code):** login OAuth na página do próprio servidor, com Google Workspace, conta do Galeed ou código por e-mail. Veja "Login de pessoa" abaixo.
+- **Bots e scripts:** a chave de bot do Galeed (`gld_live_...`) vai como token Bearer.
 
 ### Chave de bot
 
@@ -69,7 +69,7 @@ Uma pessoa com acesso de leitura só a algumas áreas recebe 403 em `cerebro_esq
 
 ## Instalar o plugin
 
-O plugin `realmak` traz as skills (`cerebro`, `licitacao`, `analisar-edital`, `conferir-habilitacao`, `conlicitacao`, `compras-publicas`) e declara o conector do servidor. Você precisa do seu `CEREBRO_TOKEN` (a chave pessoal `gld_live_...`). O endereço do servidor já vem preenchido (`https://realmak.duckdns.org/mcp`).
+O plugin `realmak` traz as skills (`cerebro`, `licitacao`, `analisar-edital`, `conferir-habilitacao`, `conlicitacao`, `compras-publicas`) e declara o conector do servidor (`https://realmak.duckdns.org/mcp`). O plugin não pede chave: cada pessoa entra pelo login, e precisa ter acesso concedido no Galeed ou no Odoo.
 
 ### Claude Code
 
@@ -78,14 +78,16 @@ claude plugin marketplace add ennioferreirab/realmak-plugin
 claude plugin install realmak@realmak
 ```
 
-Na instalação o Claude Code pergunta a chave (e o endereço, já preenchido). A chave é guardada no cofre de credenciais do sistema, não em arquivo de configuração. Para testar sem instalar, use `claude --plugin-dir ./plugins/realmak`.
+Depois, dentro do `claude`, rode `/mcp`, escolha o servidor `realmak` e autentique pelo navegador. Para testar sem instalar, use `claude --plugin-dir ./plugins/realmak`.
 
 ### Claude Desktop (chat)
 
 1. Abra Customize, Plugins, Add, Add marketplace, e informe a URL do repositório no GitHub (`https://github.com/ennioferreirab/realmak-plugin`). Instale o plugin `realmak`. Isso traz as skills.
-2. Conecte o servidor. Com o login de pessoa ligado no servidor, clique em Connect e entre com Google, conta do Galeed ou código por e-mail, sem chave. Se o Connect do plugin não aparecer, adicione o conector à mão (o chat e o Cowork ignoram servidores de plugin que dependem de `user_config`): Customize, Connectors, `+`, Add custom connector, com a URL `https://realmak.duckdns.org/mcp`, e clique em Connect.
+2. Na página do plugin, clique em Vincular (Connect) e entre com Google, conta do Galeed ou código por e-mail. Se preferir, o conector também pode ser adicionado à mão: Customize, Connectors, `+`, Add custom connector, com a URL `https://realmak.duckdns.org/mcp`.
 
-   Sem o login de pessoa, o conector manual leva Authentication: No sign-in e o header `Authorization: Bearer <chave gld_live_...>`.
+   Não coloque `headers` com `${user_config...}` no `.mcp.json` do plugin: o Desktop não resolve esse valor e o botão Vincular fica travado.
+
+   Para usar uma chave de bot num cliente, o conector manual leva Authentication: No sign-in e o header `Authorization: Bearer <chave gld_live_...>`.
 
    Fonte: [Getting started with custom connectors using remote MCP](https://support.claude.com/en/articles/11175166-getting-started-with-custom-connectors-using-remote-mcp).
 
