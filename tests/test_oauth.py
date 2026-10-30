@@ -155,6 +155,28 @@ async def test_registro_recusa_redirect_fora_da_lista(ambiente):
         assert (await registrar(c, ["http://127.0.0.1:33418/callback"])).status_code == 201
 
 
+async def test_deep_link_do_app_do_claude_conclui_o_login(ambiente):
+    deep_link = "claude://claude.ai/callback"
+    async with servidor() as c:
+        assert (await registrar(c, ["claude://evil.example/callback"])).status_code == 400
+        c.mock.post(f"{LOGIN}/auth/login").mock(return_value=httpx.Response(200, json={}))
+        client_id = (await registrar(c, [deep_link])).json()["client_id"]
+        pagina = await c.get("/mcp/oauth/authorize", params={
+            "response_type": "code", "client_id": client_id, "redirect_uri": deep_link,
+            "code_challenge": pkce_s256(VERIFIER), "code_challenge_method": "S256", "state": "xyz",
+        })
+        assert pagina.status_code == 200 and "claude:" in pagina.headers["content-security-policy"]
+        txn = re.search(r'name="txn" value="([^"]+)"', pagina.text).group(1)
+        r = await c.post("/mcp/oauth/login/galeed", data={"txn": txn, "email": ANA, "password": "senha"})
+        assert r.status_code == 302 and r.headers["location"].startswith(f"{deep_link}?code=")
+        code = parse_qs(urlsplit(r.headers["location"]).query)["code"][0]
+        tokens = await c.post("/mcp/oauth/token", data={
+            "grant_type": "authorization_code", "code": code, "client_id": client_id,
+            "redirect_uri": deep_link, "code_verifier": VERIFIER,
+        })
+        assert tokens.json()["access_token"].startswith("rmk_")
+
+
 async def test_authorize_recusa_redirect_diferente_do_cadastro(ambiente):
     async with servidor() as c:
         client_id = (await registrar(c)).json()["client_id"]
