@@ -437,7 +437,12 @@ class OAuthServer:
             if not isinstance(uris, list) or not uris or len(uris) > MAX_REDIRECT_URIS:
                 return _oauth_error("invalid_redirect_uri", "redirect_uris é obrigatório")
             if any(not isinstance(u, str) or not self.redirect_allowed(u) for u in uris):
-                log.warning("Registro recusado: redirect URI fora da lista de hosts permitidos")
+                # Só esquema e host: o caminho e a query da URI não entram no log.
+                destinos = sorted({f"{urlsplit(str(u)).scheme}://{urlsplit(str(u)).hostname}" for u in uris})
+                log.warning(
+                    "Registro recusado: redirect URI fora da lista de hosts permitidos: %s (%s, %s)",
+                    destinos, str(body.get("client_name") or "")[:80], request.headers.get("user-agent", "")[:80],
+                )
                 return _oauth_error("invalid_redirect_uri", "redirect_uri não permitida neste servidor")
             name = str(body.get("client_name") or "Aplicativo")[:80]
             return _json(
