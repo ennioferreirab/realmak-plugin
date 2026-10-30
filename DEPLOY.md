@@ -136,6 +136,8 @@ fora do ar, o servidor responde 503 (ele nunca libera sem conferir a chave).
 | Connect: "Sem acesso ao cérebro" | o e-mail não é um principal humano ativo com grant no Galeed, ou há dois com o mesmo e-mail |
 | Connect: "chave de serviço recusada" | `GALEED_SERVICE_KEY` revogada, ou o agente fora de `GALEED_ACT_AS_PRINCIPALS` no Galeed |
 | Connect abre e volta com erro de redirect | o aplicativo usa um redirect fora da lista; acrescente o host em `MCP_REALMAK_OAUTH_REDIRECT_HOSTS` |
+| Connect: "não tem acesso ao cérebro nem às licitações" | o e-mail não tem grant no Galeed nem usuário interno no Odoo com as licitações liberadas |
+| `licitacao_*` dizem "o Odoo recusou o servidor MCP (401)" | segredo diferente: o volume `mcp-realmak-odoo` não está montado aqui, ou o `ODOO_MCP_SECRET` sobrou no `.env` |
 | ConLicitação: "recusou o login" | login ou senha do site mudou; atualize o `.env`, apague o arquivo de sessão e reinicie |
 
 ## 6. Login de pessoa (botão Connect)
@@ -160,3 +162,23 @@ Opcional. Sem isto, só a chave de bot funciona (Claude Code, pi agent, scripts)
 5. Confira: `curl -s https://<dominio>/.well-known/oauth-authorization-server` devolve o JSON com
    `authorization_endpoint`. No Claude Desktop, Customize, Connectors, clique em Connect no conector da
    Realmak e faça o login.
+
+## 7. Licitações do Odoo (`licitacao_*`)
+
+Opcional. Exige o login de pessoa (seção 6) e o realmak-crm com o módulo `realmak_mcp` no mesmo servidor.
+
+1. **No realmak-crm**, o deploy instala o `realmak_mcp`. Na primeira chamada, o Odoo cria o segredo em
+   `/run/realmak-mcp/secret`, no volume Docker `mcp-realmak-odoo`, e entra na rede `mcp-realmak`.
+2. **Aqui**, o `compose.vps.yaml` monta esse volume só para leitura e define `ODOO_MCP_URL=http://web:8069`
+   e `ODOO_MCP_SECRET_FILE=/run/realmak-mcp/secret`. Atualize com:
+
+   ```bash
+   git pull && docker compose -f compose.yaml -f compose.vps.yaml up -d --build --wait
+   ```
+
+   Suba o realmak-crm antes: o volume externo precisa existir.
+3. As rotas `/realmak_mcp/` do Odoo não saem para a internet: o nginx do CRM responde 404 para elas. Só
+   este serviço as alcança, pela rede interna.
+4. Confira: depois do Connect, uma pessoa com as licitações liberadas no Odoo vê as `licitacao_*`. Se não
+   vir, `docker compose logs mcp-realmak` mostra "Odoo indisponível" (rede ou volume) ou nada (a pessoa
+   não tem o grupo de vendedor no Odoo).

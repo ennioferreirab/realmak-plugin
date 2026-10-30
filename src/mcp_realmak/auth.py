@@ -18,6 +18,7 @@ from __future__ import annotations
 import hashlib
 import logging
 import time
+from collections.abc import Awaitable, Callable
 
 import httpx
 from fastmcp.server.auth import AccessToken, TokenVerifier
@@ -65,6 +66,7 @@ class GaleedTokenVerifier(TokenVerifier):
         # Com OAuth (public_url + attach_oauth), os metadados e as rotas de login passam a existir.
         super().__init__(base_url=public_url or None)
         self.oauth: OAuthServer | None = None
+        self.acesso_odoo: Callable[[str], Awaitable[bool]] | None = None
         self.service_key = service_key
         self.api_url = api_url.rstrip("/")
         self.ttl = ttl_seconds
@@ -98,7 +100,10 @@ class GaleedTokenVerifier(TokenVerifier):
     def attach_oauth(self, oauth: OAuthServer) -> None:
         self.oauth = oauth
 
-    async def check_person(self, email: str) -> bool:
+    def attach_odoo(self, acesso_odoo: Callable[[str], Awaitable[bool]]) -> None:
+        self.acesso_odoo = acesso_odoo
+
+    async def check_cerebro_person(self, email: str) -> bool:
         """O e-mail tem acesso ao cérebro? Pergunta ao Galeed agindo em nome dele (cache de 5 min)."""
         if not self.service_key:
             return False
@@ -108,6 +113,21 @@ class GaleedTokenVerifier(TokenVerifier):
             cached = await self._check_with_galeed(self.service_key, act_as=email)
             self._cache_put(key, cached)
         return cached
+
+    async def check_person(self, email: str) -> bool:
+        """A pessoa entra se tem acesso ao cérebro ou às licitações no Odoo. Cada grupo de ferramentas só aparece
+        para quem tem aquele acesso (licitacao/visibility.py)."""
+        try:
+            if await self.check_cerebro_person(email):
+                return True
+            indisponivel = None
+        except GaleedUnavailableError as exc:
+            indisponivel = exc
+        if self.acesso_odoo is not None and await self.acesso_odoo(email):
+            return True
+        if indisponivel is not None:
+            raise indisponivel
+        return False
 
     async def verify_token(self, token: str) -> AccessToken | None:
         if not token or not self.api_url:
