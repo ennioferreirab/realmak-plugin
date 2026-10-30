@@ -7,7 +7,7 @@ description: Use para qualquer pergunta sobre a Realmak (funcionários, respons�
 
 O cérebro guarda o que a Realmak sabe sobre si mesma: pessoas, atestados, ARTs, contratos, licitações, atas e documentos. Perguntas sobre a empresa são respondidas consultando o cérebro antes de qualquer outra fonte.
 
-As ferramentas `cerebro_*` vêm do servidor `realmak`. O nome completo pode ter um prefixo, conforme o aplicativo. Elas usam a chave de quem está conversando, e cada chave abre um único cérebro.
+As ferramentas `cerebro_*` vêm do servidor `realmak`. O nome completo pode ter um prefixo, conforme o aplicativo. Elas usam o acesso de quem está conversando, concedido no Galeed.
 
 ## 1. Como consultar
 
@@ -57,9 +57,9 @@ Regras da seção:
 
 | Sintoma | O que fazer |
 | --- | --- |
-| Erro 401 | A chave está errada, foi revogada ou é de outro cérebro. O analista pede uma chave nova a quem administra o cérebro e atualiza a configuração do plugin ou do conector |
+| Erro 401 | O login venceu ou o acesso foi retirado. O analista reconecta o servidor `realmak` (Vincular no Desktop, `/mcp` no Claude Code) e, se continuar, pede acesso a quem administra o cérebro |
 | Erro 503 ao conectar | O servidor não alcançou o cérebro. Tente de novo em instantes e avise quem administra se continuar |
-| Respostas vazias ou muita coisa retida (`withheld`) | A chave não tem acesso total às áreas ou ao nível de sigilo necessário. Quem administra o cérebro ajusta o acesso do bot |
+| Respostas vazias ou muita coisa retida (`withheld`) | O acesso da pessoa não cobre as áreas ou o nível de sigilo necessário. Quem administra o cérebro ajusta o acesso |
 | `cerebro_consulta` com 400 | Nome de tabela ou coluna adivinhado. Chame `cerebro_esquema` e corrija |
-| Erro 403 em `cerebro_consulta`, `cerebro_esquema` ou `cerebro_provas` | A chave não lê o dataset de registros. Use `cerebro_buscar` e `cerebro_fatos` |
+| Erro 403 em `cerebro_consulta`, `cerebro_esquema` ou `cerebro_provas` | O acesso da pessoa não lê o dataset de registros. Use `cerebro_buscar` e `cerebro_fatos` |
 | Erro 429 | Muitas chamadas seguidas. Espere alguns segundos e não dispare consultas em paralelo |
