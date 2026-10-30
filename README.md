@@ -80,10 +80,12 @@ claude plugin install realmak@realmak
 
 Depois, dentro do `claude`, rode `/mcp`, escolha o servidor `realmak` e autentique pelo navegador. Para testar sem instalar, use `claude --plugin-dir ./plugins/realmak`.
 
-### Claude Desktop (chat)
+### Claude Desktop (Chat e Cowork)
 
-1. Abra Customize, Plugins, Add, Add marketplace, e informe a URL do repositório no GitHub (`https://github.com/ennioferreirab/realmak-plugin`). Instale o plugin `realmak`. Isso traz as skills.
-2. Na página do plugin, clique em Vincular (Connect) e entre com Google, conta do Galeed ou código por e-mail. Se preferir, o conector também pode ser adicionado à mão: Customize, Connectors, `+`, Add custom connector, com a URL `https://realmak.duckdns.org/mcp`.
+Instale com o app no **modo Chat** (ícone de balão, não o `</>`). O modo importa: no Chat o plugin vai para a conta e aparece como "from realmak-plugin"; no modo Code ele é instalado só localmente, aparece como "from realmak" e o Connect liga apenas as sessões do Code. Nesse caso a tela do plugin continua em "Not added" mesmo com o login feito, e o Chat e o Cowork ficam sem as ferramentas.
+
+1. Abra Customize, Plugins, Add, Add marketplace, Add from a repository, e informe `ennioferreirab/realmak-plugin`. Instale o plugin `realmak`.
+2. Na aba Connectors do plugin, clique em Connect (Vincular), confirme o conector que vem preenchido e entre com Google, conta do Galeed ou código por e-mail. A tela deve mostrar "Connected · Custom". Se preferir, o conector também pode ser adicionado à mão: Customize, Connectors, `+`, Add custom connector, com a URL `https://realmak.duckdns.org/mcp`.
 
    Não coloque `headers` com `${user_config...}` no `.mcp.json` do plugin: o Desktop não resolve esse valor e o botão Vincular fica travado.
 
