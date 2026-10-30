@@ -53,6 +53,8 @@ MAX_SEEN = 4096
 MAX_REDIRECT_URIS = 5
 MAX_BODY_BYTES = 16_384
 LOOPBACK_HOSTS = {"localhost", "127.0.0.1", "::1"}
+DEEP_LINK_SCHEME = "claude"
+DEEP_LINK_HOST = "claude.ai"
 DEFAULT_REDIRECT_HOSTS = ("claude.ai", "www.claude.ai", "claude.com", "www.claude.com")
 GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
@@ -206,6 +208,8 @@ class OAuthServer:
             return False
         if host in LOOPBACK_HOSTS:
             return parts.scheme in ("http", "https")
+        if parts.scheme == DEEP_LINK_SCHEME:  # retorno do app do Claude; o PKCE protege o código
+            return host == DEEP_LINK_HOST
         return parts.scheme == "https" and host in self.redirect_hosts
 
     def _check_authorize(self, q: dict[str, str]) -> tuple[str | None, dict]:
@@ -577,7 +581,7 @@ def _page(body: str, status: int) -> Response:
             "X-Frame-Options": "DENY",
             "Referrer-Policy": "no-referrer",
             # form-action precisa aceitar o redirect final para o aplicativo e o Google.
-            "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; form-action 'self' https: http://localhost:* http://127.0.0.1:*; frame-ancestors 'none'; base-uri 'none'",
+            "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; form-action 'self' https: claude: http://localhost:* http://127.0.0.1:*; frame-ancestors 'none'; base-uri 'none'",
         },
     )
 
