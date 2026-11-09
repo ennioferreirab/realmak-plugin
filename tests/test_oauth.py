@@ -34,10 +34,10 @@ VERIFIER = "v" * 64
 def _galeed_facts(req: httpx.Request) -> httpx.Response:
     auth = req.headers.get("authorization", "")
     act_as = req.headers.get("x-galeed-act-as", "")
-    if auth == "Bearer gld_live_boa" and not act_as:
-        return httpx.Response(200, json={"facts": []})
+    if auth in ("Bearer gld_live_boa", f"Bearer {SERVICO}") and not act_as:
+        return httpx.Response(200, json={"brain": "Realmak", "nivel": "total", "areas": ["*"], "registros": True})
     if auth == f"Bearer {SERVICO}" and act_as:
-        return httpx.Response(200 if act_as == ANA else 403, json={"facts": []})
+        return httpx.Response(200 if act_as == ANA else 403, json={"brain": "Realmak", "nivel": "total", "areas": ["*"], "registros": True})
     return httpx.Response(401, json={"error": "token inválido"})
 
 
@@ -70,6 +70,7 @@ async def servidor():
     app = build_app()
     with respx.mock(assert_all_called=False) as mock:
         mock.get(f"{GALEED}/facts").mock(side_effect=_galeed_facts)
+        mock.get(f"{GALEED}/acesso").mock(side_effect=_galeed_facts)
         mock.get(f"{GALEED}/consulta/esquema").mock(return_value=httpx.Response(200, json={}))
         async with app.router.lifespan_context(app):
             async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url=PUBLIC) as c:
@@ -253,7 +254,7 @@ async def test_refresh_renova_e_para_quando_o_acesso_e_retirado(ambiente, monkey
             "grant_type": "refresh_token", "refresh_token": tokens["refresh_token"], "client_id": client_id,
         })
         assert novo.status_code == 200 and novo.json()["access_token"].startswith("rmk_")
-        c.mock.get(f"{GALEED}/facts").mock(return_value=httpx.Response(403, json={}))
+        c.mock.get(f"{GALEED}/acesso").mock(return_value=httpx.Response(403, json={}))
         time.sleep(1.1)
         negado = await c.post("/mcp/oauth/token", data={
             "grant_type": "refresh_token", "refresh_token": tokens["refresh_token"], "client_id": client_id,

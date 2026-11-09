@@ -64,6 +64,9 @@ class GaleedClient:
         query = {k: v for k, v in params.items() if v is not None and v != ""}
         return await self._request("GET", "/facts", params=query)
 
+    async def acesso(self) -> Any:
+        return await self._request("GET", "/acesso", expected_status=200)
+
     async def esquema(self) -> Any:
         return await self._request("GET", "/consulta/esquema")
 
@@ -86,6 +89,7 @@ class GaleedClient:
         *,
         json_body: Any | None = None,
         params: dict[str, Any] | None = None,
+        expected_status: int | None = None,
     ) -> Any:
         url = f"{self._base}{path}"
         try:
@@ -112,7 +116,7 @@ class GaleedClient:
             ) from None
 
         text = resp.text
-        if resp.status_code >= 400:
+        if resp.status_code >= 300 or (expected_status is not None and resp.status_code != expected_status):
             server_msg = text
             try:
                 parsed = json.loads(text)
@@ -122,11 +126,11 @@ class GaleedClient:
                 pass
             server_msg = server_msg.replace(self._token, "***")[:500]
             raise GaleedApiError(
-                resp.status_code, f"{method} {path} -> HTTP {resp.status_code}: {server_msg}", server_msg
+                resp.status_code if resp.status_code >= 300 else 502, f"{method} {path} -> HTTP {resp.status_code}: {server_msg}", server_msg
             )
         if not text:
             return None
         try:
             return resp.json()
         except ValueError:
-            raise GaleedApiError(resp.status_code, f"{method} {path} -> resposta não é JSON válido") from None
+            raise GaleedApiError(502, f"{method} {path} -> resposta não é JSON válido") from None

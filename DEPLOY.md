@@ -134,7 +134,7 @@ fora do ar, o servidor responde 503 (ele nunca libera sem conferir a chave).
 | 503 ao conectar | o servidor não alcançou o Galeed (rede, URL, gateway fora do ar) |
 | ConLicitação: "recusou o token (401)" | IP de saída do servidor não cadastrado, ou token trocado |
 | Connect: "Sem acesso ao cérebro" | o e-mail não é um principal humano ativo com grant no Galeed, ou há dois com o mesmo e-mail |
-| Connect: "chave de serviço recusada" | `GALEED_SERVICE_KEY` revogada, ou o agente fora de `GALEED_ACT_AS_PRINCIPALS` no Galeed |
+| Connect: "chave de serviço recusada" | `GALEED_SERVICE_KEYS` com chave revogada, ou o agente fora de `GALEED_ACT_AS_PRINCIPALS` no Galeed |
 | Connect abre e volta com erro de redirect | o aplicativo usa um redirect fora da lista; acrescente o host em `MCP_REALMAK_OAUTH_REDIRECT_HOSTS` |
 | Connect: "não tem acesso ao cérebro nem às licitações" | o e-mail não tem grant no Galeed nem usuário interno no Odoo com as licitações liberadas |
 | `licitacao_*` dizem "o Odoo recusou o servidor MCP (401)" | segredo diferente: o volume `mcp-realmak-odoo` não está montado aqui, ou o `ODOO_MCP_SECRET` sobrou no `.env` |
@@ -148,7 +148,10 @@ Opcional. Sem isto, só a chave de bot funciona (Claude Code, pi agent, scripts)
    acrescente `<brain>:<id do agente>` a `GALEED_ACT_AS_PRINCIPALS` no `.env` do Galeed. Reinicie o
    gateway. Essa chave só age em nome de pessoas que tenham acesso concedido no mesmo cérebro, e só leitura.
 2. **No `.env` daqui:** `MCP_REALMAK_PUBLIC_URL=https://<dominio>`, `MCP_REALMAK_OAUTH_SECRET` (gere com
-   `openssl rand -hex 32`) e `GALEED_SERVICE_KEY` com a chave do passo 1.
+   `openssl rand -hex 32`) e `GALEED_SERVICE_KEYS=realmak=<chave>,aforca=<chave>,nortfort=<chave>,una=<chave>,sublime=<chave>`.
+   Repita o passo 1 em cada brain: nunca reutilize uma chave entre empresas. O gateway precisa oferecer `GET /v1/acesso`.
+   Os nomes aceitos são `realmak`, `aforca`, `nortfort`, `una`, `sublime`; cada chave deve pertencer ao brain homônimo (a Realmak exige exatamente `Realmak`, com R maiúsculo). O plugin recusa configuração cruzada.
+   Sem a nova variável, `GALEED_SERVICE_KEY` continua valendo somente para a Realmak. Empresas sem chave ficam indisponíveis para consulta.
 3. **Formas de login.** Configure as que quiser; a página mostra só as configuradas.
    - **Google Workspace:** no Google Cloud Console, crie um cliente OAuth do tipo "Aplicativo da Web",
      tela de consentimento interna, com o URI de redirecionamento `https://<dominio>/mcp/oauth/login/google/callback`.
@@ -182,3 +185,17 @@ Opcional. Exige o login de pessoa (seção 6) e o realmak-crm com o módulo `rea
 4. Confira: depois do Connect, uma pessoa com as licitações liberadas no Odoo vê as `licitacao_*`. Se não
    vir, `docker compose logs mcp-realmak` mostra "Odoo indisponível" (rede ou volume) ou nada (a pessoa
    não tem o grupo de vendedor no Odoo).
+
+## 8. Atualização multiempresa: gateway, MCP e skills
+
+A versão multiempresa depende de `GET /v1/acesso`. Atualizar só as skills não atualiza o servidor MCP. Siga esta ordem:
+
+1. **Brain:** mescle e implante o PR do gateway pelo fluxo do repositório `realmak-brain`. O Ennio controla as labels `pronto` e `stage`. Confira que o OpenAPI do gateway publicado contém `/v1/acesso` antes de atualizar este serviço. As rotas anteriores continuam disponíveis.
+2. **Acessos:** confira os cinco agentes e a allowlist `GALEED_ACT_AS_PRINCIPALS` no gateway. No `.env` privado do MCP, configure `GALEED_SERVICE_KEYS` com cinco tokens distintos. Com cada token, `GET /v1/acesso` sem act-as deve identificar exatamente `Realmak`, `aforca`, `nortfort`, `una` ou `sublime`, conforme seu alias. Não imprima nem copie os tokens em logs ou comandos compartilhados. Confirme também que o pack efetivo de cada brain oferece registros; dados extraídos e um pack habilitado são verificações separadas.
+3. **MCP:** depois de mesclar este PR, atualize o checkout limpo da `main` no servidor e execute `docker compose -f compose.yaml -f compose.vps.yaml up -d --build --wait`. Preserve `MCP_REALMAK_OAUTH_SECRET`, o restante do `.env` e os volumes existentes. Confira a saúde do serviço e o 401 de `/mcp` sem credencial. Esses dois testes não comprovam os acessos por empresa.
+4. **Ponta a ponta:** com o login real no conector, chame `cerebro_empresas` com `{}`. Confira as empresas, os níveis e `registros` esperados. Em cada empresa, chame `cerebro_fatos` com `empresa` e `limit=1`; onde `registros=true`, leia `cerebro_esquema`, execute um SELECT de contagem com `limite=1` usando uma tabela que o esquema mostrar e consulte provas de um id real da mesma empresa. Isso verifica leitura sem busca semântica nem chamada a API de IA. Com uma pessoa de acesso parcial, confira as áreas e a recusa das empresas não liberadas; com bot, confira que só o próprio brain é acessível.
+5. **Skills:** no Claude Code, atualize o marketplace e `realmak@realmak`, e abra uma conversa nova. A distribuição 0.4.1 inclui o merge de contratos por CNPJ e os parâmetros multiempresa. A cópia local de teste pode continuar usando `galeed-local`; só troque para o endpoint remoto depois de validar o servidor atualizado. No Desktop, atualize o plugin e reconecte o conector se necessário.
+
+O cache de acesso tem TTL fixo de 5 minutos; falhas de rede não são guardadas. Um 403 de leitura invalida a entrada da empresa antes de conferir o acesso novamente. Para voltar a versão do MCP, use o commit anterior e reconstrua apenas esse serviço, preservando o segredo OAuth e os volumes. O gateway novo mantém compatibilidade com o MCP anterior.
+
+A publicação e a atualização do servidor exigem autorização do Ennio. A validação local não substitui a validação do servidor nesta seção.

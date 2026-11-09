@@ -35,6 +35,8 @@ Ao citar uma licitação, entregue sempre o campo `link`, que abre a licitação
 
 `conlicitacao_buscar_contratos` é a tela Contratos do site. Passe `cnpj_fornecedor` (ou `empresa`, `orgao`, `objeto`, `numero_edital`) e receba em segundos os contratos que o ConLicitação indexou: órgão, edital, objeto, número do contrato, vigência, valor e número de controle do PNCP.
 
+Aqui `empresa` é texto do nome do fornecedor, não o alias de seleção de cérebro. Prefira `cnpj_fornecedor` quando houver CNPJ conferido. Essa ferramenta não recebe `cnpj` nem `os`. Para `compras_contratos_vigentes_por_cnpj`, o nome do parâmetro é `cnpj` (skill `compras-publicas`).
+
 - A vigência é a do contrato como publicado, sem termos aditivos: um contrato prorrogado aparece vencido. Confirme no histórico do contrato (`contratosgovbr_consultar_historico_contrato`).
 - Só entram contratos que o ConLicitação indexou; a lista pode ter menos que o PNCP ou o Compras.gov.br.
 - Para a lista cruzada das três fontes, use `compras_contratos_vigentes_por_cnpj` (skill `compras-publicas`).
@@ -42,6 +44,8 @@ Ao citar uma licitação, entregue sempre o campo `link`, que abre a licitação
 ## Ver o detalhe
 
 `conlicitacao_detalhe_licitacao` devolve a licitação completa: objeto, modalidade, itens, datas, situações, garantias, o link do edital no portal de origem (`edital_site`, por exemplo PNCP) e os nomes dos arquivos do edital.
+
+Envie o inteiro `id_conlicitacao` retornado pela busca; não use `licitacao_id` do Odoo nem `bidding_id` do monitoramento. `incluir_resumo` é booleano. Busca e detalhe não recebem `empresa` nem `os`.
 
 - `bidding_info_em_ordem_de_data` traz avisos, esclarecimentos e impugnações publicados, do mais antigo ao mais recente. Eles podem mudar exigências e datas, e o PDF do edital não mostra isso. Liste-os em ordem de data quando analisar o edital.
 - `incluir_resumo=true` anexa o resumo gerado pelo ConLicitação, quando existe. Use só para conferir; a fonte é o edital.

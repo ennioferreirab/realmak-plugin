@@ -1,7 +1,7 @@
 {
   "name": "realmak",
   "displayName": "Realmak",
-  "version": "0.3.1",
+  "version": "0.4.1",
   "description": "Skills de licitação para a equipe da Realmak: consultar o cérebro, trabalhar na licitação da plataforma, analisar edital, conferir habilitação, buscar no ConLicitação e pesquisar compras públicas, com o conector do servidor MCP da Realmak.",
   "author": {
     "name": "Equipe Realmak"

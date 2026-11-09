@@ -2,12 +2,38 @@
 
 from __future__ import annotations
 
+import logging
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 DEFAULT_CONLICITACAO_URL = "https://consultaonline.conlicitacao.com.br"
 DEFAULT_SESSION_FILE = "/data/conlicitacao-sessao.json"
 MAX_RESULT_CHARS = 100_000
+EMPRESAS = ("realmak", "aforca", "nortfort", "una", "sublime")
+BRAINS_EMPRESAS = {"realmak": "Realmak", "aforca": "aforca", "nortfort": "nortfort", "una": "una", "sublime": "sublime"}
+NOMES_EMPRESAS = {"realmak": "Realmak", "aforca": "AForça", "nortfort": "Nortfort", "una": "UNA", "sublime": "Sublime"}
+log = logging.getLogger(__name__)
+
+
+def _service_keys() -> dict[str, str]:
+    raw = _env("GALEED_SERVICE_KEYS")
+    if not raw:
+        old = _env("GALEED_SERVICE_KEY")
+        return {"realmak": old} if old else {}
+    result = {}
+    for entry in raw.split(","):
+        if not entry.strip():
+            continue
+        empresa, sep, key = entry.partition("=")
+        empresa, key = empresa.strip(), key.strip()
+        if empresa not in EMPRESAS:
+            # Não registrar entradas desconhecidas: elas podem ser uma chave malformada.
+            continue
+        if not sep or not key:
+            log.warning("Empresa sem chave configurada: %s", empresa)
+            continue
+        result[empresa] = key
+    return result
 
 
 def _env(name: str, default: str = "") -> str:
@@ -37,7 +63,8 @@ class Settings:
     oauth_public_url: str = ""
     oauth_secret: str = ""
     oauth_redirect_hosts: tuple[str, ...] = ()
-    galeed_service_key: str = ""
+    galeed_service_key: str = field(default="", repr=False)
+    galeed_service_keys: dict[str, str] = field(default_factory=dict, repr=False)
     galeed_login_url: str = ""
     google_client_id: str = ""
     google_client_secret: str = ""
@@ -84,9 +111,13 @@ class Settings:
         return (
             bool(self.oauth_public_url)
             and len(self.oauth_secret) >= 32
-            and bool(self.galeed_service_key)
+            and bool(self.service_keys)
             and (self.google_configured or bool(self.galeed_login_url) or self.smtp_configured)
         )
+
+    @property
+    def service_keys(self) -> dict[str, str]:
+        return self.galeed_service_keys or ({"realmak": self.galeed_service_key} if self.galeed_service_key else {})
 
     @property
     def galeed_configured(self) -> bool:
@@ -108,7 +139,8 @@ def load_settings() -> Settings:
         oauth_public_url=_env("MCP_REALMAK_PUBLIC_URL").rstrip("/"),
         oauth_secret=_env("MCP_REALMAK_OAUTH_SECRET"),
         oauth_redirect_hosts=tuple(h for h in _env("MCP_REALMAK_OAUTH_REDIRECT_HOSTS").split(",") if h.strip()),
-        galeed_service_key=_env("GALEED_SERVICE_KEY"),
+        galeed_service_key=_env("GALEED_SERVICE_KEY") if not _env("GALEED_SERVICE_KEYS") else "",
+        galeed_service_keys=_service_keys(),
         galeed_login_url=_env("GALEED_LOGIN_URL").rstrip("/"),
         google_client_id=_env("GOOGLE_CLIENT_ID"),
         google_client_secret=_env("GOOGLE_CLIENT_SECRET"),

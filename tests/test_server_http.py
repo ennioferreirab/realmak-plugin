@@ -23,6 +23,7 @@ def com_servidor(fn):
     @functools.wraps(fn)
     async def wrapper(*args, monkeypatch, **kwargs):
         monkeypatch.setenv("GALEED_API_URL", GALEED)
+        monkeypatch.setenv("GALEED_SERVICE_KEY", "gld_live_servico")
         async with abrir_servidor() as servidor:
             return await fn(servidor, *args, **kwargs)
 
@@ -43,6 +44,7 @@ async def abrir_servidor():
                 json={"facts": []},
             )
         )
+        mock.get(f"{GALEED}/acesso").mock(return_value=httpx.Response(200, json={"brain": "Realmak", "nivel": "total", "areas": ["*"], "registros": True}))
         mock.get(f"{GALEED}/consulta/esquema").mock(return_value=httpx.Response(200, json={"tabelas": []}))
         async with app.router.lifespan_context(app):
             async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as c:
@@ -94,8 +96,8 @@ async def test_header_estatico_funciona_sem_fluxo_oauth(servidor):
 
 @com_servidor
 async def test_ferramentas_de_registros_somem_quando_o_gateway_nega(servidor):
-    servidor.galeed.get(f"{GALEED}/consulta/esquema").mock(
-        return_value=httpx.Response(403, json={"error": "sem acesso"})
+    servidor.galeed.get(f"{GALEED}/acesso").mock(
+        return_value=httpx.Response(200, json={"brain": "Realmak", "nivel": "parcial", "areas": ["rh"], "registros": False})
     )
     r = await rpc(servidor, "tools/list", token="gld_live_outra")
     nomes = {t["name"] for t in parse_body(r)["result"]["tools"]}

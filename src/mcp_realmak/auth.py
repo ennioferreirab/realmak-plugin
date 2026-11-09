@@ -5,7 +5,8 @@
   verificado; o servidor confere no Galeed, com a chave de serviço e o header
   X-Galeed-Act-As, se esse e-mail ainda tem acesso ao cérebro.
 
-A cada token novo o servidor pergunta ao Galeed (GET /facts?limit=1). 200 vale,
+Para bot novo o servidor pergunta ao Galeed (GET /facts?limit=1). Pessoas
+consultam GET /acesso por empresa configurada com act-as. 200 vale,
 401 e 403 não valem. O resultado fica em cache por 5 minutos, indexado pelo
 sha256 do token, e o token nunca é gravado em log nem em disco.
 
@@ -60,6 +61,7 @@ class GaleedTokenVerifier(TokenVerifier):
         transport: httpx.AsyncBaseTransport | None = None,
         public_url: str = "",
         service_key: str = "",
+        service_keys: dict[str, str] | None = None,
     ) -> None:
         # Sem OAuth (padrão): sem base_url, o FastMCP não publica metadados (RFC 9728),
         # o 401 não traz resource_metadata e o cliente usa só o cabeçalho Authorization.
@@ -68,6 +70,7 @@ class GaleedTokenVerifier(TokenVerifier):
         self.oauth: OAuthServer | None = None
         self.acesso_odoo: Callable[[str], Awaitable[bool]] | None = None
         self.service_key = service_key
+        self.service_keys = service_keys or ({"realmak": service_key} if service_key else {})
         self.api_url = api_url.rstrip("/")
         self.ttl = ttl_seconds
         self.timeout = timeout_seconds
@@ -105,14 +108,25 @@ class GaleedTokenVerifier(TokenVerifier):
 
     async def check_cerebro_person(self, email: str) -> bool:
         """O e-mail tem acesso ao cérebro? Pergunta ao Galeed agindo em nome dele (cache de 5 min)."""
-        if not self.service_key:
+        from dataclasses import replace
+
+        from .cerebro.empresas import get_empresas
+        from .config import load_settings
+
+        if not self.service_keys:
             return False
-        key = "pessoa:" + token_hash(email)
-        cached = self._cache_get(key)
-        if cached is None:
-            cached = await self._check_with_galeed(self.service_key, act_as=email)
-            self._cache_put(key, cached)
-        return cached
+        settings = replace(load_settings(), galeed_api_url=self.api_url,
+                           galeed_service_keys=self.service_keys, token_cache_ttl_s=self.ttl,
+                           galeed_timeout_s=self.timeout)
+        access = AccessToken(token="", client_id="person", scopes=[], claims={"email": email})
+        result = await get_empresas(settings, self._transport).descobrir(access)
+        if result.empresas:
+            return True
+        if result.chave_recusada:
+            raise GaleedUnavailableError("O servidor não conseguiu consultar o cérebro (chave de serviço recusada). Avise quem administra.")
+        if result.indisponiveis:
+            raise GaleedUnavailableError("Não foi possível conferir o acesso porque o cérebro não respondeu. Tente de novo em instantes.")
+        return False
 
     async def check_person(self, email: str) -> bool:
         """A pessoa entra se tem acesso ao cérebro ou às licitações no Odoo. Cada grupo de ferramentas só aparece

@@ -1,16 +1,10 @@
-"""Mostra as ferramentas de registros só para chaves que o gateway deixa usar.
+"""Mostra registros quando ao menos uma empresa liberada anuncia o dataset em /acesso.
 
-Na listagem de ferramentas, o servidor pergunta ao gateway (GET /consulta/esquema)
-com a chave do usuário. 200 ou 503 (módulo ligado, dataset ainda sem derivação)
-mostram as ferramentas; 403 e 404 as escondem. Qualquer outra falha esconde só
-nesta listagem e não entra no cache. Respostas definitivas ficam 5 minutos em
-cache, indexadas pelo sha256 da chave.
+A descoberta compartilhada guarda apenas respostas definitivas por identidade.
 """
 
 from __future__ import annotations
 
-import logging
-import time
 from collections.abc import Sequence
 
 import httpx
@@ -19,44 +13,22 @@ from fastmcp.server.dependencies import get_access_token
 from fastmcp.server.middleware import Middleware, MiddlewareContext
 from mcp import types as mt
 
-from ..auth import token_hash
 from ..config import load_settings
-from .client import GaleedApiError
-from .tools import REGISTROS_TAG, client_for_access
-
-log = logging.getLogger("mcp_realmak.cerebro")
+from .empresas import get_empresas
+from .tools import REGISTROS_TAG
 
 
 class RegistrosVisibilityMiddleware(Middleware):
     def __init__(self, ttl_seconds: int = 300, transport: httpx.AsyncBaseTransport | None = None):
         self.ttl = ttl_seconds
         self._transport = transport
-        self._cache: dict[str, tuple[float, bool]] = {}
 
     async def _visivel(self, access: AccessToken) -> bool:
-        key = token_hash(access.token)
-        hit = self._cache.get(key)
-        if hit and hit[0] > time.monotonic():
-            return hit[1]
         settings = load_settings()
         if not settings.galeed_configured:
             return False
-        client = client_for_access(access, settings, self._transport)
-        try:
-            await client.esquema()
-            visivel, definitivo = True, True
-        except GaleedApiError as exc:
-            if exc.status in (403, 404):
-                visivel, definitivo = False, True
-            elif exc.status == 503:
-                visivel, definitivo = True, False
-            else:
-                visivel, definitivo = False, False
-        if definitivo:
-            if len(self._cache) > 2048:
-                self._cache.clear()
-            self._cache[key] = (time.monotonic() + self.ttl, visivel)
-        return visivel
+        empresas = await get_empresas(settings, self._transport).empresas_liberadas(access)
+        return any(e.registros for e in empresas)
 
     async def on_list_tools(self, context: MiddlewareContext[mt.ListToolsRequest], call_next):
         tools: Sequence = await call_next(context)

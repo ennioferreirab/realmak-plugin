@@ -13,14 +13,18 @@ Uso: uv run python scripts/check_local.py
 from __future__ import annotations
 
 import asyncio
+import json
 import os
+import re
 import socket
 import sys
 import threading
 import time
+from pathlib import Path
 
 import httpx
 import uvicorn
+from jsonschema import Draft202012Validator
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import JSONResponse
@@ -42,6 +46,8 @@ async def _resposta(request: Request) -> JSONResponse:
     recebidas.append((request.url.path, chave))
     if chave != CHAVE_VALIDA:
         return JSONResponse({"error": "chave inválida"}, status_code=401)
+    if request.url.path.endswith("/acesso"):
+        return JSONResponse({"brain": "Realmak", "nivel": "total", "areas": ["*"], "registros": True})
     if request.url.path.endswith("/consulta/esquema"):
         return JSONResponse({"tabelas": []})
     if request.url.path.endswith("/retrieve"):
@@ -80,6 +86,8 @@ async def principal() -> None:
     servir(galeed, porta_galeed)
     os.environ["GALEED_API_URL"] = f"http://127.0.0.1:{porta_galeed}/v1"
 
+    os.environ["GALEED_SERVICE_KEYS"] = f"realmak={CHAVE_VALIDA}"
+
     from mcp_realmak.server import build_app
 
     servir(build_app(), porta_mcp)
@@ -104,12 +112,24 @@ async def principal() -> None:
     async with Client(transporte) as cliente:
         ferramentas = await cliente.list_tools()
         nomes = sorted(t.name for t in ferramentas)
+        esquemas = {t.name: t.input_schema for t in ferramentas}
+        skill = Path(__file__).resolve().parents[1] / "plugins/realmak/skills/cerebro/SKILL.md"
+        exemplos = re.findall(r"```json\s*\n(.*?)\n```", skill.read_text(), re.DOTALL)
+        conferir(bool(exemplos), "a skill cerebro contém exemplos de argumentos")
+        for bloco in exemplos:
+            exemplo = json.loads(bloco)
+            nome, argumentos = exemplo["tool"], exemplo["arguments"]
+            conferir(nome in esquemas, f"skill: {nome} existe no tools/list real")
+            esquema = esquemas[nome]
+            extras = argumentos.keys() - esquema.get("properties", {}).keys()
+            erros = list(Draft202012Validator(esquema).iter_errors(argumentos))
+            conferir(not extras and not erros, f"skill: parâmetros de {nome} conferem com o schema MCP")
         grupos: dict[str, int] = {}
         for n in nomes:
             grupos[n.split("_")[0]] = grupos.get(n.split("_")[0], 0) + 1
         print(f"tools/list: {len(nomes)} ferramentas, por grupo: {grupos}")
         conferir(len(nomes) >= 40, "tools/list com chave válida trouxe as ferramentas")
-        conferir("cerebro_consulta" in nomes, "ferramentas de registros listadas (esquema respondeu 200)")
+        conferir("cerebro_consulta" in nomes, "ferramentas de registros listadas (acesso confirmou registros)")
         resultado = await cliente.call_tool("cerebro_buscar", {"query": "teste", "os": "windows"})
         conferir("exemplo" in str(resultado.content), "cerebro_buscar devolveu o trecho do Galeed falso")
 

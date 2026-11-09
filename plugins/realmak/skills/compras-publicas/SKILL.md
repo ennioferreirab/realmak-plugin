@@ -31,6 +31,8 @@ Regras de bolso:
 
 Use `compras_contratos_vigentes_por_cnpj` com o CNPJ (com ou sem pontuação). Não monte a consulta à mão com `pncp_buscar_contratos` ou `dadosabertos_buscar_contratos`: nenhuma API oficial filtra contrato só por fornecedor.
 
+Parâmetros: `cnpj` é obrigatório; `aguardar_segundos` é um inteiro de 0 a 110 (padrão 45); `codigos_orgao` é uma string com os códigos separados por vírgula, não uma lista JSON. Não envie `empresa`, `os`, `cnpj_fornecedor` nem `ctx` a esta ferramenta. O CNPJ vem da pergunta ou de uma fonte conferida para a empresa escolhida; não invente nem reutilize o de outra empresa. O seletor `empresa` do cérebro não seleciona fornecedor nas compras públicas.
+
 - Fontes: a busca do portal do PNCP (Lei 14.133, todas as esferas), a tela Contratos do ConLicitação (rápida, com o login do servidor) e uma varredura dos órgãos federais no Compras.gov.br (inclui contratos do SIASG que não estão no PNCP). O resultado já vem sem contratos repetidos.
 - A varredura leva cerca de 10 minutos, porque o Compras.gov.br aceita só ~2 consultas por segundo. A primeira chamada espera até 45 s e devolve o que achou, com o andamento. Se vier "varredura em andamento", o resultado é parcial: chame de novo com o mesmo CNPJ (o progresso fica guardado por 6 horas). Diga ao analista que é parcial enquanto não concluir.
 - Atalho: se já sabe os órgãos, passe `codigos_orgao` (ex.: `52111,26270`). Ache os códigos com `dadosabertos_buscar_orgao`. Responde em segundos.
