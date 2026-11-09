@@ -22,6 +22,7 @@ from .format import (
     casa_busca,
     detalhar_licitacao,
     resumir_acompanhamento,
+    resumir_contratos,
     resumir_item_site,
     resumir_licitacao_boletim,
     scrub,
@@ -147,6 +148,43 @@ async def conlicitacao_detalhe_licitacao(
     except Exception as exc:  # noqa: BLE001
         raise _falha(exc) from None
     return dumps(out)
+
+
+async def conlicitacao_buscar_contratos(
+    cnpj_fornecedor: Annotated[str | None, Field(description="CNPJ do fornecedor contratado, com ou sem pontuação.")] = None,
+    empresa: Annotated[str | None, Field(description="Nome do fornecedor (texto), quando não há CNPJ.")] = None,
+    orgao: Annotated[str | None, Field(description="Nome do órgão contratante (texto).")] = None,
+    objeto: Annotated[str | None, Field(description="Palavras do objeto da licitação.")] = None,
+    numero_edital: Annotated[str | None, Field(description="Número do edital, como PE/90107/2026.")] = None,
+    pagina: Annotated[int, Field(ge=1, description="Página de resultados.")] = 1,
+) -> str:
+    """Contratos celebrados que o ConLicitação indexou (tela Contratos do site), com filtro por CNPJ do fornecedor. É a forma mais rápida de listar os contratos de uma empresa: responde em segundos, sem varrer órgãos. Cada item traz órgão, edital, objeto, número do contrato, vigência, valor contratado, fonte e o número de controle do PNCP. Limites: a vigência é a do contrato como publicado, sem os termos aditivos, então um contrato prorrogado aparece vencido; e só entram os contratos que o ConLicitação indexou. Para a lista cruzada com PNCP e Compras.gov.br use compras_contratos_vigentes_por_cnpj."""
+    cnpj = "".join(ch for ch in (cnpj_fornecedor or "") if ch.isdigit())
+    if cnpj_fornecedor and len(cnpj) != 14:
+        raise ToolError("CNPJ inválido: informe os 14 dígitos, com ou sem pontuação.")
+    if not any([cnpj, empresa, orgao, objeto, numero_edital]):
+        raise ToolError("Informe pelo menos um filtro (CNPJ do fornecedor, empresa, órgão, objeto ou edital).")
+    try:
+        data = await get_site_client().buscar_contratos(
+            cnpj=cnpj,
+            empresa=(empresa or "").strip(),
+            orgao=(orgao or "").strip(),
+            objeto=(objeto or "").strip(),
+            edital=(numero_edital or "").strip(),
+            pagina=pagina,
+        )
+    except Exception as exc:  # noqa: BLE001
+        raise _falha(exc) from None
+    contratos = resumir_contratos(data, cnpj or None)
+    return dumps(
+        {
+            "total_licitacoes": data.get("total_rows"),
+            "pagina": pagina,
+            "total_contratos_nesta_pagina": len(contratos),
+            "contratos": contratos,
+            "aviso": "Vigência como publicada, sem termos aditivos. Confira prorrogações no histórico do contrato.",
+        }
+    )
 
 
 async def conlicitacao_listar_filtros() -> str:
@@ -296,6 +334,7 @@ def build_conlicitacao_server() -> FastMCP:
     for fn in (
         conlicitacao_buscar_licitacao,
         conlicitacao_detalhe_licitacao,
+        conlicitacao_buscar_contratos,
         conlicitacao_listar_filtros,
         conlicitacao_listar_boletins,
         conlicitacao_ler_boletim,

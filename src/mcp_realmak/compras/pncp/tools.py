@@ -152,8 +152,11 @@ async def buscar_contratos(
 
     Retorna contratos publicados no Portal Nacional de Contratações Públicas.
 
-    IMPORTANTE: A API PNCP não suporta busca textual em contratos.
-    O parâmetro 'texto' filtra os resultados localmente.
+    IMPORTANTE: A API PNCP não suporta busca textual em contratos nem filtro
+    por fornecedor. O parâmetro 'texto' filtra só a página de resultados que
+    veio da API, não todos os contratos do período: "nenhum resultado" NÃO
+    prova que o contrato não existe. Para contratos de um CNPJ, use
+    `compras_contratos_vigentes_por_cnpj`; para busca por assunto, `pncp_pesquisar`.
 
     Args:
         data_inicial: Data inicial no formato YYYYMMDD (ex: 20250101).
@@ -283,41 +286,6 @@ async def buscar_atas(
         lines.append(f"*Filtrado localmente por '{texto}'.*")
     if resultado.total > len(resultado.atas):
         lines.append(f"*Use pagina={pagina + 1} para mais resultados.*")
-    return "\n".join(lines)
-
-
-async def consultar_fornecedor(cnpj: str, ctx: Context) -> str:
-    """Consulta informações de um fornecedor de contratações públicas pelo CNPJ.
-
-    Retorna dados cadastrais do fornecedor no PNCP (Portal Nacional de
-    Contratações Públicas).
-
-    Args:
-        cnpj: CNPJ do fornecedor (com ou sem formatação).
-
-    Returns:
-        Dados do fornecedor encontrado.
-    """
-    await ctx.info(f"Consultando fornecedor CNPJ {cnpj}...")
-    resultado = await client.consultar_fornecedor(cnpj=cnpj)
-    await ctx.info(f"{resultado.total} fornecedor(es) encontrado(s)")
-
-    if not resultado.fornecedores:
-        return f"Nenhum fornecedor encontrado com CNPJ {cnpj}."
-
-    lines: list[str] = []
-    for f in resultado.fornecedores:
-        lines.extend(
-            [
-                f"**{f.razao_social or 'N/A'}**",
-                f"**CNPJ:** {f.cnpj or 'N/A'}",
-                f"**Nome fantasia:** {f.nome_fantasia or 'N/A'}",
-                f"**Local:** {f.municipio or 'N/A'}/{f.uf or 'N/A'}",
-                f"**Porte:** {f.porte or 'N/A'}",
-                f"**Abertura:** {f.data_abertura or 'N/A'}",
-                "",
-            ]
-        )
     return "\n".join(lines)
 
 

@@ -12,6 +12,7 @@ Existem dois caminhos, que o servidor escolhe sozinho conforme a ferramenta:
 | Para quê | Ferramentas |
 | --- | --- |
 | Achar uma licitação e ver o detalhe (site do ConLicitação) | `conlicitacao_buscar_licitacao`, `conlicitacao_detalhe_licitacao` |
+| Contratos celebrados, com filtro por CNPJ do fornecedor (site) | `conlicitacao_buscar_contratos` |
 | Boletins do filtro, pregões monitorados e mensagens (API oficial) | `conlicitacao_listar_filtros`, `conlicitacao_listar_boletins`, `conlicitacao_ler_boletim`, `conlicitacao_pregoes_monitorados`, `conlicitacao_mensagens_pregao` |
 
 A API oficial não tem busca: só entrega boletins. Para achar uma licitação específica, use sempre `conlicitacao_buscar_licitacao`. Varrer boletins é lento e pode não achar.
@@ -29,6 +30,14 @@ Sem esses dados, filtre por `orgao`, `objeto` ou `itens` (texto), com `busca_exa
 Limite importante: a busca do site só alcança licitações classificadas nas atividades contratadas pela Realmak. Se a licitação procurada estiver fora desse perfil, a busca não a mostra. Diga isso ao analista e sugira o PNCP (skill `compras-publicas`).
 
 Ao citar uma licitação, entregue sempre o campo `link`, que abre a licitação no site. O analista precisa estar logado no ConLicitação no navegador.
+
+## Contratos de uma empresa
+
+`conlicitacao_buscar_contratos` é a tela Contratos do site. Passe `cnpj_fornecedor` (ou `empresa`, `orgao`, `objeto`, `numero_edital`) e receba em segundos os contratos que o ConLicitação indexou: órgão, edital, objeto, número do contrato, vigência, valor e número de controle do PNCP.
+
+- A vigência é a do contrato como publicado, sem termos aditivos: um contrato prorrogado aparece vencido. Confirme no histórico do contrato (`contratosgovbr_consultar_historico_contrato`).
+- Só entram contratos que o ConLicitação indexou; a lista pode ter menos que o PNCP ou o Compras.gov.br.
+- Para a lista cruzada das três fontes, use `compras_contratos_vigentes_por_cnpj` (skill `compras-publicas`).
 
 ## Ver o detalhe
 

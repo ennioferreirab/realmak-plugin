@@ -16,8 +16,6 @@ from mcp_realmak.compras.pncp.schemas import (
     ContratacaoResultado,
     Contrato,
     ContratoResultado,
-    Fornecedor,
-    FornecedorResultado,
     InstrumentoCobranca,
     InstrumentoCobrancaResultado,
     OrgaoContratante,
@@ -248,55 +246,7 @@ class TestBuscarAtas:
         assert "Erro de validação" in result
 
 
-# ---------------------------------------------------------------------------
-# consultar_fornecedor
-# ---------------------------------------------------------------------------
 
-
-class TestConsultarFornecedor:
-    @pytest.mark.asyncio
-    async def test_formats_results(self) -> None:
-        mock_data = FornecedorResultado(
-            total=1,
-            fornecedores=[
-                Fornecedor(
-                    cnpj="12345678000199",
-                    razao_social="Empresa Teste LTDA",
-                    nome_fantasia="Teste Corp",
-                    municipio="São Paulo",
-                    uf="SP",
-                    porte="Médio",
-                    data_abertura="2010-05-20",
-                ),
-            ],
-        )
-        ctx = _mock_ctx()
-        with patch(
-            f"{CLIENT_MODULE}.consultar_fornecedor",
-            new_callable=AsyncMock,
-            return_value=mock_data,
-        ):
-            result = await tools.consultar_fornecedor("12345678000199", ctx)
-        assert "Empresa Teste LTDA" in result
-        assert "12345678000199" in result
-        assert "Teste Corp" in result
-        assert "São Paulo" in result
-        assert "SP" in result
-        assert "Médio" in result
-        assert "2010-05-20" in result
-
-    @pytest.mark.asyncio
-    async def test_empty_results(self) -> None:
-        mock_data = FornecedorResultado(total=0, fornecedores=[])
-        ctx = _mock_ctx()
-        with patch(
-            f"{CLIENT_MODULE}.consultar_fornecedor",
-            new_callable=AsyncMock,
-            return_value=mock_data,
-        ):
-            result = await tools.consultar_fornecedor("00000000000000", ctx)
-        assert "Nenhum fornecedor encontrado" in result
-        assert "00000000000000" in result
 
 
 # ---------------------------------------------------------------------------

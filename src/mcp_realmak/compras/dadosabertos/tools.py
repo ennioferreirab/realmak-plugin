@@ -185,40 +185,54 @@ async def buscar_dispensas(
 
 
 async def buscar_contratos(
-    data_vigencia_inicial_min: str,
-    data_vigencia_inicial_max: str,
+    codigo_orgao: str,
     ctx: Context,
-    codigo_orgao: str | None = None,
+    data_vigencia_inicial_min: str | None = None,
+    data_vigencia_inicial_max: str | None = None,
     ni_fornecedor: str | None = None,
+    somente_vigentes: bool = False,
     pagina: int = 1,
 ) -> str:
-    """Busca contratos no Compras.gov.br (Dados Abertos).
+    """Busca contratos federais de UM órgão no Compras.gov.br (Dados Abertos).
 
-    Consulta contratos federais por período de vigência. Inclui dados
-    completos: órgão, fornecedor, objeto, valor e prazo.
+    A API consulta um órgão por vez: sem `codigo_orgao` ela responde 404, que
+    parece rota inexistente mas é parâmetro faltando. Descubra o código com
+    `dadosabertos_buscar_orgao` (por nome) ou `dadosabertos_buscar_uasg`.
+    Para achar os contratos de um CNPJ SEM saber o órgão, não use esta
+    ferramenta: use `compras_contratos_vigentes_por_cnpj`.
+
+    Dois modos:
+    - `somente_vigentes=true`: contratos com vigência final de hoje em diante.
+      Não precisa de datas.
+    - Por início da vigência: informe as duas datas; o período máximo é de 365 dias.
 
     Args:
-        data_vigencia_inicial_min: Início da vigência mínima YYYY-MM-DD (obrigatório).
-        data_vigencia_inicial_max: Início da vigência máxima YYYY-MM-DD (obrigatório).
-        codigo_orgao: Código do órgão (opcional).
-        ni_fornecedor: CNPJ/CPF do fornecedor (opcional).
+        codigo_orgao: Código do órgão (obrigatório), ex.: 52111 (Comando da Aeronáutica).
+        data_vigencia_inicial_min: Início da vigência, mínimo, YYYY-MM-DD (modo por período).
+        data_vigencia_inicial_max: Início da vigência, máximo, YYYY-MM-DD (modo por período).
+        ni_fornecedor: CNPJ/CPF do fornecedor, só dígitos ou formatado (opcional).
+        somente_vigentes: Só contratos ainda vigentes (padrão false).
         pagina: Página de resultados (padrão 1).
 
     Returns:
         Lista de contratos encontrados.
     """
     await ctx.info("Buscando contratos...")
-    resultado = await client.buscar_contratos(
-        data_vigencia_inicial_min=data_vigencia_inicial_min,
-        data_vigencia_inicial_max=data_vigencia_inicial_max,
-        codigo_orgao=codigo_orgao,
-        ni_fornecedor=ni_fornecedor,
-        pagina=pagina,
-    )
+    try:
+        resultado = await client.buscar_contratos(
+            codigo_orgao=codigo_orgao,
+            data_vigencia_inicial_min=data_vigencia_inicial_min,
+            data_vigencia_inicial_max=data_vigencia_inicial_max,
+            ni_fornecedor=ni_fornecedor,
+            somente_vigentes=somente_vigentes,
+            pagina=pagina,
+        )
+    except ValueError as exc:
+        return f"Consulta inválida: {exc}"
     await ctx.info(f"{resultado.total} contratos encontrados")
 
     if not resultado.contratos:
-        return "Nenhum contrato encontrado no período informado."
+        return "Nenhum contrato encontrado para esse órgão e filtro."
 
     lines = [f"**Total:** {resultado.total} contratos\n"]
     for i, c in enumerate(resultado.contratos, 1):
@@ -241,6 +255,48 @@ async def buscar_contratos(
     if resultado.total > len(resultado.contratos):
         lines.append(f"*Use pagina={pagina + 1} para mais resultados.*")
     return "\n".join(lines)
+
+
+async def buscar_orgao(
+    nome: str,
+    ctx: Context,
+    esfera: str | None = "F",
+) -> str:
+    """Acha o código de um órgão pelo nome, para usar em `dadosabertos_buscar_contratos`.
+
+    Procura no cadastro de órgãos do Compras.gov.br (SIASG), sem acentos e sem
+    exigir o nome completo. Ex.: "aeronautica", "universidade federal amazonas".
+
+    Args:
+        nome: Parte do nome do órgão.
+        esfera: F (federal, padrão), E (estadual), M (municipal) ou vazio para todas.
+
+    Returns:
+        Até 15 órgãos com código, nome, órgão superior e esfera.
+    """
+    await ctx.info(f"Buscando órgão '{nome}'...")
+    orgaos = await client.listar_orgaos()
+    if esfera:
+        orgaos = [o for o in orgaos if (o.esfera or "").upper() == esfera.strip().upper()]
+    achados, completo = rank_by_text(nome, orgaos, key=lambda o: o.nome_orgao, limite=15)
+    if not achados:
+        return f"Nenhum órgão encontrado para '{nome}'."
+    linhas = [
+        "Correspondência parcial: nem todas as palavras apareceram em um mesmo nome."
+        if not completo
+        else f"{len(achados)} órgão(s):",
+        "",
+    ]
+    linhas.append(
+        markdown_table(
+            ["Código", "Órgão", "Órgão superior", "Esfera"],
+            [
+                [o.codigo_orgao, o.nome_orgao, o.nome_orgao_superior or "", o.esfera or ""]
+                for o in achados
+            ],
+        )
+    )
+    return "\n".join(linhas)
 
 
 async def consultar_fornecedor(
@@ -440,6 +496,7 @@ async def buscar_uasg(
             [
                 f"### {i}. {u.nome_uasg or 'N/A'}",
                 f"**Código:** {u.codigo_uasg or 'N/A'}",
+                f"**Órgão:** {u.nome_orgao or 'N/A'} (código {u.codigo_orgao or 'N/A'})",
                 f"**CNPJ:** {u.cnpj_cpf_orgao or 'N/A'}",
                 f"**Local:** {u.nome_municipio or 'N/A'}/{u.sigla_uf or 'N/A'}",
                 f"**SISG:** {'Sim' if u.uso_sisg else 'Não'}",

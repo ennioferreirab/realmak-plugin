@@ -38,10 +38,11 @@ async def chamar(nome: str, args: dict) -> str:
         return r.content[0].text
 
 
-async def test_lista_as_sete_ferramentas_somente_leitura():
+async def test_lista_as_oito_ferramentas_somente_leitura():
     async with Client(build_conlicitacao_server()) as c:
         tools = await c.list_tools()
     assert sorted(t.name for t in tools) == [
+        "conlicitacao_buscar_contratos",
         "conlicitacao_buscar_licitacao",
         "conlicitacao_detalhe_licitacao",
         "conlicitacao_ler_boletim",
@@ -220,3 +221,59 @@ async def test_token_ausente_da_erro_claro(monkeypatch):
     async with Client(build_conlicitacao_server()) as c:
         with pytest.raises(ToolError, match="token da API"):
             await c.call_tool("conlicitacao_listar_filtros", {})
+
+
+@respx.mock
+async def test_buscar_contratos_chama_a_mesma_rota_do_navegador_e_filtra_o_cnpj(cfg):
+    login_ok()
+    rota = respx.get(url__regex=rf"{BASE}/contracts/search.*").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "total_rows": 1,
+                "contratos": [
+                    {
+                        "_source": {
+                            "id": 18437512,
+                            "edital": "PE/90016/2025",
+                            "objeto": "Manutenção de geradores " + "x" * 600,
+                            "orgao": {"nome": "Embrapa", "uasg": "135058", "cidade": "Brasília", "estado": "DF"},
+                            "contratos": [
+                                {
+                                    "id_contrato": "16907", "cpf_cnpj": "09108248000145",
+                                    "nome_fornecedor": "OUTRA LTDA", "valor_contratado": 1,
+                                },
+                                {
+                                    "id_contrato": "16907", "cpf_cnpj": "03496338000174",
+                                    "nome_fornecedor": "REALMAK SERVICOS E COMERCIO LTDA",
+                                    "vigencia_inicio": "2025-12-30T00:00:00.000Z",
+                                    "vigencia_fim": "2026-12-30T00:00:00.000Z",
+                                    "valor_contratado": 14428.9, "fonte": "Contratos.gov.br",
+                                    "contrato_pncp_id": "00348003000110-2-000011/2025",
+                                },
+                            ],
+                        }
+                    }
+                ],
+            },
+        )
+    )
+    out = await chamar("conlicitacao_buscar_contratos", {"cnpj_fornecedor": "03.496.338/0001-74"})
+    p = rota.calls[0].request.url.params
+    assert p["cnpj"] == "03496338000174" and p["companyId"] == "1" and p["page"] == "1"
+    data = json.loads(out)
+    assert data["total_contratos_nesta_pagina"] == 1  # o contrato de outro fornecedor sai
+    c = data["contratos"][0]
+    assert c["fornecedor"].startswith("REALMAK") and c["vigencia_fim"] == "2026-12-30"
+    assert c["contrato_pncp_id"] == "00348003000110-2-000011/2025"
+    assert c["link"] == "https://consulteonline.conlicitacao.com.br/biddings/18437512"
+    assert len(c["objeto"]) <= 301
+    assert "senha-teste" not in out
+
+
+async def test_buscar_contratos_valida_entrada(cfg):
+    async with Client(build_conlicitacao_server()) as c:
+        with pytest.raises(ToolError, match="pelo menos um filtro"):
+            await c.call_tool("conlicitacao_buscar_contratos", {})
+        with pytest.raises(ToolError, match="CNPJ inválido"):
+            await c.call_tool("conlicitacao_buscar_contratos", {"cnpj_fornecedor": "123"})

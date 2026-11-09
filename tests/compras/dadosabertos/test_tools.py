@@ -187,12 +187,19 @@ class TestBuscarContratos:
             new_callable=AsyncMock,
             return_value=mock_data,
         ):
-            result = await tools.buscar_contratos("2024-01-01", "2024-01-31", ctx)
+            result = await tools.buscar_contratos("26410", ctx, "2024-01-01", "2024-01-31")
         assert "AQUISIÇÃO DE ESTUFA" in result
         assert "IFNMG" in result
         assert "KM JUNIOR LTDA" in result
         assert "R$ 118.800,00" in result
         assert "1 contratos" in result
+
+    @pytest.mark.asyncio
+    async def test_sem_orgao_explica_o_que_fazer(self) -> None:
+        ctx = _mock_ctx()
+        result = await tools.buscar_contratos("", ctx, "2024-01-01", "2024-01-31")
+        assert "codigo_orgao é obrigatório" in result
+        assert "compras_contratos_vigentes_por_cnpj" in result
 
 
 # ---------------------------------------------------------------------------

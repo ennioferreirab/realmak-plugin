@@ -20,7 +20,7 @@ CLIENT_MODULE = "mcp_realmak.compras.pncp.client"
 
 class TestToolsRegistered:
     @pytest.mark.asyncio
-    async def test_all_19_tools_registered(self) -> None:
+    async def test_all_18_tools_registered(self) -> None:
         async with Client(mcp) as c:
             tool_list = await c.list_tools()
             names = {t.name for t in tool_list}
@@ -28,7 +28,6 @@ class TestToolsRegistered:
                 "buscar_contratacoes",
                 "buscar_contratos",
                 "buscar_atas",
-                "consultar_fornecedor",
                 "consultar_orgao",
                 "buscar_contratacoes_abertas",
                 "buscar_contratacoes_atualizadas",

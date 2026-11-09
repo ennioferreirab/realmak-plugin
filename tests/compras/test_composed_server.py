@@ -19,7 +19,6 @@ class TestComposedServer:
                 "pncp_buscar_contratacoes",
                 "pncp_buscar_contratos",
                 "pncp_buscar_atas",
-                "pncp_consultar_fornecedor",
                 "pncp_consultar_orgao",
                 "pncp_buscar_contratacoes_abertas",
                 "pncp_buscar_contratacoes_atualizadas",
@@ -66,13 +65,22 @@ class TestComposedServer:
                 "dadosabertos_buscar_material_catmat",
                 "dadosabertos_buscar_servico_catser",
                 "dadosabertos_buscar_uasg",
+                "dadosabertos_buscar_orgao",
                 "dadosabertos_pesquisar_preco_material",
                 "dadosabertos_pesquisar_preco_servico",
             }
             assert expected.issubset(names), f"Missing: {expected - names}"
 
     @pytest.mark.asyncio
+    async def test_fornecedor_tool_namespaced(self) -> None:
+        async with Client(mcp) as c:
+            names = {t.name for t in await c.list_tools()}
+            assert "compras_contratos_vigentes_por_cnpj" in names
+            # rota inexistente no PNCP: a ferramenta foi removida
+            assert "pncp_consultar_fornecedor" not in names
+
+    @pytest.mark.asyncio
     async def test_total_tools_count(self) -> None:
         async with Client(mcp) as c:
             tool_list = await c.list_tools()
-            assert len(tool_list) == 36, f"Expected 36 tools, got {len(tool_list)}"
+            assert len(tool_list) == 37, f"Expected 37 tools, got {len(tool_list)}"

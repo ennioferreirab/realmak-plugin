@@ -38,6 +38,9 @@ def _parse_json(response: httpx.Response) -> Any:
     Some government APIs (e.g. PNCP search) return unescaped line breaks
     inside string values, which the strict parser rejects.
     """
+    if not response.content.strip():
+        # 204 ou corpo vazio: o PNCP responde assim quando não há resultado.
+        return {}
     try:
         return response.json()
     except json.JSONDecodeError:
