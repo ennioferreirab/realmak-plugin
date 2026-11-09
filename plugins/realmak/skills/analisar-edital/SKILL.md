@@ -18,6 +18,8 @@ O analista fornece um ou mais destes itens:
 
 Se nada do edital estiver na conversa, diga o que falta e pare. Não analise só pelo resumo do ConLicitação.
 
+Ao chamar as ferramentas, siga os parâmetros da skill correspondente: `licitacao_pasta` recebe `licitacao_id` do Odoo ou `conlicitacao_id`, enquanto `conlicitacao_detalhe_licitacao` recebe `id_conlicitacao`. São campos diferentes. `empresa` seleciona cérebro apenas nas ferramentas `cerebro_*` que o aceitam; não o acrescente às chamadas de licitação ou de análise de edital.
+
 ## O que ler
 
 1. Leia por inteiro, nesta ordem: edital, termo de referência, ETP, relatório de vistoria, minuta de contrato e minuta de ata. Os nomes variam: identifique cada arquivo pelo conteúdo, não só pelo nome.

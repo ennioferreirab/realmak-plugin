@@ -1,6 +1,6 @@
 [project]
 name = "mcp-realmak"
-version = "0.1.0"
+version = "0.2.0"
 description = "Servidor MCP remoto da Realmak: compras públicas, ConLicitação (leitura) e cérebro Galeed"
 readme = "README.md"
 license = "MIT"

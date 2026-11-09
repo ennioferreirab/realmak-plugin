@@ -32,7 +32,7 @@ INSTRUCOES = (
     "dadosabertos_buscar_contratos para isso (eles exigem o órgão). Resposta rápida só com o que o ConLicitação indexou: conlicitacao_buscar_contratos. Se a ferramenta devolver "
     "varredura em andamento, o resultado é parcial: chame de novo com o mesmo CNPJ.\n"
     "- conlicitacao_*: ConLicitação da Realmak (licitações, boletins, pregões monitorados). Só leitura.\n"
-    "- cerebro_*: cérebro da Realmak (pessoas, atestados, contratos, documentos).\n"
+    "- cerebro_*: cérebros das empresas do grupo (pessoas, atestados, contratos, documentos).\n"
     "- licitacao_*: as licitações da Realmak no Odoo, como a pessoa que entrou: pasta, textos, registros, "
     "arquivos e status.\n"
     "Compras, ConLicitação e cérebro são só leitura; as escritas de licitacao_* ficam registradas no card. "
@@ -85,6 +85,7 @@ def build_server(
             transport=galeed_transport,
             public_url=settings.oauth_public_url if settings.oauth_configured else "",
             service_key=settings.galeed_service_key,
+            service_keys=settings.service_keys,
         )
         verifier.attach_odoo(acesso_odoo)
         if settings.oauth_configured:
@@ -106,7 +107,7 @@ def build_server(
     mcp.add_middleware(
         RegistrosVisibilityMiddleware(settings.token_cache_ttl_s, transport=galeed_transport)
     )
-    mcp.add_middleware(PessoaVisibilityMiddleware(acesso_odoo, acesso_cerebro))
+    mcp.add_middleware(PessoaVisibilityMiddleware(acesso_odoo, acesso_cerebro, transport=galeed_transport))
     for caminho, metodos, rota in licitacao_arquivos.rotas(odoo_transport):
         mcp.custom_route(caminho, methods=metodos)(rota)
 

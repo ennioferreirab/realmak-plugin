@@ -9,6 +9,15 @@ As ferramentas `licitacao_*` agem no Odoo da Realmak como a pessoa que entrou pe
 
 `conlicitacao_*` é o site externo do ConLicitação. `licitacao_*` é a licitação dentro da plataforma, com os documentos já baixados e extraídos.
 
+## Parâmetros e identificadores
+
+- Estas ferramentas operam o Odoo da Realmak; não recebem o seletor `empresa` dos cérebros nem `os`. Consultar o cérebro da AForça, por exemplo, não muda a empresa do Odoo.
+- `licitacao_pasta`: envie `licitacao_id` (inteiro do Odoo) ou `conlicitacao_id` (inteiro do ConLicitação), conforme a origem. Não troque esses campos.
+- Nas ferramentas de leitura, registro, envio e status, `licitacao_id` é o id do Odoo retornado pela pasta. `documento_id` é o inteiro listado nos documentos dessa pasta; não é um id de registro do cérebro.
+- `licitacao_buscar` e `licitacao_ler_texto` paginam com `inicio` e `limite`. Para texto, use o `proximo_inicio` devolvido, sem calcular uma página.
+- `licitacao_status` recebe `estado` (`trabalhando`, `aguardando`, `concluido`) e `texto`; não envie um campo `status`.
+- `licitacao_registrar` recebe `tipo`, `texto` e `origem`, além de `licitacao_id`. Use os nomes e tipos do schema apresentado pela ferramenta.
+
 ## 1. Abrir
 
 1. Ache a licitação com `licitacao_buscar` (texto, UF, UASG, etapa, analista, data da disputa) ou use o id que o analista der. O ID ConLicitação também serve em `licitacao_pasta`.

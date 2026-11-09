@@ -32,10 +32,10 @@ BIA = "bia@realmak.com.br"
 
 def _galeed_facts(req: httpx.Request) -> httpx.Response:
     auth, act_as = req.headers.get("authorization", ""), req.headers.get("x-galeed-act-as", "")
-    if auth == "Bearer gld_live_boa" and not act_as:
-        return httpx.Response(200, json={"facts": []})
+    if auth in ("Bearer gld_live_boa", f"Bearer {SERVICO}") and not act_as:
+        return httpx.Response(200, json={"brain": "Realmak", "nivel": "total", "areas": ["*"], "registros": True})
     if auth == f"Bearer {SERVICO}" and act_as:
-        return httpx.Response(200 if act_as == ANA else 403, json={"facts": []})
+        return httpx.Response(200 if act_as == ANA else 403, json={"brain": "Realmak", "nivel": "total", "areas": ["*"], "registros": True})
     return httpx.Response(401, json={"error": "token inválido"})
 
 
@@ -73,6 +73,7 @@ async def servidor():
     app = build_app()
     with respx.mock(assert_all_called=False) as mock:
         mock.get(f"{GALEED}/facts").mock(side_effect=_galeed_facts)
+        mock.get(f"{GALEED}/acesso").mock(side_effect=_galeed_facts)
         mock.get(f"{GALEED}/consulta/esquema").mock(return_value=httpx.Response(200, json={}))
         mock.post(f"{API}/acesso").mock(side_effect=_odoo_acesso)
         async with app.router.lifespan_context(app):

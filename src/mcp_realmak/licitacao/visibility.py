@@ -1,7 +1,7 @@
 """Quem vê o quê: cada grupo de ferramentas só aparece para quem tem aquele acesso.
 
 - `licitacao_*`: só para pessoa (login OAuth) que o Odoo representa, isto é, com as licitações liberadas.
-- `cerebro_*`: para chave de bot válida (já conferida na entrada) ou pessoa com acesso ao cérebro no Galeed.
+- `cerebro_*`: para bot ou pessoa com ao menos uma empresa liberada no Galeed.
 
 As respostas definitivas ficam 5 minutos em cache por e-mail. Odoo ou Galeed fora do ar escondem o grupo só nesta
 listagem, sem entrar no cache.
@@ -19,6 +19,7 @@ from fastmcp.server.middleware import Middleware, MiddlewareContext
 from mcp import types as mt
 
 from ..auth import GaleedUnavailableError, token_hash
+from ..cerebro.empresas import get_empresas
 from ..config import load_settings
 from .client import OdooApiError, OdooClient
 from .tools import LICITACAO_TAG
@@ -59,9 +60,11 @@ class AcessoOdoo:
 
 
 class PessoaVisibilityMiddleware(Middleware):
-    def __init__(self, acesso_odoo: AcessoOdoo, acesso_cerebro: Callable[[str], Awaitable[bool]] | None) -> None:
+    def __init__(self, acesso_odoo: AcessoOdoo, acesso_cerebro: Callable[[str], Awaitable[bool]] | None,
+                 transport: httpx.AsyncBaseTransport | None = None) -> None:
         self.acesso_odoo = acesso_odoo
         self.acesso_cerebro = acesso_cerebro
+        self._transport = transport
 
     async def _cerebro(self, email: str) -> bool:
         if self.acesso_cerebro is None:
@@ -78,7 +81,11 @@ class PessoaVisibilityMiddleware(Middleware):
         esconder = set()
         if not email or not await self.acesso_odoo(email):
             esconder.add(LICITACAO_TAG)
-        if email and not await self._cerebro(email):
+        if email:
+            mostrar_cerebro = await self._cerebro(email)
+        else:
+            mostrar_cerebro = bool(access and access.token and await get_empresas(transport=self._transport).empresas_liberadas(access))
+        if not mostrar_cerebro:
             esconder.add(CEREBRO_TAG)
         if not esconder:
             return tools

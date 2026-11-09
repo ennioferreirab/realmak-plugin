@@ -9,7 +9,7 @@ VARS = [
     "CONLICITACAO_LOGIN", "CONLICITACAO_SITE_PASSWORD", "CONLICITACAO_SESSION_FILE",
     "MCP_REALMAK_TOKEN_CACHE_SECONDS", "MCP_REALMAK_MAX_RESULT_CHARS",
     "MCP_REALMAK_PUBLIC_URL", "MCP_REALMAK_OAUTH_SECRET", "MCP_REALMAK_OAUTH_REDIRECT_HOSTS",
-    "GALEED_SERVICE_KEY", "GALEED_LOGIN_URL", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET",
+    "GALEED_SERVICE_KEY", "GALEED_SERVICE_KEYS", "GALEED_LOGIN_URL", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET",
     "GOOGLE_WORKSPACE_DOMAIN", "SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASSWORD", "SMTP_FROM",
     "ODOO_MCP_URL", "ODOO_MCP_SECRET", "ODOO_MCP_SECRET_FILE", "ODOO_MCP_TIMEOUT_MS", "MCP_REALMAK_ARQUIVO_MAX_MB",
 ]
@@ -20,8 +20,10 @@ def ambiente_limpo(monkeypatch: pytest.MonkeyPatch):
     for name in VARS:
         monkeypatch.delenv(name, raising=False)
     # Zera os clientes únicos entre testes.
+    from mcp_realmak.cerebro.empresas import _instances
     from mcp_realmak.conlicitacao import tools as clt
 
+    _instances.clear()
     clt._site = None
     clt._site_key = None
     yield
