@@ -4,7 +4,6 @@ Endpoints (verified against OpenAPI spec at /v3/api-docs):
     - /contratacoes/publicacao  → buscar_contratacoes (requires dates + modalidade)
     - /contratos                → buscar_contratos (requires dates)
     - /atas                     → buscar_atas (requires dates)
-    - /fornecedores             → consultar_fornecedor
     - /orgaos                   → consultar_orgao
 
 IMPORTANT: The PNCP API has NO text search parameter (`q`).
@@ -25,13 +24,13 @@ from .constants import (
     ARQUIVO_URL_PUBLICA,
     ATAS_ATUALIZACAO_URL,
     ATAS_URL,
+    CONTRATACAO_DETALHE_URL,
     CONTRATACOES_ATUALIZACAO_URL,
     CONTRATACOES_PROPOSTA_URL,
     CONTRATACOES_URL,
     CONTRATOS_ATUALIZACAO_URL,
     CONTRATOS_URL,
     ESFERAS,
-    FORNECEDORES_URL,
     INSTRUMENTOS_COBRANCA_URL,
     MAX_DATE_RANGE_DAYS,
     MAX_PAGE_SIZE_CONTRATACOES,
@@ -54,8 +53,6 @@ from .schemas import (
     ContratoResultado,
     DocumentoPesquisa,
     EventoHistorico,
-    Fornecedor,
-    FornecedorResultado,
     InstrumentoCobranca,
     InstrumentoCobrancaResultado,
     ItemContratacao,
@@ -386,27 +383,6 @@ async def buscar_atas(
     )
 
 
-def _parse_fornecedor(item: dict[str, Any]) -> Fornecedor:
-    """Parse a raw API response item into a Fornecedor model."""
-    return Fornecedor(
-        cnpj=item.get("cnpj") or item.get("cpfCnpj"),
-        razao_social=item.get("razaoSocial") or item.get("nomeRazaoSocial"),
-        nome_fantasia=item.get("nomeFantasia"),
-        municipio=(
-            item.get("municipio", {}).get("nome")
-            if isinstance(item.get("municipio"), dict)
-            else item.get("municipioNome")
-        ),
-        uf=(
-            item.get("uf", {}).get("sigla")
-            if isinstance(item.get("uf"), dict)
-            else item.get("ufSigla")
-        ),
-        porte=item.get("porte") or item.get("porteEmpresa"),
-        data_abertura=item.get("dataAbertura"),
-    )
-
-
 _ESFERA_MAP: dict[str, str] = {"F": "Federal", "E": "Estadual", "M": "Municipal", "D": "Distrital"}
 _PODER_MAP: dict[str, str] = {"E": "Executivo", "L": "Legislativo", "J": "Judiciário"}
 
@@ -422,18 +398,6 @@ def _parse_orgao(item: dict[str, Any]) -> OrgaoContratante:
         poder=item.get("poderNome") or _PODER_MAP.get(poder_id, poder_id),
         uf=item.get("ufSigla") or item.get("ufNome"),
         municipio=item.get("municipioNome"),
-    )
-
-
-async def consultar_fornecedor(cnpj: str) -> FornecedorResultado:
-    """Search supplier by CNPJ."""
-    params: dict[str, str] = {"cnpj": cnpj}
-    data: dict[str, Any] = await http_get(FORNECEDORES_URL, params=params)
-    items = data.get("data", data.get("resultado", []))
-    fornecedores = [_parse_fornecedor(item) for item in items] if isinstance(items, list) else []
-    return FornecedorResultado(
-        total=data.get("totalRegistros", data.get("count", len(fornecedores))),
-        fornecedores=fornecedores,
     )
 
 
@@ -654,7 +618,7 @@ async def consultar_contratacao_detalhe(
 
     API: GET /v1/orgaos/{cnpj}/compras/{ano}/{sequencial}
     """
-    url = f"{ORGAOS_URL}/{cnpj}/compras/{ano}/{sequencial}"
+    url = f"{CONTRATACAO_DETALHE_URL}/{cnpj}/compras/{ano}/{sequencial}"
     data: dict[str, Any] = await http_get(url)
     return _parse_contratacao(data)
 

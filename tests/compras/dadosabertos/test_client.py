@@ -7,12 +7,14 @@ import respx
 from mcp_realmak.compras.dadosabertos import client
 from mcp_realmak.compras.dadosabertos.constants import (
     COMPRAS_SEM_LICITACAO_URL,
+    CONTRATOS_FIM_VIGENCIA_URL,
     CONTRATOS_URL,
     FORNECEDOR_URL,
     GRUPO_MATERIAL_URL,
     ITEM_MATERIAL_URL,
     ITEM_SERVICO_URL,
     LICITACOES_URL,
+    ORGAO_URL,
     PDM_MATERIAL_URL,
     PESQUISA_PRECO_MATERIAL_URL,
     PESQUISA_PRECO_SERVICO_URL,
@@ -190,6 +192,7 @@ class TestBuscarContratos:
             )
         )
         result = await client.buscar_contratos(
+            codigo_orgao="26410",
             data_vigencia_inicial_min="2024-01-01",
             data_vigencia_inicial_max="2024-01-31",
         )
@@ -209,11 +212,75 @@ class TestBuscarContratos:
             return_value=httpx.Response(200, json={"totalRegistros": 0, "resultado": []})
         )
         result = await client.buscar_contratos(
+            codigo_orgao="26410",
             data_vigencia_inicial_min="2024-01-01",
             data_vigencia_inicial_max="2024-01-01",
         )
         assert result.total == 0
         assert result.contratos == []
+
+    @pytest.mark.asyncio
+    async def test_codigo_orgao_obrigatorio(self) -> None:
+        # Sem codigoOrgao a API responde 404 "Resource not found": falhamos antes, com a causa.
+        with pytest.raises(ValueError, match="codigo_orgao é obrigatório"):
+            await client.buscar_contratos(
+                codigo_orgao="",
+                data_vigencia_inicial_min="2024-01-01",
+                data_vigencia_inicial_max="2024-01-31",
+            )
+
+    @pytest.mark.asyncio
+    async def test_periodo_acima_de_365_dias(self) -> None:
+        with pytest.raises(ValueError, match="no máximo 365"):
+            await client.buscar_contratos(
+                codigo_orgao="26410",
+                data_vigencia_inicial_min="2020-01-01",
+                data_vigencia_inicial_max="2026-12-31",
+            )
+
+    @pytest.mark.asyncio
+    @respx.mock
+    async def test_somente_vigentes_usa_fim_de_vigencia_e_cnpj_so_digitos(self) -> None:
+        rota = respx.get(CONTRATOS_FIM_VIGENCIA_URL).mock(
+            return_value=httpx.Response(200, json={"totalRegistros": 0, "resultado": []})
+        )
+        await client.buscar_contratos(
+            codigo_orgao="26410", ni_fornecedor="03.496.338/0001-74", somente_vigentes=True
+        )
+        params = rota.calls[0].request.url.params
+        assert params["codigoOrgao"] == "26410"
+        assert params["niFornecedor"] == "03496338000174"
+        assert "dataVigenciaFinalMin" in params
+        assert "dataVigenciaInicialMin" not in params
+
+
+class TestListarOrgaos:
+    @pytest.mark.asyncio
+    @respx.mock
+    async def test_pagina_ate_o_fim(self) -> None:
+        client.listar_orgaos.cache.clear()  # type: ignore[attr-defined]
+        rota = respx.get(ORGAO_URL).mock(
+            side_effect=[
+                httpx.Response(
+                    200,
+                    json={
+                        "totalPaginas": 2,
+                        "resultado": [{"codigoOrgao": 52111, "nomeOrgao": "COMANDO DA AERONAUTICA", "esfera": "F"}],
+                    },
+                ),
+                httpx.Response(
+                    200,
+                    json={
+                        "totalPaginas": 2,
+                        "resultado": [{"codigoOrgao": 26270, "nomeOrgao": "FUNDACAO UNIVERSIDADE DO AMAZONAS", "esfera": "F"}],
+                    },
+                ),
+            ]
+        )
+        orgaos = await client.listar_orgaos()
+        assert [o.codigo_orgao for o in orgaos] == ["52111", "26270"]
+        assert rota.call_count == 2
+        assert rota.calls[0].request.url.params["statusOrgao"] == "true"
 
 
 # ---------------------------------------------------------------------------

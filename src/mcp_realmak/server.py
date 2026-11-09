@@ -25,8 +25,12 @@ from .oauth import GoogleLogin, OAuthServer, SmtpConfig
 
 INSTRUCOES = (
     "Servidor de licitações da Realmak. Grupos de ferramentas:\n"
-    "- pncp_*, dadosabertos_*, contratosgovbr_*: compras públicas (PNCP, Compras.gov.br, "
+    "- pncp_*, dadosabertos_*, contratosgovbr_*, compras_*: compras públicas (PNCP, Compras.gov.br, "
     "Contratos.gov.br). Dados abertos de qualquer órgão.\n"
+    "  Contratos vigentes de uma empresa (você só tem o CNPJ): compras_contratos_vigentes_por_cnpj. "
+    "Nenhuma API oficial filtra contrato só por fornecedor: não tente pncp_buscar_contratos nem "
+    "dadosabertos_buscar_contratos para isso (eles exigem o órgão). Resposta rápida só com o que o ConLicitação indexou: conlicitacao_buscar_contratos. Se a ferramenta devolver "
+    "varredura em andamento, o resultado é parcial: chame de novo com o mesmo CNPJ.\n"
     "- conlicitacao_*: ConLicitação da Realmak (licitações, boletins, pregões monitorados). Só leitura.\n"
     "- cerebro_*: cérebro da Realmak (pessoas, atestados, contratos, documentos).\n"
     "- licitacao_*: as licitações da Realmak no Odoo, como a pessoa que entrou: pasta, textos, registros, "

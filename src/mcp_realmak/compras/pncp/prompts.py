@@ -12,13 +12,18 @@ def investigar_fornecedor(cnpj: str) -> str:
     return (
         f"Investigue o fornecedor com CNPJ {cnpj} em contratações públicas.\n\n"
         "Passos:\n"
-        f"1. Use buscar_contratos(cnpj_fornecedor='{cnpj}') para ver contratos\n"
-        f"2. Use buscar_contratacoes(texto='{cnpj}') para ver licitações\n\n"
+        f"1. Chame compras_contratos_vigentes_por_cnpj(cnpj='{cnpj}') para os contratos "
+        "vigentes. Se a varredura vier em andamento, chame de novo até concluir.\n"
+        f"2. Chame dadosabertos_consultar_fornecedor(cnpj='{cnpj}') para o cadastro "
+        "(razão social, porte, habilitação).\n"
+        f"3. Use pncp_pesquisar(texto='{cnpj}', tipo='contrato', status='nao_vigente') "
+        "para o histórico de contratos já encerrados.\n\n"
         "Apresente um relatório com:\n"
         "- Total de contratos e valores\n"
         "- Órgãos contratantes\n"
         "- Objetos mais frequentes\n"
-        "- Período de atuação"
+        "- Período de atuação\n"
+        "- O que a consulta não cobre (a seção Cobertura da ferramenta)"
     )
 
 

@@ -9,7 +9,6 @@ from mcp_realmak.compras.pncp.constants import (
     ATAS_URL,
     CONTRATACOES_URL,
     CONTRATOS_URL,
-    FORNECEDORES_URL,
     ORGAOS_URL,
 )
 
@@ -397,86 +396,7 @@ class TestBuscarAtas:
         assert a.valor_total == 300000.0
 
 
-# ---------------------------------------------------------------------------
-# consultar_fornecedor
-# ---------------------------------------------------------------------------
 
-
-class TestConsultarFornecedor:
-    @pytest.mark.asyncio
-    @respx.mock
-    async def test_returns_parsed_fornecedor(self) -> None:
-        respx.get(FORNECEDORES_URL).mock(
-            return_value=httpx.Response(
-                200,
-                json={
-                    "totalRegistros": 1,
-                    "data": [
-                        {
-                            "cnpj": "12345678000199",
-                            "razaoSocial": "Empresa Teste LTDA",
-                            "nomeFantasia": "Teste Corp",
-                            "municipio": {"nome": "São Paulo"},
-                            "uf": {"sigla": "SP"},
-                            "porte": "Médio",
-                            "dataAbertura": "2010-05-20",
-                        }
-                    ],
-                },
-            )
-        )
-        result = await client.consultar_fornecedor(cnpj="12345678000199")
-        assert result.total == 1
-        assert len(result.fornecedores) == 1
-        f = result.fornecedores[0]
-        assert f.cnpj == "12345678000199"
-        assert f.razao_social == "Empresa Teste LTDA"
-        assert f.nome_fantasia == "Teste Corp"
-        assert f.municipio == "São Paulo"
-        assert f.uf == "SP"
-        assert f.porte == "Médio"
-        assert f.data_abertura == "2010-05-20"
-
-    @pytest.mark.asyncio
-    @respx.mock
-    async def test_empty_response(self) -> None:
-        respx.get(FORNECEDORES_URL).mock(
-            return_value=httpx.Response(
-                200,
-                json={"totalRegistros": 0, "data": []},
-            )
-        )
-        result = await client.consultar_fornecedor(cnpj="00000000000000")
-        assert result.total == 0
-        assert result.fornecedores == []
-
-    @pytest.mark.asyncio
-    @respx.mock
-    async def test_fornecedor_fields_fallback(self) -> None:
-        respx.get(FORNECEDORES_URL).mock(
-            return_value=httpx.Response(
-                200,
-                json={
-                    "count": 1,
-                    "resultado": [
-                        {
-                            "cpfCnpj": "99988877000166",
-                            "nomeRazaoSocial": "Fornecedor Alt",
-                            "municipioNome": "Rio de Janeiro",
-                            "ufSigla": "RJ",
-                            "porteEmpresa": "Grande",
-                        }
-                    ],
-                },
-            )
-        )
-        result = await client.consultar_fornecedor(cnpj="99988877000166")
-        f = result.fornecedores[0]
-        assert f.cnpj == "99988877000166"
-        assert f.razao_social == "Fornecedor Alt"
-        assert f.municipio == "Rio de Janeiro"
-        assert f.uf == "RJ"
-        assert f.porte == "Grande"
 
 
 # ---------------------------------------------------------------------------

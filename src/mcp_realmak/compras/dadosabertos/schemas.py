@@ -176,10 +176,25 @@ class PrecoResultado(BaseModel):
     precos: list[PrecoPraticado] = []
 
 
+class OrgaoDA(BaseModel):
+    """Órgão do cadastro SIASG/SIORG (código usado nas consultas de contratos)."""
+
+    codigo_orgao: str | None = None
+    nome_orgao: str | None = None
+    codigo_orgao_superior: str | None = None
+    nome_orgao_superior: str | None = None
+    cnpj: str | None = None
+    esfera: str | None = None
+    poder: str | None = None
+    tipo_administracao: str | None = None
+
+
 class Uasg(BaseModel):
     """Unidade Administrativa de Serviços Gerais."""
 
     codigo_uasg: str | None = None
+    codigo_orgao: str | None = None
+    nome_orgao: str | None = None
     nome_uasg: str | None = None
     cnpj_cpf_orgao: str | None = None
     sigla_uf: str | None = None

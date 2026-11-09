@@ -145,3 +145,48 @@ def resumir_acompanhamento(ac: dict) -> dict:
 def casa_busca(texto: str, *valores: Any) -> bool:
     alvo = texto.casefold()
     return any(isinstance(v, str) and alvo in v.casefold() for v in valores)
+
+
+def _dia(valor: Any) -> str | None:
+    return valor[:10] if isinstance(valor, str) and len(valor) >= 10 else None
+
+
+def resumir_contratos(data: dict, cnpj: str | None = None) -> list[dict]:
+    """Um item por contratado de cada licitação da tela Contratos.
+
+    Uma licitação pode ter vários contratados (ata com vários fornecedores). Com `cnpj`,
+    só ficam os contratos desse fornecedor. A vigência é a do contrato como publicado.
+    """
+    saida: list[dict] = []
+    for registro in data.get("contratos") or []:
+        origem = registro.get("_source") if isinstance(registro, dict) else None
+        if not isinstance(origem, dict):
+            continue
+        orgao = origem.get("orgao") if isinstance(origem.get("orgao"), dict) else {}
+        for c in origem.get("contratos") or []:
+            if not isinstance(c, dict):
+                continue
+            if cnpj and "".join(ch for ch in str(c.get("cpf_cnpj") or "") if ch.isdigit()) != cnpj:
+                continue
+            saida.append(
+                {
+                    "id_conlicitacao": origem.get("id"),
+                    "link": link_licitacao(origem.get("id")),
+                    "orgao": orgao.get("nome"),
+                    "uasg": orgao.get("uasg"),
+                    "cidade": orgao.get("cidade"),
+                    "uf": orgao.get("estado"),
+                    "edital": origem.get("edital"),
+                    "objeto": truncar(scrub(origem.get("objeto")), 300),
+                    "fornecedor": c.get("nome_fornecedor"),
+                    "cnpj_fornecedor": c.get("cpf_cnpj"),
+                    "numero_contrato": c.get("id_contrato"),
+                    "assinatura": _dia(c.get("data_assinatura")),
+                    "vigencia_inicio": _dia(c.get("vigencia_inicio")),
+                    "vigencia_fim": _dia(c.get("vigencia_fim")),
+                    "valor_contratado": c.get("valor_contratado"),
+                    "fonte_do_contrato": c.get("fonte"),
+                    "contrato_pncp_id": c.get("contrato_pncp_id"),
+                }
+            )
+    return saida

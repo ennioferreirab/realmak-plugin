@@ -18,6 +18,7 @@ from mcp_realmak.compras._shared.http_client import http_get
 
 from .constants import (
     COMPRAS_SEM_LICITACAO_URL,
+    CONTRATOS_FIM_VIGENCIA_URL,
     CONTRATOS_URL,
     DEFAULT_PAGE_SIZE,
     FORNECEDOR_URL,
@@ -26,7 +27,9 @@ from .constants import (
     ITEM_SERVICO_URL,
     LICITACOES_URL,
     MAX_PAGE_SIZE,
+    MAX_PERIODO_CONTRATOS_DIAS,
     MIN_PAGE_SIZE,
+    ORGAO_URL,
     PDM_MATERIAL_URL,
     PESQUISA_PRECO_MATERIAL_URL,
     PESQUISA_PRECO_SERVICO_URL,
@@ -46,6 +49,7 @@ from .schemas import (
     ItemServicoResultado,
     Licitacao,
     LicitacaoResultado,
+    OrgaoDA,
     PdmMaterial,
     PrecoPraticado,
     PrecoResultado,
@@ -196,9 +200,15 @@ def _parse_preco(item: dict[str, Any]) -> PrecoPraticado:
     )
 
 
+def _str(value: Any) -> str | None:
+    return None if value is None else str(value)
+
+
 def _parse_uasg(item: dict[str, Any]) -> Uasg:
     return Uasg(
         codigo_uasg=item.get("codigoUasg"),
+        codigo_orgao=_str(item.get("codigoOrgao")),
+        nome_orgao=item.get("nomeOrgao"),
         nome_uasg=item.get("nomeUasg"),
         cnpj_cpf_orgao=item.get("cnpjCpfOrgao"),
         sigla_uf=item.get("siglaUf"),
@@ -287,33 +297,101 @@ async def buscar_dispensas(
     )
 
 
+def _validar_periodo_contratos(inicio: str, fim: str) -> None:
+    try:
+        d0, d1 = date.fromisoformat(inicio), date.fromisoformat(fim)
+    except ValueError as exc:
+        raise ValueError("Datas no formato YYYY-MM-DD (ex.: 2026-01-31).") from exc
+    if d1 < d0:
+        raise ValueError("A data final da vigência é anterior à inicial.")
+    if (d1 - d0).days > MAX_PERIODO_CONTRATOS_DIAS:
+        raise ValueError(
+            f"Período de {(d1 - d0).days} dias: o Compras.gov.br aceita no máximo "
+            f"{MAX_PERIODO_CONTRATOS_DIAS}. Divida em janelas ou use somente_vigentes=true."
+        )
+
+
 async def buscar_contratos(
-    data_vigencia_inicial_min: str,
-    data_vigencia_inicial_max: str,
-    codigo_orgao: str | None = None,
+    codigo_orgao: str,
+    data_vigencia_inicial_min: str | None = None,
+    data_vigencia_inicial_max: str | None = None,
     ni_fornecedor: str | None = None,
+    somente_vigentes: bool = False,
     pagina: int = 1,
     tamanho: int = DEFAULT_PAGE_SIZE,
 ) -> ContratoDAResultado:
-    """Search public contracts."""
+    """Search the contracts of ONE órgão at Compras.gov.br.
+
+    API: /modulo-contratos/1_consultarContratos (por início da vigência, no
+    máximo 365 dias) ou /1.2_consultarContratos_FimVigencia (somente_vigentes).
+    codigoOrgao é obrigatório nas duas: sem ele a API devolve 404, não 400.
+    """
+    if not codigo_orgao or not str(codigo_orgao).strip():
+        raise ValueError(
+            "codigo_orgao é obrigatório: a API de contratos só consulta um órgão por vez. "
+            "Ache o código com dadosabertos_buscar_orgao ou dadosabertos_buscar_uasg; "
+            "para achar contratos de um CNPJ sem saber o órgão, use "
+            "compras_contratos_vigentes_por_cnpj."
+        )
     params: dict[str, str] = {
-        "dataVigenciaInicialMin": data_vigencia_inicial_min,
-        "dataVigenciaInicialMax": data_vigencia_inicial_max,
+        "codigoOrgao": str(codigo_orgao).strip(),
         "pagina": str(pagina),
         "tamanhoPagina": str(_ensure_min_page_size(tamanho)),
     }
-    if codigo_orgao:
-        params["codigoOrgao"] = codigo_orgao
+    if somente_vigentes:
+        hoje = date.today()
+        params["dataVigenciaFinalMin"] = hoje.isoformat()
+        params["dataVigenciaFinalMax"] = hoje.replace(year=hoje.year + 15).isoformat()
+        url = CONTRATOS_FIM_VIGENCIA_URL
+    else:
+        if not (data_vigencia_inicial_min and data_vigencia_inicial_max):
+            raise ValueError(
+                "Informe data_vigencia_inicial_min e data_vigencia_inicial_max "
+                "(YYYY-MM-DD, até 365 dias) ou use somente_vigentes=true."
+            )
+        _validar_periodo_contratos(data_vigencia_inicial_min, data_vigencia_inicial_max)
+        params["dataVigenciaInicialMin"] = data_vigencia_inicial_min
+        params["dataVigenciaInicialMax"] = data_vigencia_inicial_max
+        url = CONTRATOS_URL
     if ni_fornecedor:
-        params["niFornecedor"] = ni_fornecedor
+        params["niFornecedor"] = "".join(ch for ch in ni_fornecedor if ch.isdigit())
 
-    data: dict[str, Any] = await http_get(CONTRATOS_URL, params=params)
+    data: dict[str, Any] = await http_get(url, params=params)
     items = data.get("resultado", [])
     contratos = [_parse_contrato_da(i) for i in items] if isinstance(items, list) else []
     return ContratoDAResultado(
         total=data.get("totalRegistros", len(contratos)),
         contratos=contratos,
     )
+
+
+def _parse_orgao_da(item: dict[str, Any]) -> OrgaoDA:
+    return OrgaoDA(
+        codigo_orgao=_str(item.get("codigoOrgao")),
+        nome_orgao=item.get("nomeOrgao"),
+        codigo_orgao_superior=_str(item.get("codigoOrgaoSuperior")),
+        nome_orgao_superior=item.get("nomeOrgaoSuperior"),
+        cnpj=item.get("cnpjCpfOrgao"),
+        esfera=item.get("esfera"),
+        poder=item.get("poder"),
+        tipo_administracao=item.get("nomeTipoAdministracao"),
+    )
+
+
+@ttl_cache(ttl=24 * 3600.0, maxsize=4)
+async def listar_orgaos() -> list[OrgaoDA]:
+    """Todos os órgãos ativos do cadastro (cerca de 12 mil; em cache por 24 h)."""
+    orgaos: list[OrgaoDA] = []
+    pagina = 1
+    while True:
+        data: dict[str, Any] = await http_get(
+            ORGAO_URL,
+            params={"statusOrgao": "true", "pagina": str(pagina), "tamanhoPagina": str(MAX_PAGE_SIZE)},
+        )
+        orgaos.extend(_parse_orgao_da(i) for i in data.get("resultado", []))
+        if pagina >= int(data.get("totalPaginas", 1)):
+            return orgaos
+        pagina += 1
 
 
 async def consultar_fornecedor(

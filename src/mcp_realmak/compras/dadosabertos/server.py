@@ -10,6 +10,7 @@ from .tools import (
     buscar_dispensas,
     buscar_licitacoes,
     buscar_material_catmat,
+    buscar_orgao,
     buscar_pregoes,
     buscar_servico_catser,
     buscar_uasg,
@@ -29,5 +30,6 @@ mcp.tool(consultar_fornecedor, tags={"consulta", "fornecedores", "compras"})
 mcp.tool(buscar_material_catmat, tags={"busca", "catmat", "materiais"})
 mcp.tool(buscar_servico_catser, tags={"busca", "catser", "servicos"})
 mcp.tool(buscar_uasg, tags={"busca", "uasg", "orgaos"})
+mcp.tool(buscar_orgao, tags={"busca", "orgaos", "contratos"})
 mcp.tool(pesquisar_preco_material, tags={"busca", "precos", "referencia", "catmat", "materiais"})
 mcp.tool(pesquisar_preco_servico, tags={"busca", "precos", "referencia", "catser", "servicos"})

@@ -174,25 +174,6 @@ class AtaResultado(BaseModel):
     atas: list[AtaRegistroPreco] = []
 
 
-class Fornecedor(BaseModel):
-    """Fornecedor de contratações públicas."""
-
-    cnpj: str | None = None
-    razao_social: str | None = None
-    nome_fantasia: str | None = None
-    municipio: str | None = None
-    uf: str | None = None
-    porte: str | None = None
-    data_abertura: str | None = None
-
-
-class FornecedorResultado(BaseModel):
-    """Resultado paginado de busca de fornecedores."""
-
-    total: int = 0
-    fornecedores: list[Fornecedor] = []
-
-
 class OrgaoContratante(BaseModel):
     """Órgão contratante no PNCP."""
 

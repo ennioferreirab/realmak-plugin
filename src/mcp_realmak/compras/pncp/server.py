@@ -21,7 +21,6 @@ from .tools import (
     buscar_pca_atualizacao,
     buscar_pca_usuario,
     consultar_contratacao_detalhe,
-    consultar_fornecedor,
     consultar_orgao,
     historico_contratacao,
     itens_contratacao,
@@ -35,7 +34,6 @@ mcp = FastMCP("pncp")
 mcp.tool(buscar_contratacoes, tags={"busca", "contratacoes", "licitacoes"})
 mcp.tool(buscar_contratos, tags={"busca", "contratos", "compras"})
 mcp.tool(buscar_atas, tags={"busca", "atas", "registro-preco"})
-mcp.tool(consultar_fornecedor, tags={"consulta", "fornecedores", "compras"})
 mcp.tool(consultar_orgao, tags={"consulta", "orgaos", "compras"})
 
 # Tools — propostas abertas e atualizações

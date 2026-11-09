@@ -250,6 +250,35 @@ class ConlicitacaoSiteClient:
         query.append(("page", pagina))
         return await self.get_json("/biddings.json?" + urlencode(query))
 
+    async def buscar_contratos(
+        self,
+        *,
+        cnpj: str = "",
+        empresa: str = "",
+        objeto: str = "",
+        orgao: str = "",
+        edital: str = "",
+        pagina: int = 1,
+    ) -> dict:
+        """Tela Contratos do site: GET /contracts/search, a mesma chamada do navegador."""
+        from urllib.parse import urlencode
+
+        await self._ensure_session()
+        query = [
+            ("page", pagina),
+            ("objeto", objeto),
+            ("id", ""),
+            ("edital", edital),
+            ("empresa", empresa),
+            ("exact_search", "true"),
+            ("all_segments", "true"),
+            ("cnpj", cnpj),
+            ("searchAll", "true"),
+            ("orgao", orgao),
+            ("companyId", self.empresa_id or 0),
+        ]
+        return await self.get_json("/contracts/search?" + urlencode(query))
+
     async def obter_licitacao(self, licitacao_id: int) -> dict:
         _validar_id(licitacao_id)
         data = await self.get_json(f"/biddings/{licitacao_id}.json")

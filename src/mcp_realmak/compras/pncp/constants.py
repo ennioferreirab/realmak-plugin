@@ -15,10 +15,10 @@ CONTRATOS_URL = f"{PNCP_API_BASE}/contratos"
 CONTRATOS_ATUALIZACAO_URL = f"{PNCP_API_BASE}/contratos/atualizacao"
 ATAS_URL = f"{PNCP_API_BASE}/atas"
 ATAS_ATUALIZACAO_URL = f"{PNCP_API_BASE}/atas/atualizacao"
-FORNECEDORES_URL = f"{PNCP_API_BASE}/fornecedores"
 ORGAOS_URL = "https://pncp.gov.br/api/pncp/v1/orgaos"
+# Detalhe de uma contratação: o caminho antigo /api/pncp/v1 responde 301 sem Location.
 CONTRATACAO_DETALHE_URL = f"{PNCP_API_BASE}/orgaos"
-PCA_URL = f"{PNCP_API_BASE}/pca"
+PCA_URL = f"{PNCP_API_BASE}/pca/"  # a barra final é obrigatória: sem ela o PNCP responde 404
 INSTRUMENTOS_COBRANCA_URL = f"{PNCP_API_BASE}/instrumentoscobranca/inclusao"
 
 # Busca do portal (texto livre). Não tem OpenAPI: os parâmetros vêm do código
