@@ -105,7 +105,7 @@ A mesma pasta `plugins/realmak` serve aos dois aplicativos:
 
 A versão é a mesma nos dois manifestos. Ao lançar uma versão, altere os dois.
 
-As planilhas-modelo das skills de análise são geradas por `scripts/gerar_modelos_analise.py`. Para mudar uma planilha, altere o script e rode `uv run --with openpyxl python scripts/gerar_modelos_analise.py`.
+As saídas da análise de manutenção (painel HTML, relatório em PDF, planilha e Markdown) são geradas pelo script da skill: `python plugins/realmak/skills/analisar-edital-manutencao/scripts/gerar_analise.py dados.json pasta`, com o exemplo em `assets/exemplo-dados.json`. A planilha-modelo de fornecimento sai de `scripts/gerar_modelos_analise.py`; para regerar as duas planilhas-modelo, rode `uv run --with openpyxl python scripts/gerar_modelos_analise.py`.
 
 ### Claude Code
 

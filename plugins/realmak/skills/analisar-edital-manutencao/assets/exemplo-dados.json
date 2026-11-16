@@ -1,0 +1,1533 @@
+{
+ "subtitulo": "Pregão Eletrônico nº 21/2026 - SSP-GO (SISLOG 119920) | Processo SEI nº 202600005015278 | Sessão pública em 17/11/2026, às 9h (Brasília). Resumo de apoio: confira o texto oficial no SISLOG antes de decidir.",
+ "ident": {
+  "Órgão / unidade": "Secretaria de Estado da Segurança Pública de Goiás (SSP-GO), para a Superintendência de Polícia Técnico-Científica",
+  "Edital e processo": "Pregão Eletrônico nº 21/2026 · SISLOG 119920 · SEI 202600005015278",
+  "Objeto": "Manutenção preventiva e corretiva de 64 nobreaks (item 1) e 8 geradores (item 2), com peças originais, baterias e atendimento 24x7, em Goiânia, Aparecida de Goiânia, Anápolis, Itumbiara, Luziânia, Águas Lindas e Campos Belos",
+  "Vigência": "12 meses a partir da divulgação no PNCP, prorrogável (Edital 11.8; TR 2.6)",
+  "Valor estimado": "R$ 352.181,28 por 12 meses: item 1 R$ 221.494,32; item 2 R$ 130.686,96 (Edital 2.7 e 2.8)",
+  "Sessão pública": "17/11/2026, às 9h (Brasília), no SISLOG",
+  "Data desta análise": "15/11/2026"
+ },
+ "conclusao": "Atende com condições",
+ "justificativa": "(C) A carga estimada de 212,5 h/mês cabe em 2 técnicos (252 h produtivas/mês), com folga de 39,5 h. O que mais pesa no risco não está nas horas: plantão 24x7 com atendimento em 4 h, equipamento reserva em 24 h, peças e baterias até o teto e garantia de execução de 3%. (D) Pelo texto do TR, peças e baterias entram no preço mensal até o teto de R$ 62 mil (item 1) e R$ 83 mil (item 2) por ano (TR 3.5, 4.3.1 e 9.13). (C) Se o teto for todo consumido, sobram R$ 159.494,32 (item 1) e R$ 47.686,96 (item 2) por ano para mão de obra, deslocamento, plantão e lucro. (P) Tempos e número de chamados são premissas: o histórico do Contrato 29/2020 não foi anexado.",
+ "condicoes": [
+  [
+   "Escala de plantão 24x7 com 2 técnicos em campo para cumprir 4 h (faixa 1) e 8 h (faixa 2)",
+   "TR 4.1.1 e 7.1.2"
+  ],
+  [
+   "Nobreak e gerador reserva equivalentes ou superiores para entregar em 24 h (48 h em Campos Belos)",
+   "TR 4.1.1"
+  ],
+  [
+   "Capacidade de absorver peças e baterias até R$ 62 mil (item 1) e R$ 83 mil (item 2) por ano, sem cobrança adicional",
+   "TR 4.3 e 4.4"
+  ],
+  [
+   "Atestado de manutenção de nobreak ≥ 60 kVA para o item 1 e de gerador ≥ 150 kVA para o item 2",
+   "TR 10.14"
+  ],
+  [
+   "Garantia de execução de 3% do contrato (cerca de R$ 10.565,44)",
+   "TR 8.17"
+  ],
+  [
+   "Definição sobre diesel e consumíveis, que o TR não atribui expressamente",
+   "P-01, P-05"
+  ]
+ ],
+ "riscos": [
+  [
+   "Teto de peças e baterias (R$ 62 mil e R$ 83 mil por ano)",
+   "R-19, R-22",
+   "Até o teto, o consumo é da contratada e não gera reequilíbrio; no item 2 o teto é 63,5% do valor anual.",
+   "Estimar o consumo com o relatório inicial de baterias; precificar a parcela esperada."
+  ],
+  [
+   "Atendimento 24x7 em 4 h, 8 h e 24 h",
+   "R-13 a R-16",
+   "Descumprimento gera multa de 0,5% a 30%.",
+   "Escala de plantão e técnico baseado em Goiânia; subcontratação é vedada."
+  ],
+  [
+   "Equipamento reserva em 24 h / 48 h",
+   "R-17",
+   "Exige parque próprio de 1,2 a 120 kVA (nobreak) e 12 a 300 kVA (gerador).",
+   "Dimensionar o parque reserva e o custo de capital."
+  ],
+  [
+   "Garantia de execução de 3% (só no TR)",
+   "R-28",
+   "Cerca de R$ 10.565,44; o edital e a minuta não detalham.",
+   "Prever seguro-garantia ou fiança no preço."
+  ],
+  [
+   "Qualificação técnica por item",
+   "R-30, R-31",
+   "Sem atestado compatível, a empresa é inabilitada no item.",
+   "Conferir com analisar-habilitacao (AForça tem atestado GAPBR com nobreak de 50 a 250 kVA)."
+  ]
+ ],
+ "decisoes": [
+  [
+   "Qual empresa do grupo disputa e se disputa os dois itens ou só um (critério por item; Edital 2.8)",
+   "Antes de 17/11, 9h"
+  ],
+  [
+   "Quanto do teto de peças a empresa espera consumir no preço de cada item",
+   "Antes de 17/11, 9h"
+  ],
+  [
+   "Como tratar diesel e consumíveis nos testes do gerador (P-01, P-05)",
+   "Antes de 17/11, 9h"
+  ]
+ ],
+ "documentos": [
+  [
+   "D-01",
+   "Edital do Pregão Eletrônico nº 21/2026",
+   "Edital",
+   "PNCP (arquivo 1) e SISLOG",
+   "27/10/2026"
+  ],
+  [
+   "D-02",
+   "Termo de Referência retificado",
+   "TR",
+   "SISLOG (o arquivo do PNCP está corrompido)",
+   "27/10/2026"
+  ],
+  [
+   "D-03",
+   "Minuta Contratual",
+   "Minuta",
+   "PNCP (arquivo 4) e SISLOG",
+   "27/10/2026"
+  ],
+  [
+   "D-04",
+   "Aviso de Licitação e publicações (DOE, site da SSP, jornal)",
+   "Aviso",
+   "PNCP (arquivos 2, 5, 6 e 7)",
+   "27 e 28/10/2026"
+  ],
+  [
+   "D-05",
+   "Pedidos de esclarecimento de 11/11 e 12/11 (sem resposta)",
+   "Esclarecimento",
+   "SISLOG",
+   "11 e 12/11/2026"
+  ]
+ ],
+ "nobreaks": [
+  [
+   1,
+   120,
+   "Senus Tecnologia",
+   "ICLR - Sala de Automação e Segurança",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   1,
+   3,
+   "Senus Tecnologia",
+   "LAAE - Laboratório de Análises de Água e Efluentes",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   1,
+   1.5,
+   "SMS",
+   "LBDF - Biologia e DNA Forense (amplificação)",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   1,
+   1.44,
+   "Intelbras",
+   "LBDF (amplificação)",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   1,
+   2.2,
+   "NHS",
+   "LBDF (amostragem 1)",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   1,
+   1.5,
+   "APC",
+   "LBDF (extração de DNA)",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   1,
+   2,
+   "Senus",
+   "LBDF (amplificação)",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   1,
+   3,
+   "CM Comandos Lineares",
+   "LBDF (amplificação)",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   1,
+   3,
+   "Senus",
+   "LBDF (amplificação)",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   1,
+   1.5,
+   "SMS",
+   "LBDF (amplificação)",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   15,
+   3.2,
+   "TS Shara",
+   "LINF - Informática Forense",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   5,
+   3,
+   "CR Energia",
+   "LINF - Informática Forense",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   1,
+   2.2,
+   "NHS Sistemas Eletrônicos",
+   "LABAL - Balística Forense",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   11,
+   1.2,
+   "Schneider Electric ITB",
+   "LABAL - Balística Forense",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   1,
+   2.5,
+   "Enermax",
+   "LABAL - Balística Forense",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   1,
+   2.2,
+   "Schneider Electric ITB",
+   "LABAL - Balística Forense",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   1,
+   1.5,
+   "Schneider Electric ITB",
+   "LABAL - Balística Forense",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   2,
+   10,
+   "Senus",
+   "LANARC - Narcóticos (instrumental analítico 1)",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   2,
+   3,
+   "CM Comandos Lineares",
+   "LANARC (recepção)",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   2,
+   10,
+   "CM Comandos Lineares",
+   "LANARC (recepção)",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   1,
+   1.4,
+   "Microsol",
+   "LANARC (recepção)",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   1,
+   2.2,
+   "NHS",
+   "LANARC (recepção)",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   2,
+   1.5,
+   "CM Comandos Lineares",
+   "LANARC (instrumental analítico 1)",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   1,
+   10,
+   "CM Comandos Lineares",
+   "LANARC (instrumental analítico 1)",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   1,
+   1.2,
+   "Ragtech",
+   "LAPAI",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   2,
+   7.5,
+   "Solution",
+   "LANARC (instrumental analítico 2)",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   1,
+   5,
+   "Solution",
+   "LANARC (instrumental analítico 2)",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   1,
+   3,
+   "Senus",
+   "SEPAE - Perícias de Águas e Efluentes",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   1,
+   1.4,
+   "NHS",
+   "Laboratório de Patologia Forense",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   1,
+   1.4,
+   "Ragtech",
+   "Laboratório de Patologia Forense",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ],
+  [
+   1,
+   1.4,
+   "SMS",
+   "Automação - IMLAT",
+   "Faixa 1 · 4 h",
+   "TR 4.2.1"
+  ]
+ ],
+ "geradores": [
+  [
+   1,
+   40,
+   "MWM - Cromaco",
+   "Gerência de Criminalística - Goiânia",
+   "Faixa 1 · 4 h",
+   "TR 4.2.2"
+  ],
+  [
+   1,
+   160,
+   "Heimer",
+   "Sala do Gerador - IML Goiânia",
+   "Faixa 1 · 4 h",
+   "TR 4.2.2"
+  ],
+  [
+   1,
+   300,
+   "Weifang",
+   "14ª Coordenação Regional - Luziânia",
+   "Faixa 2 · 8 h",
+   "TR 4.2.2"
+  ],
+  [
+   1,
+   150,
+   "Brushless Generator",
+   "10ª Coordenação Regional - Anápolis",
+   "Faixa 1 · 4 h",
+   "TR 4.2.2"
+  ],
+  [
+   1,
+   300,
+   "BRG Brasil Geradores",
+   "14º PAPTC - Águas Lindas de Goiás",
+   "Faixa 2 · 8 h",
+   "TR 4.2.2"
+  ],
+  [
+   1,
+   12,
+   "Branco",
+   "12ª Coordenação Regional - Campos Belos",
+   "Faixa 3 · 24 h",
+   "TR 4.2.2"
+  ],
+  [
+   1,
+   212,
+   "Cummins Power Generation",
+   "1ª Coordenação Regional - Aparecida de Goiânia",
+   "Faixa 1 · 4 h",
+   "TR 4.2.2"
+  ],
+  [
+   1,
+   212,
+   "Cummins Power Generation",
+   "4ª Coordenação Regional - Itumbiara",
+   "Faixa 2 · 8 h",
+   "TR 4.2.2"
+  ]
+ ],
+ "escopo": [
+  [
+   "Preventiva",
+   "Programada",
+   "Preventiva mensal dos nobreaks de até 4,4 kVA (55 unidades)",
+   "R-02",
+   12,
+   55,
+   "nobreak",
+   1.0,
+   "Técnico de eletrônica",
+   "Multímetro, analisador, cargas de teste"
+  ],
+  [
+   "Preventiva",
+   "Programada",
+   "Preventiva mensal dos nobreaks de 5 a 7,5 kVA (3 unidades)",
+   "R-02",
+   12,
+   3,
+   "nobreak",
+   2.5,
+   "Técnico de eletrônica",
+   "Analisador, teste de descarga"
+  ],
+  [
+   "Preventiva",
+   "Programada",
+   "Preventiva mensal dos nobreaks de 10 kVA ou mais (6 unidades, inclui o de 120 kVA)",
+   "R-02",
+   12,
+   6,
+   "nobreak",
+   6.0,
+   "Técnico de eletrônica",
+   "Analisador, teste de descarga, medição individual dos elementos"
+  ],
+  [
+   "Preventiva",
+   "Programada",
+   "Preventiva mensal dos geradores, com teste de 20 min sem carga",
+   "R-03",
+   12,
+   8,
+   "gerador",
+   3.0,
+   "Técnico eletromecânico",
+   "Multímetro, ferramentas"
+  ],
+  [
+   "Preventiva",
+   "Programada",
+   "Teste bimestral com carga por 45 min e simulação de falta de rede",
+   "R-04",
+   6,
+   8,
+   "gerador",
+   3.0,
+   "Técnico eletromecânico",
+   "Combustível, cronometragem, horímetro"
+  ],
+  [
+   "Preventiva",
+   "Programada",
+   "Rotinas semestrais do gerador (dreno, aditivo de combustível, baterias)",
+   "R-03",
+   2,
+   8,
+   "gerador",
+   1.5,
+   "Técnico eletromecânico",
+   "Aditivo, densímetro"
+  ],
+  [
+   "Preventiva",
+   "Programada",
+   "Rotinas anuais do gerador (óleo e filtros, limpeza de tanque, isolamento, aterramento)",
+   "R-03",
+   1,
+   8,
+   "gerador",
+   10.0,
+   "Técnico eletromecânico",
+   "Óleo, filtros, megôhmetro"
+  ],
+  [
+   "Corretiva",
+   "Não programada",
+   "Corretivas emergenciais (triagem remota, deslocamento, reparo, relatório)",
+   "R-07",
+   36,
+   1,
+   "chamado",
+   4.0,
+   "Técnico de plantão",
+   "Veículo, peças, sobreaviso 24x7"
+  ],
+  [
+   "Corretiva",
+   "Não programada",
+   "Corretivas programadas (Ordem de Serviço em até 30 dias)",
+   "R-11",
+   24,
+   1,
+   "chamado",
+   4.0,
+   "Técnico",
+   "Peças"
+  ],
+  [
+   "Logística",
+   "Não programada",
+   "Equipamento reserva: transporte, instalação e retirada",
+   "R-17",
+   12,
+   1,
+   "ocorrência",
+   6.0,
+   "Técnico, motorista",
+   "Parque de nobreaks e geradores reserva, veículo"
+  ],
+  [
+   "Documentação",
+   "Indireta",
+   "Relatório mensal (chamados, horas, peças e baterias por unidade)",
+   "R-05",
+   12,
+   1,
+   "relatório",
+   8.0,
+   "Técnico, administrativo",
+   "Sistema de gestão ou planilha"
+  ],
+  [
+   "Documentação",
+   "Indireta",
+   "Relatório inicial de baterias e estado dos 72 equipamentos",
+   "R-06",
+   1,
+   1,
+   "relatório",
+   16.0,
+   "Técnico",
+   "Testador de baterias"
+  ],
+  [
+   "Logística",
+   "Indireta",
+   "Deslocamento mensal às unidades do interior (6 cidades)",
+   "R-14",
+   12,
+   1,
+   "rota",
+   30.0,
+   "Técnico",
+   "Veículo, combustível, diárias"
+  ],
+  [
+   "Responsabilidade técnica",
+   "Indireta",
+   "Gestão do contrato, reunião inicial e responsabilidade técnica",
+   "R-01",
+   12,
+   1,
+   "mês",
+   4.0,
+   "Engenheiro responsável",
+   "—"
+  ]
+ ],
+ "escopo_na": "Sistema de gestão da manutenção: o TR não exige software; o relatório mensal pode ser planilha. Treinamento e mobilização: o TR não os exige.",
+ "premissas": [
+  [
+   "Parque de nobreaks por faixa: 55 de até 4,4 kVA, 3 de 5 a 7,5 kVA e 6 de 10 kVA ou mais",
+   "64",
+   "(C) cálculo",
+   "Contagem feita sobre a tabela do TR 4.2.1; muda as horas de preventiva"
+  ],
+  [
+   "Parque de geradores",
+   "8",
+   "(D) dado do documento",
+   "TR 4.2.2"
+  ],
+  [
+   "Tempo de preventiva por nobreak: 1,0 h, 2,5 h e 6,0 h por porte",
+   "1,0 / 2,5 / 6,0 h",
+   "(P) premissa",
+   "Sem histórico de execução; ±20% muda ≈ 240 h/ano"
+  ],
+  [
+   "Tempo mensal por gerador, com teste de 20 min",
+   "3,0 h",
+   "(P) premissa",
+   "Cada hora a mais por gerador soma 96 h/ano"
+  ],
+  [
+   "Corretivas: 36 emergenciais e 24 programadas por ano, 4 h cada",
+   "60 chamados",
+   "(P) premissa",
+   "O histórico do Contrato 29/2020 não foi anexado; chamados são ilimitados (R-07)"
+  ],
+  [
+   "Deslocamento mensal ao interior, somando as 6 cidades",
+   "30 h/mês",
+   "(P) premissa",
+   "Distâncias não conferidas; Campos Belos pesa mais"
+  ],
+  [
+   "Horas brutas por técnico no mês",
+   "176 h",
+   "(P) premissa",
+   "Jornada de 8 h por 22 dias"
+  ],
+  [
+   "Descontos por técnico: férias, feriados, treinamento e reserva para picos",
+   "50 h/mês",
+   "(P) premissa",
+   "Mais desconto reduz a cobertura"
+  ],
+  [
+   "Equipe considerada: 2 técnicos, mais engenheiro responsável rateado nas horas indiretas",
+   "2 técnicos",
+   "(P) premissa",
+   "Sobreaviso 24x7 não entra nas horas"
+  ],
+  [
+   "Teto de peças e baterias",
+   "R$ 62.000 e R$ 83.000 por ano",
+   "(D) dado do documento",
+   "Não entra nas horas; entra na precificação"
+  ]
+ ],
+ "base_carga": {
+  "Programada": "Preventivas dos nobreaks e geradores (Escopo, linhas 1 a 7)",
+  "Não programada": "Corretivas e equipamento reserva (linhas 8 a 10); sem histórico",
+  "Indireta": "Relatórios, deslocamento ao interior e gestão (linhas 11 a 14)"
+ },
+ "equipe": [
+  [
+   "Técnico (eletrônica e eletromecânica)",
+   2,
+   176,
+   50,
+   "Férias, feriados, treinamento e reserva para picos"
+  ]
+ ],
+ "testes": {
+  "ciclo": [
+   "Mês 1: preventiva dos 72 equipamentos, relatório inicial de baterias, relatório mensal, deslocamento e gestão (R-06)",
+   180.5,
+   252,
+   null,
+   "Carga do mês 1 = 98,5 + 24 + 16 + 8 + 30 + 4 h (C)"
+  ],
+  "sla": [
+   "Emergências simultâneas: 4 h em Goiânia e 8 h em Itumbiara (R-13, R-14)",
+   "Dois chamados ao mesmo tempo",
+   "2 técnicos em escala de plantão (P)",
+   "Atende",
+   "Depende da escala 24x7 e do equipamento reserva, que não aparecem nas horas"
+  ]
+ },
+ "conclusao_equipe": [
+  "Não há equipe mínima; só atestado por item (R-30, R-31)",
+  "2 técnicos, engenheiro responsável rateado, escala de plantão 24x7 e equipamento reserva",
+  "A carga de 212,5 h/mês pede cerca de 1,7 técnico produtivo; 2 técnicos dão folga de 39,5 h. É o SLA de 4 h, 24x7, que exige a escala, não as horas."
+ ],
+ "pecas": [
+  [
+   "Peças e componentes de nobreak (placas, relés, fusíveis, disjuntores, cabos, ventoinhas)",
+   "Peça",
+   "R-19",
+   "Incluído no preço",
+   "",
+   "",
+   "Teto anual do item 1",
+   "Até o teto de R$ 62.000,00/ano, dentro do preço mensal (TR 4.3.1); acima, aditivo (TR 4.4)",
+   "Peças originais (R-24)"
+  ],
+  [
+   "Baterias de nobreak",
+   "Peça",
+   "R-23",
+   "Incluído no preço",
+   "",
+   "",
+   "Idade e estado só aparecem no relatório inicial (R-06)",
+   "Compõem o mesmo teto de R$ 62.000,00; troca com laudo; garantia mínima 12 meses",
+   "Quantidade e Ah não informados (P-07)"
+  ],
+  [
+   "Peças e componentes de gerador",
+   "Peça",
+   "R-19",
+   "Incluído no preço",
+   "",
+   "",
+   "Teto anual do item 2",
+   "Até o teto de R$ 83.000,00/ano, dentro do preço mensal (TR 4.3.1); acima, aditivo",
+   "Peças originais (R-24)"
+  ],
+  [
+   "Baterias de partida dos geradores",
+   "Peça",
+   "R-19",
+   "Incluído no preço",
+   "",
+   "",
+   "Plano semestral de baterias (TR 4.1.2)",
+   "Compõem o teto do item 2",
+   "—"
+  ],
+  [
+   "Óleo lubrificante, filtros, líquido de arrefecimento (troca anual dos 8 geradores)",
+   "Insumo",
+   "R-03",
+   "Edital não diz",
+   "8",
+   "jogos/ano",
+   "Plano anual do TR 4.1.2",
+   "O TR 4.3.1 cita peças, componentes e baterias; não diz se esses insumos contam no teto",
+   "P-05"
+  ],
+  [
+   "Aditivo de combustível multifunção (semestral)",
+   "Insumo",
+   "R-03",
+   "Edital não diz",
+   "16",
+   "aplicações/ano",
+   "Plano semestral do TR 4.1.2",
+   "Idem",
+   "P-05"
+  ],
+  [
+   "Óleo diesel para completar nível e testes mensais e bimestrais",
+   "Insumo",
+   "R-04",
+   "Edital não diz",
+   "",
+   "",
+   "Testes de 20 min mensais e 45 min bimestrais com carga",
+   "O TR manda completar o combustível, mas não diz quem fornece o volume consumido",
+   "P-01"
+  ],
+  [
+   "Nobreaks e geradores reserva (de 1,2 a 120 kVA e de 12 a 300 kVA)",
+   "Material",
+   "R-17",
+   "Incluído no preço",
+   "",
+   "",
+   "TR 4.1.1",
+   "Equipamento de propriedade da contratada, igual ou superior ao em reparo",
+   "Custo de capital"
+  ],
+  [
+   "Peças acima do teto anual",
+   "Peça",
+   "R-21",
+   "Cobrado à parte",
+   "",
+   "",
+   "Sob demanda",
+   "Autorização do Gestor, laudo do Fiscal Técnico, 3 cotações, aditivo de até 25%",
+   "Depende de dotação orçamentária"
+  ]
+ ],
+ "requisitos": [
+  [
+   "R-01",
+   "Execução",
+   "Preventiva mensal em cada unidade, em cronograma aprovado pelo Fiscal Técnico, sem depender de solicitação",
+   "TR 7.1.1 e 4.1.1",
+   72,
+   "equipamentos",
+   "Mensal",
+   "Mão de obra, logística",
+   "Médio",
+   "—"
+  ],
+  [
+   "R-02",
+   "Execução",
+   "Escopo preventivo dos nobreaks: medições com carga, by-pass, descarga e impedância individual das baterias, planilha de elementos, ambiente",
+   "TR 4.1.1",
+   64,
+   "nobreaks",
+   "Mensal",
+   "Mão de obra, instrumentos",
+   "Alto",
+   "P-07"
+  ],
+  [
+   "R-03",
+   "Execução",
+   "Plano do gerador: rotinas mensais, bimestrais, semestrais e anuais (óleo, filtros, aditivo de combustível, megôhmetro)",
+   "TR 4.1.2",
+   8,
+   "geradores",
+   "Mensal a anual",
+   "Mão de obra, insumos",
+   "Médio",
+   "P-05"
+  ],
+  [
+   "R-04",
+   "Execução",
+   "Teste bimestral do gerador com carga por 45 min, agendado pela fiscalização, simulando falta de rede",
+   "TR 4.1.2 (plano item 7.2)",
+   8,
+   "geradores",
+   "Bimestral",
+   "Combustível, mão de obra",
+   "Médio",
+   "P-01"
+  ],
+  [
+   "R-05",
+   "Execução",
+   "Relatório mensal até o 5º dia útil: chamados, horas técnicas, peças e baterias por unidade, com data e hora",
+   "TR 4.6.1",
+   1,
+   "relatório",
+   "Mensal",
+   "Mão de obra, sistema de gestão",
+   "Médio",
+   "—"
+  ],
+  [
+   "R-06",
+   "Execução",
+   "Relatório inicial com idade e estado dos bancos de baterias, entregue com o 1º relatório mensal",
+   "TR 4.5.2",
+   72,
+   "equipamentos",
+   "Único",
+   "Mão de obra",
+   "Médio",
+   "P-07"
+  ],
+  [
+   "R-07",
+   "Execução",
+   "Atendimento de chamados corretivos e emergenciais ilimitado, sem franquia; mão de obra, deslocamento e transporte incluídos",
+   "TR 4.7",
+   null,
+   "chamados",
+   "Sob demanda",
+   "Mão de obra, logística",
+   "Alto",
+   "P-02"
+  ],
+  [
+   "R-08",
+   "Execução",
+   "Chamado registrado por canal formal (telefone com protocolo, e-mail ou mensagem registrada), 24x7",
+   "TR 4.1.1",
+   null,
+   "canal",
+   "Contínuo",
+   "Sobreaviso, comunicação",
+   "Médio",
+   "—"
+  ],
+  [
+   "R-09",
+   "Execução",
+   "Relatório técnico e relatório fotográfico de cada corretiva, com diagnóstico, solução e peças substituídas",
+   "TR 4.1.1",
+   null,
+   "relatório",
+   "Por chamado",
+   "Mão de obra",
+   "Baixo",
+   "—"
+  ],
+  [
+   "R-10",
+   "Execução",
+   "Transporte de equipamentos para reparo por conta da contratada; termo de vistoria na saída",
+   "TR 4.1.1",
+   null,
+   "transporte",
+   "Sob demanda",
+   "Logística",
+   "Médio",
+   "—"
+  ],
+  [
+   "R-11",
+   "Execução",
+   "Corretivas programadas em 30 dias da Ordem de Serviço",
+   "TR 7.1.3",
+   null,
+   "prazo",
+   "Sob demanda",
+   "Mão de obra",
+   "Médio",
+   "—"
+  ],
+  [
+   "R-12",
+   "Execução",
+   "Avisar com 7 dias de antecedência se não puder comparecer à preventiva",
+   "TR 7.1.5",
+   null,
+   "prazo",
+   "Sob demanda",
+   "Gestão",
+   "Baixo",
+   "—"
+  ],
+  [
+   "R-13",
+   "SLA e penalidades",
+   "Emergência em 4 h na faixa 1 (Goiânia, Aparecida, Anápolis), contadas do registro do chamado",
+   "TR 4.1.1 e 7.1.2",
+   4,
+   "horas",
+   "Contínuo 24x7",
+   "Sobreaviso, veículo",
+   "Alto",
+   "—"
+  ],
+  [
+   "R-14",
+   "SLA e penalidades",
+   "Emergência em 8 h na faixa 2 (Itumbiara, Luziânia, Águas Lindas)",
+   "TR 4.1.1 e 7.1.2",
+   8,
+   "horas",
+   "Contínuo 24x7",
+   "Sobreaviso, veículo",
+   "Alto",
+   "—"
+  ],
+  [
+   "R-15",
+   "SLA e penalidades",
+   "Emergência em 24 h na faixa 3 (Campos Belos)",
+   "TR 4.1.1 e 7.1.2",
+   24,
+   "horas",
+   "Contínuo 24x7",
+   "Sobreaviso, deslocamento",
+   "Médio",
+   "—"
+  ],
+  [
+   "R-16",
+   "SLA e penalidades",
+   "Triagem técnica remota em até 1 h em todas as faixas, cobertura 24x7",
+   "TR 4.1.1",
+   1,
+   "hora",
+   "Contínuo 24x7",
+   "Sobreaviso",
+   "Médio",
+   "—"
+  ],
+  [
+   "R-17",
+   "SLA e penalidades",
+   "Equipamento reserva igual ou superior em 24 h (faixas 1 e 2) ou 48 h (faixa 3) quando o reparo não termina no prazo",
+   "TR 4.1.1",
+   null,
+   "equipamentos",
+   "Sob demanda",
+   "Capital, logística",
+   "Alto",
+   "—"
+  ],
+  [
+   "R-18",
+   "SLA e penalidades",
+   "Multa de 0,5% a 30% do contrato; impedimento de licitar e inidoneidade",
+   "Edital 12.4 a 12.8; Minuta Cl. 10",
+   null,
+   "%",
+   "Sob infração",
+   "Risco",
+   "Médio",
+   "—"
+  ],
+  [
+   "R-19",
+   "Peças e materiais",
+   "Peças, componentes e baterias incluídos no preço mensal até o teto anual: R$ 62.000,00 (item 1) e R$ 83.000,00 (item 2); sem cobrança adicional até o teto",
+   "TR 3.5, 4.3.1, 4.3.3 e 9.13",
+   null,
+   "R$ por ano",
+   "Anual",
+   "Peças, baterias",
+   "Alto",
+   "P-09"
+  ],
+  [
+   "R-20",
+   "Peças e materiais",
+   "Consumo apurado por ano de vigência, valorado pelo custo de aquisição comprovado por nota fiscal da contratada",
+   "TR 4.3.2",
+   null,
+   "R$",
+   "Anual",
+   "Peças",
+   "Médio",
+   "—"
+  ],
+  [
+   "R-21",
+   "Peças e materiais",
+   "Acima do teto: autorização do Gestor, laudo do Fiscal Técnico, 3 cotações e aditivo de até 25%",
+   "TR 4.4",
+   null,
+   "%",
+   "Sob demanda",
+   "Peças",
+   "Médio",
+   "—"
+  ],
+  [
+   "R-22",
+   "Peças e materiais",
+   "Sinistralidade até o teto é risco ordinário da contratada e não gera reequilíbrio",
+   "TR 4.4.4",
+   null,
+   "—",
+   "Contínuo",
+   "Peças",
+   "Alto",
+   "—"
+  ],
+  [
+   "R-23",
+   "Peças e materiais",
+   "Troca de baterias depende de laudo de capacidade da contratada aprovado pelo Fiscal Técnico; baterias de nobreak com garantia mínima de 12 meses",
+   "TR 4.5.1 e 7.5.1",
+   null,
+   "meses",
+   "Sob demanda",
+   "Baterias",
+   "Médio",
+   "P-07"
+  ],
+  [
+   "R-24",
+   "Peças e materiais",
+   "Peças originais",
+   "Edital 2.1; Minuta Cl. 1 e 7 §4",
+   null,
+   "—",
+   "Contínuo",
+   "Peças",
+   "Médio",
+   "—"
+  ],
+  [
+   "R-25",
+   "Peças e materiais",
+   "Carta de solidariedade do fabricante só para peças e baterias, quando o licitante for revendedor; não para os serviços",
+   "TR 6.2",
+   null,
+   "carta",
+   "Na habilitação",
+   "Gestão",
+   "Baixo",
+   "—"
+  ],
+  [
+   "R-26",
+   "Execução",
+   "Pagamento em 12 parcelas fixas (1/12 do item), em até 30 dias após o atesto; atesto em 10 dias; recebimento definitivo em 10 dias",
+   "TR 9.13, 9.14, 9.4 e 9.2",
+   12,
+   "parcelas",
+   "Mensal",
+   "Capital de giro",
+   "Médio",
+   "—"
+  ],
+  [
+   "R-27",
+   "Execução",
+   "Preço fixo por 12 meses da data do orçamento; depois IPCA/IPC-A (IBGE)",
+   "TR 9.20; Minuta Cl. 4 §8 e 9",
+   null,
+   "meses",
+   "Anual",
+   "Preço",
+   "Baixo",
+   "—"
+  ],
+  [
+   "R-28",
+   "Execução",
+   "Garantia de execução de 3% do contrato (limite de 5%)",
+   "TR 8.17",
+   null,
+   "%",
+   "Na assinatura",
+   "Custo financeiro",
+   "Alto",
+   "P-03"
+  ],
+  [
+   "R-29",
+   "Execução",
+   "Subcontratação do objeto vedada",
+   "TR 10.15",
+   null,
+   "—",
+   "Contínuo",
+   "Equipe própria",
+   "Médio",
+   "—"
+  ],
+  [
+   "R-30",
+   "Qualificação técnica",
+   "Item 001: atestado de manutenção de nobreak de potência igual ou superior a 60 kVA, de pessoa jurídica, com nome do contratante e assinatura do responsável",
+   "TR 10.14 (a); Edital 4.13 e 4.14",
+   60,
+   "kVA",
+   "Na habilitação",
+   "Habilitação",
+   "Alto",
+   "P-04"
+  ],
+  [
+   "R-31",
+   "Qualificação técnica",
+   "Item 002: atestado de manutenção de grupo gerador de potência igual ou superior a 150 kVA",
+   "TR 10.14 (b)",
+   150,
+   "kVA",
+   "Na habilitação",
+   "Habilitação",
+   "Médio",
+   "—"
+  ],
+  [
+   "R-32",
+   "Qualificação técnica",
+   "Comprovação de aptidão para serviço de complexidade tecnológica e operacional equivalente ou superior",
+   "Edital 4.14",
+   null,
+   "—",
+   "Na habilitação",
+   "Habilitação",
+   "Médio",
+   "—"
+  ],
+  [
+   "R-33",
+   "Execução",
+   "Vigência de 12 meses a partir da divulgação no PNCP, prorrogável (serviço contínuo)",
+   "Edital 11.8; TR 2.6",
+   12,
+   "meses",
+   "—",
+   "Contrato",
+   "Baixo",
+   "—"
+  ]
+ ],
+ "pontos": [
+  [
+   "P-01",
+   "Esclarecimento",
+   "O TR manda completar o combustível nos testes e aplicar aditivo semestral, mas não diz quem fornece o diesel consumido nos testes mensais e bimestrais",
+   "TR 4.1.2 (plano, itens 2.2 e 7.3)",
+   "Preço do item 2",
+   "Assumir o diesel dos testes por conta da contratada ou aguardar resposta ao pedido da DFTEK, publicável até 16/11",
+   "16/11/2026"
+  ],
+  [
+   "P-02",
+   "Dado ausente",
+   "ETP, memória de cálculo e histórico do Contrato nº 29/2020 não estão entre os arquivos do certame",
+   "TR 5.3",
+   "Número de chamados corretivos",
+   "Usar premissa e registrar a incerteza",
+   "Antes da sessão"
+  ],
+  [
+   "P-03",
+   "Divergência",
+   "Garantia de execução de 3% só aparece no TR; edital e minuta não a mencionam",
+   "TR 8.17; Edital 14.11",
+   "Custo de ≈R$ 10.565,44 (C)",
+   "Precificar a garantia; o prazo de impugnação já passou",
+   "Antes da sessão"
+  ],
+  [
+   "P-04",
+   "Levar à análise geral",
+   "Item 1 exige atestado de manutenção de nobreak ≥ 60 kVA; confirmar qual empresa tem",
+   "TR 10.14 (a)",
+   "Habilitação no item 1",
+   "Rodar analisar-habilitacao com os atestados abertos",
+   "Antes da sessão"
+  ],
+  [
+   "P-05",
+   "Esclarecimento",
+   "O TR cita peças, componentes e baterias no teto; não diz se óleo, filtros, líquido de arrefecimento e aditivo contam nele",
+   "TR 4.3.1",
+   "Preço do item 2",
+   "Tratar esses insumos como fora do teto (leitura conservadora)",
+   "Antes da sessão"
+  ],
+  [
+   "P-06",
+   "Levar à análise geral",
+   "O edital traz regras de serviço comum de engenharia (75% e 85%); o TR diz só serviço comum",
+   "Edital 7.12; TR 2.4",
+   "Limite de inexequibilidade e garantia adicional",
+   "Avaliar na análise geral",
+   "Antes da sessão"
+  ],
+  [
+   "P-07",
+   "Dado ausente",
+   "Quantidade, capacidade e idade das baterias de cada nobreak e dos geradores não constam; a DFTEK perguntou e o pedido segue sem resposta",
+   "TR 4.2; pedido de esclarecimento de 11/11",
+   "Teto de peças e baterias pode ser insuficiente",
+   "Estimar com premissa; o relatório inicial só sai no 1º mês",
+   "16/11/2026"
+  ],
+  [
+   "P-09",
+   "Divergência",
+   "Teto de peças e baterias: o texto do TR diz que o preço do item inclui peças e baterias até o teto e que não há faturamento de peça dentro dele; a tabela de valores mostra o teto em coluna separada do valor de 12 meses. Esta análise segue o texto.",
+   "TR 3.5, 4.3.1, 4.3.3, 9.13 e tabela de valores",
+   "Até R$ 145.000,00/ano no preço, conforme a leitura (C)",
+   "Precificar com o consumo esperado de peças dentro do preço mensal; confirmar com o gestor do contrato após a sessão",
+   "Antes da sessão"
+  ],
+  [
+   "P-08",
+   "Levar à análise geral",
+   "A minuta usa cláusulas de bens (recebimento, garantia legal de produtos) e remete ao 'Tópico 9' para pagamento",
+   "Minuta Cl. 2 e 7",
+   "Sem efeito direto no custo",
+   "Avaliar na análise geral",
+   "—"
+  ],
+  [
+   "D1",
+   "Divergência",
+   "Qualificação técnica: o edital pede 1 atestado de equipamento compatível ou serviço (4.13); o TR pede, por item, nobreak ≥ 60 kVA e gerador ≥ 150 kVA (10.14). Adotado o TR, porque o edital manda incluir o Tópico 10 (8.3).",
+   "Edital 4.13 e 8.3; TR 10.14",
+   "Habilitação por item",
+   "Seguir o TR 10.14",
+   "—"
+  ],
+  [
+   "D2",
+   "Divergência",
+   "Subcontratação: a minuta prevê suboperadores só para dados pessoais (LGPD); o TR veda subcontratar o objeto. Adotado o TR.",
+   "Minuta Cl. 8 §10; TR 10.15",
+   "Equipe própria nas 7 cidades",
+   "Planejar equipe própria ou contratados diretos",
+   "—"
+  ]
+ ],
+ "id": "pe-21-2026-ssp-go",
+ "titulo_pagina": "Análise de manutenção · PE 21/2026 SSP-GO",
+ "rodape": "Análise de manutenção - Pregão Eletrônico nº 21/2026 - SSP-GO",
+ "limites": {
+  "nobreak": 60,
+  "gerador": 150
+ },
+ "capa": {
+  "titulo": "ANÁLISE DE MANUTENÇÃO: EXEQUIBILIDADE OPERACIONAL",
+  "linha2": "PREGÃO ELETRÔNICO Nº 21/2026 - SSP-GO (SISLOG 119920) | PROCESSO SEI Nº 202600005015278",
+  "linha3": "Manutenção preventiva e corretiva de 64 nobreaks e 8 geradores, com peças e baterias e atendimento 24x7 | Sessão pública em 17/11/2026, às 9h (Brasília)",
+  "aviso": "Este documento é um resumo de apoio. Confira o texto oficial no SISLOG antes de decidir e de montar a proposta."
+ },
+ "pilulas": [
+  "PE 21/2026 · SSP-GO",
+  "SISLOG 119920",
+  "SEI 202600005015278",
+  "Sessão 17/11/2026 · 9h",
+  "R$ 352.181,28 / 12 meses"
+ ],
+ "kpis_extras": [
+  [
+   "R$ 62 mil",
+   "Teto peças · item 1",
+   "28,0% do item",
+   true
+  ],
+  [
+   "R$ 83 mil",
+   "Teto peças · item 2",
+   "63,5% do item",
+   true
+  ]
+ ],
+ "leitura_rapida": [
+  [
+   "Parque",
+   "=={n_nobreaks} nobreaks== (Item 1, todos em Goiânia, de 1,2 a 120 kVA) e =={n_geradores} geradores== (Item 2, de 12 a 300 kVA) em 7 cidades. Preventiva mensal obrigatória, corretiva e emergência ilimitadas, plantão 24x7."
+  ],
+  [
+   "Valor",
+   "R$ 352.181,28 por 12 meses. Item 1: ==R$ 221.494,32== (R$ 18.457,86/mês); Item 2: ==R$ 130.686,96== (R$ 10.890,58/mês). 12 parcelas fixas por item."
+  ],
+  [
+   "Peças dentro do preço",
+   "pelo texto do TR, peças e baterias entram no preço mensal até o teto anual de ==R$ 62.000,00 (Item 1) e R$ 83.000,00 (Item 2)==. Com o teto todo consumido, sobram R$ 159.494,32 e R$ 47.686,96 por ano para mão de obra, deslocamento, plantão e lucro (C). Acima do teto: autorização, 3 cotações e aditivo de até 25%."
+  ],
+  [
+   "Carga e equipe",
+   "carga estimada de =={req} h/mês== contra {disp} h de 2 técnicos: cobertura de {cob} e folga de {folga} h (C). Tempos e chamados são premissas (P)."
+  ],
+  [
+   "Atendimento",
+   "==4 h== em Goiânia, Aparecida e Anápolis; ==8 h== em Itumbiara, Luziânia e Águas Lindas; ==24 h== em Campos Belos. Triagem remota em 1 h; equipamento reserva em 24 h (48 h na faixa 3). Subcontratação vedada."
+  ],
+  [
+   "Qualificação técnica",
+   "atestado de nobreak ==≥ {lim_nobreak} kVA== (Item 1) e de gerador ==≥ {lim_gerador} kVA== (Item 2). No parque, {nb_ok} nobreak atinge {lim_nobreak} kVA; {gr_ok} dos {n_geradores} geradores têm {lim_gerador} kVA ou mais."
+  ],
+  [
+   "Garantia e vedações",
+   "garantia de execução de 3% (≈ R$ 10.565,44); subcontratação e consórcio vedados."
+  ]
+ ],
+ "prazos": [
+  [
+   "Todo mês",
+   "Preventiva em cada unidade, pelo cronograma aprovado pelo Fiscal Técnico, mesmo sem chamado",
+   "TR 7.1.1"
+  ],
+  [
+   "1 hora",
+   "Triagem técnica remota após o registro do chamado, 24x7",
+   "TR 4.1.1"
+  ],
+  [
+   "4 h / 8 h / 24 h",
+   "Atendimento emergencial nas faixas 1, 2 e 3",
+   "TR 4.1.1 e 7.1.2"
+  ],
+  [
+   "24 h / 48 h",
+   "Equipamento reserva quando o reparo não termina no prazo",
+   "TR 4.1.1"
+  ],
+  [
+   "30 dias",
+   "Corretiva programada, contada da Ordem de Serviço",
+   "TR 7.1.3"
+  ],
+  [
+   "7 dias antes",
+   "Aviso quando não puder comparecer à preventiva",
+   "TR 7.1.5"
+  ],
+  [
+   "5º dia útil do mês",
+   "Relatório mensal de chamados, horas, peças e baterias por unidade",
+   "TR 4.6.1"
+  ],
+  [
+   "1º mês",
+   "Relatório inicial com idade e estado dos bancos de baterias",
+   "TR 4.5.2"
+  ],
+  [
+   "10 + 30 dias",
+   "Atesto da nota fiscal e pagamento após o atesto e o recebimento definitivo",
+   "TR 9.4 e 9.14"
+  ]
+ ],
+ "dados_servico": [
+  "A. Identificação",
+  [
+   "Órgão",
+   "Secretaria de Estado da Segurança Pública de Goiás (SSP-GO), para a Superintendência de Polícia Técnico-Científica",
+   "Edital, preâmbulo"
+  ],
+  [
+   "Edital e processo",
+   "Pregão Eletrônico nº 21/2026 · SISLOG 119920 · SEI 202600005015278",
+   "Edital, capa"
+  ],
+  [
+   "Valor estimado",
+   "R$ 352.181,28 por 12 meses: item 1 R$ 221.494,32; item 2 R$ 130.686,96 (Edital 2.7 e 2.8)",
+   "Edital 2.7 e 2.8; TR 3.1"
+  ],
+  [
+   "Vigência",
+   "12 meses a partir da divulgação no PNCP, prorrogável (Edital 11.8; TR 2.6)",
+   "Edital 11.8; TR 2.6"
+  ],
+  "B. Parque e locais",
+  [
+   "Equipamentos",
+   "64 nobreaks (Instituto de Criminalística e IML, em Goiânia) e 8 geradores em Goiânia e 6 coordenações regionais",
+   "TR 4.2 e 5.3"
+  ],
+  [
+   "Locais",
+   "Goiânia, Aparecida de Goiânia, Anápolis, Itumbiara, Luziânia, Águas Lindas de Goiás e Campos Belos",
+   "TR 7.2"
+  ],
+  "C. Execução",
+  [
+   "Preventiva",
+   "Mensal em cada unidade; nos geradores também testes bimestrais com carga (45 min) e rotinas semestrais e anuais",
+   "TR 4.1.1, 4.1.2 e 7.1.1"
+  ],
+  [
+   "Corretiva",
+   "Ilimitada, sem franquia de chamados ou horas; mão de obra, deslocamento e transporte incluídos",
+   "TR 4.7"
+  ],
+  [
+   "Relatórios",
+   "Relatório técnico e fotográfico por corretiva; relatório mensal; relatório inicial de baterias",
+   "TR 4.1.1, 4.5.2 e 4.6"
+  ],
+  "D. Peças e baterias",
+  [
+   "Como é pago",
+   "Incluídas no preço mensal até o teto anual de R$ 62.000,00 (Item 1) e R$ 83.000,00 (Item 2); sem cobrança adicional até o teto",
+   "TR 3.5, 4.3.1, 4.3.3 e 9.13"
+  ],
+  [
+   "Controle",
+   "Consumo apurado por ano, com base no relatório mensal, pelo custo de aquisição comprovado por nota fiscal",
+   "TR 4.3.2 e 4.6"
+  ],
+  [
+   "Acima do teto",
+   "Autorização do Gestor, laudo do Fiscal Técnico, 3 cotações e aditivo de até 25%; sinistralidade até o teto não gera reequilíbrio",
+   "TR 4.4"
+  ],
+  [
+   "Baterias",
+   "Troca depende de laudo da contratada aprovado pelo Fiscal; baterias de nobreak com garantia mínima de 12 meses; peças originais",
+   "TR 4.5, 7.5.1; Edital 2.1"
+  ],
+  "E. Pagamento, garantia e condições",
+  [
+   "Pagamento",
+   "12 parcelas fixas de 1/12 por item; atesto em 10 dias; pagamento em até 30 dias do atesto",
+   "TR 9.4, 9.13 e 9.14"
+  ],
+  [
+   "Reajuste",
+   "Preço fixo por 12 meses da data do orçamento; depois IPCA",
+   "TR 9.20; Minuta Cl. 4"
+  ],
+  [
+   "Garantia de execução",
+   "3% do valor do contrato (cerca de R$ 10.565,44)",
+   "TR 8.17"
+  ],
+  [
+   "Subcontratação e consórcio",
+   "Vedados",
+   "TR 10.3 e 10.15"
+  ],
+  "F. Qualificação técnica",
+  [
+   "Item 1",
+   "Atestado de PJ de manutenção de nobreak de 60 kVA ou mais, com nome do contratante e assinatura do responsável",
+   "TR 10.14 (a)"
+  ],
+  [
+   "Item 2",
+   "Atestado de PJ de manutenção de grupo gerador de 150 kVA ou mais",
+   "TR 10.14 (b)"
+  ],
+  [
+   "Equipe mínima",
+   "Não exigida; o TR não define número nem categoria de técnicos",
+   "TR 10.14 (ausência)"
+  ]
+ ],
+ "proximos_passos": [
+  "Decidir qual empresa do grupo disputa e em quais itens, com base nos atestados de nobreak ≥ 60 kVA e gerador ≥ 150 kVA (skill analisar-habilitacao).",
+  "Estimar quanto do teto de peças e baterias será consumido em cada item; é o maior fator da margem.",
+  "Definir escala de plantão 24x7, base de atendimento e parque de equipamento reserva.",
+  "Precificar com a skill precificar-proposta-exequibilidade, incluindo garantia de 3%, diesel e consumíveis conforme P-01 e P-05.",
+  "Acompanhar no SISLOG as respostas aos pedidos de esclarecimento até 16/11."
+ ]
+}
