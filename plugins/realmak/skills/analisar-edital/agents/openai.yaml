@@ -1,0 +1,5 @@
+interface:
+  display_name: "Analisar Edital"
+  short_description: "Prazos, habilitação, declarações e impugnação"
+policy:
+  allow_implicit_invocation: true

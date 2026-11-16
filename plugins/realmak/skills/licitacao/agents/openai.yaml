@@ -1,0 +1,5 @@
+interface:
+  display_name: "Licitação na Plataforma"
+  short_description: "Abrir, ler, registrar e anexar no card"
+policy:
+  allow_implicit_invocation: true

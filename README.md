@@ -1,6 +1,6 @@
 # realmak-plugin
 
-Servidor MCP remoto (Streamable HTTP, caminho `/mcp`) que dá aos analistas de licitação da Realmak, dentro do Claude Desktop, quatro grupos de ferramentas, e um plugin do Claude com as skills que ensinam a usá-las. Só as ferramentas `licitacao_*` escrevem, e só na licitação do Odoo, como a pessoa que entrou.
+Servidor MCP remoto (Streamable HTTP, caminho `/mcp`) que dá aos analistas de licitação da Realmak, dentro do Claude e do Codex, quatro grupos de ferramentas, e um plugin com as skills que ensinam a usá-las, instalável nos dois. Só as ferramentas `licitacao_*` escrevem, e só na licitação do Odoo, como a pessoa que entrou.
 
 Esta é uma versão de teste (MVP). Veja os [limites](#limites-do-mvp) no fim.
 
@@ -76,7 +76,36 @@ Uma pessoa com acesso de leitura só a algumas áreas recebe 403 em `cerebro_esq
 
 ## Instalar o plugin
 
-O plugin `realmak` traz as skills (`cerebro`, `licitacao`, `analisar-edital`, `conferir-habilitacao`, `conlicitacao`, `compras-publicas`) e declara o conector do servidor (`https://realmak.duckdns.org/mcp`). O plugin não pede chave: cada pessoa entra pelo login, e precisa ter acesso concedido no Galeed ou no Odoo.
+O plugin `realmak` traz 11 skills e declara o conector do servidor (`https://realmak.duckdns.org/mcp`). O plugin não pede chave: cada pessoa entra pelo login, e precisa ter acesso concedido no Galeed ou no Odoo.
+
+| Skill | Para quê |
+| --- | --- |
+| `analisar-edital` | Análise geral de qualquer edital: prazos, habilitação, declarações, impugnação |
+| `analisar-edital-manutencao` | Serviço de manutenção: escopo, peças e materiais, equipe, SLA. Entrega Excel, Markdown e HTML |
+| `analisar-edital-fornecimento` | Fornecimento de bens: itens, exigências do produto, entrega. Entrega Excel e HTML |
+| `analisar-habilitacao` | Compara AForça, Realmak, UNA e Nortfort diante da habilitação e lista as pendências |
+| `precificar-proposta-exequibilidade` | Preço e planilha de exequibilidade de manutenção |
+| `cotar-pecas-materiais-licitacoes` | Cotação de peças e materiais com link por item |
+| `auditar-proposta-concorrente-manutencao` | Auditoria de proposta concorrente e minuta de recurso |
+| `licitacao` | Trabalhar na licitação da plataforma (Odoo) |
+| `cerebro` | Consultar os cérebros das empresas |
+| `conlicitacao` | Buscar no ConLicitação |
+| `compras-publicas` | PNCP, Compras.gov.br e Contratos.gov.br |
+
+Só `licitacao`, `cerebro`, `conlicitacao` e `compras-publicas` citam ferramentas do servidor. As demais citam apenas outras skills, para funcionarem igual no Claude, no Codex e dentro da plataforma de licitações. Ao escrever ou alterar uma skill de análise, não cite nome de ferramenta: aponte para a skill que a documenta.
+
+A mesma pasta `plugins/realmak` serve aos dois aplicativos:
+
+| Arquivo | Claude | Codex |
+| --- | --- | --- |
+| Catálogo do repositório | `.claude-plugin/marketplace.json` | `.agents/plugins/marketplace.json` |
+| Manifesto do plugin | `plugins/realmak/.claude-plugin/plugin.json` | `plugins/realmak/.codex-plugin/plugin.json` |
+| Conector | `plugins/realmak/.mcp.json` | o mesmo arquivo |
+| Skills | `plugins/realmak/skills/*/SKILL.md` | as mesmas, com `agents/openai.yaml` para o nome na interface |
+
+A versão é a mesma nos dois manifestos. Ao lançar uma versão, altere os dois.
+
+As planilhas-modelo das skills de análise são geradas por `scripts/gerar_modelos_analise.py`. Para mudar uma planilha, altere o script e rode `uv run --with openpyxl python scripts/gerar_modelos_analise.py`.
 
 ### Claude Code
 
@@ -86,6 +115,16 @@ claude plugin install realmak@realmak
 ```
 
 Depois, dentro do `claude`, rode `/mcp`, escolha o servidor `realmak` e autentique pelo navegador. Para testar sem instalar, use `claude --plugin-dir ./plugins/realmak`.
+
+### Codex
+
+```bash
+codex plugin marketplace add ennioferreirab/realmak-plugin
+codex plugin add realmak@realmak
+codex mcp login realmak
+```
+
+O último comando abre o navegador para o login do conector. Confira com `codex plugin list` (deve mostrar `realmak@realmak` instalado) e `codex mcp list`. Para testar a partir de uma cópia local, passe o caminho da pasta do repositório em `marketplace add`. Para atualizar, rode `codex plugin marketplace upgrade` e instale de novo.
 
 ### Claude Desktop (Chat e Cowork)
 
@@ -142,7 +181,7 @@ O `check_local.py` confere `/healthz`, o `401` sem chave, o `tools/list` pelo cl
 
 - Fora das `licitacao_*`, só leitura. Não há ferramentas para monitorar ou desmonitorar pregões, nem para gravar no cérebro.
 - As `licitacao_*` exigem o login de pessoa. No Claude Code com a chave de bot no header, elas não aparecem.
-- Não lê pastas do servidor de arquivos. Sem as `licitacao_*`, nas skills `analisar-edital` e `conferir-habilitacao` o analista anexa os arquivos à conversa.
+- Não lê pastas do servidor de arquivos. Sem as `licitacao_*`, nas skills de análise o analista anexa os arquivos à conversa.
 - A busca do ConLicitação no site só alcança licitações classificadas nas atividades contratadas pela Realmak.
 - Uma única conta do ConLicitação (login e token) para todos os analistas. A chave do Galeed controla quem entra, não quem vê o quê no ConLicitação.
 - O formato exato de alguns campos do site do ConLicitação (por exemplo `bidding_info`) não é documentado; o servidor repassa o que vem, sem links assinados, e ordena os avisos por data quando consegue.

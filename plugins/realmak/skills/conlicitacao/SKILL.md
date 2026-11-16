@@ -49,7 +49,7 @@ Envie o inteiro `id_conlicitacao` retornado pela busca; não use `licitacao_id` 
 
 - `bidding_info_em_ordem_de_data` traz avisos, esclarecimentos e impugnações publicados, do mais antigo ao mais recente. Eles podem mudar exigências e datas, e o PDF do edital não mostra isso. Liste-os em ordem de data quando analisar o edital.
 - `incluir_resumo=true` anexa o resumo gerado pelo ConLicitação, quando existe. Use só para conferir; a fonte é o edital.
-- O servidor não devolve links de download do edital nem baixa o arquivo. Se faltar o edital, indique o portal de origem (`edital_site` ou o link no objeto) e peça ao analista que baixe e anexe à conversa. Um pacote de edital pode trazer só um complemento: diga o que veio.
+- O servidor não devolve links de download do edital nem baixa o arquivo. Se faltar o edital, abra o portal de origem (`edital_site` ou o link no objeto) e baixe os documentos de lá, como orienta a seção "Onde estão os documentos" da skill `analisar-edital`. Se o portal exigir login, peça ao analista que baixe e anexe à conversa. Um pacote de edital pode trazer só um complemento: diga o que veio.
 
 ## Boletins
 

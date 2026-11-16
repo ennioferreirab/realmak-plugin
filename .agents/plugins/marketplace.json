@@ -1,0 +1,20 @@
+{
+  "name": "realmak",
+  "interface": {
+    "displayName": "Realmak"
+  },
+  "plugins": [
+    {
+      "name": "realmak",
+      "source": {
+        "source": "local",
+        "path": "./plugins/realmak"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Business & Operations"
+    }
+  ]
+}

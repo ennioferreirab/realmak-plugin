@@ -1,0 +1,5 @@
+interface:
+  display_name: "Compras Públicas"
+  short_description: "PNCP, contratos por CNPJ e preços praticados"
+policy:
+  allow_implicit_invocation: true

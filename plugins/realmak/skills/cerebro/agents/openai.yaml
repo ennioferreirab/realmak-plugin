@@ -1,0 +1,5 @@
+interface:
+  display_name: "Cérebro das Empresas"
+  short_description: "Atestados, pessoas, contratos e documentos"
+policy:
+  allow_implicit_invocation: true

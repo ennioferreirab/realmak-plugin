@@ -1,0 +1,5 @@
+interface:
+  display_name: "Cotar Peças e Materiais"
+  short_description: "Cotação com preço real e link por item"
+policy:
+  allow_implicit_invocation: true
