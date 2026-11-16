@@ -169,3 +169,43 @@ async def test_links_baixam_e_enviam_arquivo_sem_passar_pela_conversa(ambiente):
         direto = await chamar(c, "licitacao_enviar_arquivo",
                               {"licitacao_id": 7, "nome": "notas.md", "conteudo_texto": "# Achados"}, token)
         assert not direto.get("isError") and upload.calls.last.request.content == b"# Achados"
+
+
+async def test_base_de_custos_vem_da_plataforma_e_sobe_por_link_como_a_pessoa(ambiente):
+    async with servidor() as c:
+        token = token_de(BIA)
+        base = {"competencia": "2026-01", "empresas": {"aforca": {}}, "cargos_por_empresa": []}
+        leitura = c.mock.post(f"{API}/base_custos").mock(side_effect=[
+            httpx.Response(200, json={"resultado": {"competencia": "2026-02", "competencias": ["2026-02", "2026-01"],
+                                                    "base": base}}),
+            httpx.Response(403, json={"erro": "Esta pessoa não tem a base de custos da precificação liberada no Odoo."}),
+        ])
+        upload = c.mock.post(f"{API}/base_custos/enviar").mock(return_value=httpx.Response(
+            200, json={"resultado": {"competencia": "2026-01", "planilha": "base-custos-2026-01.xlsx"}}))
+
+        assert "precificacao_base_custos" in await nomes(c, token)
+        lida = corpo(await chamar(c, "precificacao_base_custos", {}, token))
+        assert lida["base"] == base and lida["competencias"] == ["2026-02", "2026-01"]
+        assert json.loads(leitura.calls.last.request.content) == {}
+        negada = await chamar(c, "precificacao_base_custos", {"competencia": "2026-01"}, token)
+        assert json.loads(leitura.calls.last.request.content) == {"competencia": "2026-01"}
+        assert negada["isError"] and "sem permissão (403)" in negada["content"][0]["text"]
+        invalida = await chamar(c, "precificacao_base_custos", {"competencia": "jan/2026"}, token)
+        assert invalida["isError"] and leitura.call_count == 2
+
+        envio = corpo(await chamar(c, "precificacao_enviar_base_custos", {}, token))
+        assert "-F base=@base-custos.json" in envio["comando"]
+        caminho = urlsplit(envio["url"]).path
+        arquivos = {"base": ("base-custos.json", json.dumps(base).encode(), "application/json"),
+                    "planilha": ("base-custos.xlsx", b"PK\x03\x04 planilha", "application/octet-stream")}
+        assert (await c.post(caminho, content=b"{}")).status_code == 400  # sem formulário
+        r = await c.post(caminho, files=arquivos)
+        assert r.status_code == 200 and r.json()["resultado"]["competencia"] == "2026-01"
+        pedido = upload.calls.last.request
+        assert pedido.headers["x-realmak-act-as"] == BIA and pedido.headers["content-type"].startswith("multipart/form-data")
+        assert b'name="planilha"' in pedido.content and b"PK\x03\x04 planilha" in pedido.content
+        assert (await c.post(caminho, files=arquivos)).status_code == 409  # o link vale uma vez
+        # O link de um documento da licitação não serve para enviar a base.
+        link_doc = corpo(await chamar(c, "licitacao_link_arquivo", {"licitacao_id": 7, "documento_id": 31}, token))
+        token_doc = urlsplit(link_doc["url"]).path.rsplit("/", 1)[-1]
+        assert (await c.post(f"/mcp/arquivos/base-custos/{token_doc}", files=arquivos)).status_code == 404

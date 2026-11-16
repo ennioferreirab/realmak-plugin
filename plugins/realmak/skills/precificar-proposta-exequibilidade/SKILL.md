@@ -43,7 +43,12 @@ O esquema completo está em `references/base-custos.md`.
 
 ### Onde está
 
-A base real fica na plataforma de licitações e não vem com o plugin, porque traz salários e custos internos. Peça ao analista o `base-custos.json` da competência mais recente, ou o caminho dele. `assets/base-custos-exemplo.json` tem valores fictícios e serve só para testar os scripts; nunca forme preço com ele.
+A base real não vem com o plugin, porque traz salários e custos internos.
+
+- Na plataforma de licitações: leia a skill `licitacao`; ela diz como buscar a base da competência mais recente (ou de outra) e gravá-la como `base-custos.json` para os scripts.
+- Fora da plataforma: peça ao analista o `base-custos.json` da competência mais recente, ou o caminho dele no computador.
+
+`assets/base-custos-exemplo.json` tem valores fictícios e serve só para testar os scripts; nunca forme preço com ele.
 
 Antes de usar, confira a `competencia` e a lista `alertas`. Base com mais de 12 meses, empresa sem alíquota ou faixa marcada como larga vira pendência na síntese.
 
@@ -83,7 +88,7 @@ Quando chegar a planilha nova de pessoal, rode a ingestão com a planilha origin
 uv run --with openpyxl python scripts/ingerir_custos.py TODOS_FUNCIONARIOS_2026.xls pasta-saida --competencia 2026-01
 ```
 
-Saem `base-custos.json` (o que a skill consulta) e `base-custos.xlsx` (a mesma base para conferência, com a aba Alertas). Confira os alertas e a aba Tributos, depois envie os dois arquivos para a plataforma. Não grave a base dentro do plugin nem num repositório.
+Saem `base-custos.json` (o que a skill consulta) e `base-custos.xlsx` (a mesma base para conferência, com a aba Alertas). Confira os alertas e a aba Tributos, depois envie os dois arquivos para a plataforma (a skill `licitacao` diz como). Não grave a base dentro do plugin nem num repositório.
 
 A base é dado interno do grupo. Na proposta e nos anexos da licitação entra só a composição usada no preço, nunca a base inteira nem as faixas das outras empresas.
 
