@@ -61,7 +61,7 @@ Para obter provas, faça uma consulta que devolva os ids reais dos registros e e
 ## 1. Como consultar
 
 - Use `cerebro_buscar` com os termos da pergunta. Peça `include_facts=true` quando quiser os fatos consolidados junto dos trechos. Use `cerebro_fatos` para listar fatos por dimensão, área ou data.
-- Em `cerebro_buscar`, `cerebro_fatos` e `cerebro_provas`, passe `os="windows"`: os analistas usam Windows, e o parâmetro define o link do arquivo original. Se o analista informar outro sistema, use `macos` ou `linux`.
+- Em `cerebro_buscar`, `cerebro_fatos` e `cerebro_provas`, passe `os="windows"`: os analistas usam Windows, e o servidor exige o parâmetro. Se o analista informar outro sistema, use `macos` ou `linux`.
 - Monte a resposta você mesmo, a partir dos trechos.
 - Se a busca vier fraca, tente de novo com variações do nome (nome completo, sobrenome, apelido) antes de dizer que não há resultado.
 - Responda só com o que os resultados sustentam e diga o que ficou sem confirmação. Nomes parecidos não provam que é a mesma pessoa ou empresa: confira CPF, CNPJ ou número de registro.
@@ -85,19 +85,20 @@ As tabelas podem não ter todos os casos. Nunca diga "não tem" só porque o dat
 Cada resultado pode trazer um `original` com:
 
 - `file_path`: caminho do arquivo no servidor de arquivos da empresa consultada. Serve para o analista localizar o arquivo.
-- `os_open_link`: o mesmo arquivo como link `file://` para o computador do analista.
+- `brain_link`: link `https://` que abre o arquivo no explorador do Cérebro. Pede o login do Odoo se a pessoa não estiver logada e funciona fora da rede da empresa.
+- `os_open_link`: link `file://` que só abre na rede interna. Não entregue.
 
 Quando houver `original`, termine a resposta com a seção **Arquivos**, no formato:
 
-- **Nome do arquivo** (tamanho e data, se vierem)
-  - Link: o `os_open_link`, exatamente como veio
+- **Nome do arquivo** (empresa e assunto, tamanho e data, se vierem)
+  - Link: o `brain_link`, exatamente como veio
   - Caminho: o `file_path`
 
 Regras da seção:
 
 - Liste cada arquivo uma vez. Resultados com o mesmo `sha256` são o mesmo arquivo.
 - Mostre no máximo 5 arquivos, só os que sustentam a resposta. Ofereça os outros em uma linha.
-- Se o `original` vier sem `os_open_link`, mostre só o `file_path` e diga que o link não está disponível.
+- Se o `original` vier sem `brain_link`, mostre só o `file_path` e diga que o arquivo não abre pelo Cérebro.
 - Se o resultado não tiver `original`, diga que a fonte é só texto indexado e não monte link.
 - Nunca invente caminho nem link.
 - O link `file://` só abre se o computador enxergar o compartilhamento de arquivos da empresa. Se não abrir, o analista precisa pedir acesso ao compartilhamento a quem administra a rede.
