@@ -11,3 +11,8 @@ dist/
 build/
 data/
 *.log
+
+# Base de custos real da precificação (dado interno; fica na plataforma)
+base-custos.json
+base-custos.xlsx
+TODOS_FUNCIONARIOS*
