@@ -56,7 +56,7 @@ As skills de análise, habilitação, precificação e auditoria não citam ferr
 | --- | --- |
 | Ler o edital e os anexos | Abra a pasta (seção 1) e leia cada documento com `licitacao_ler_texto` (seção 2) |
 | Usar uma análise anterior | Ela está na pasta: nas análises dos agentes, nas notas ou nos arquivos da Saída IA |
-| Entregar arquivos (xlsx, md, html) | Anexe cada um com `licitacao_enviar_arquivo` (seção 4) |
+| Entregar arquivos (xlsx, pdf, md, html) | Anexe cada um com `licitacao_enviar_arquivo` (seção 4) |
 | Apontar pendência | `licitacao_registrar` com tipo `pendencia`, dizendo o que falta e de quem depende |
 | Registrar achado ou conclusão | `licitacao_registrar` com tipo `observacao`, com documento, página e item |
 | Registrar o que o analista decidiu | `licitacao_registrar` com tipo `decisao` |

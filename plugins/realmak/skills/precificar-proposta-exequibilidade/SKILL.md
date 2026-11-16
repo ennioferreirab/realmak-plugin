@@ -20,7 +20,7 @@ Se o trabalho for feito na plataforma de licitações, leia a skill `licitacao` 
 
 | Preciso de | Onde buscar |
 | --- | --- |
-| Preço de peças, insumos e materiais em fornecedores | Skill `cotar-pecas-materiais-licitacoes`, a partir da seção 4 de `analise-manutencao.md` |
+| Preço de peças, insumos e materiais em fornecedores | Skill `cotar-pecas-materiais-licitacoes`, a partir da Tabela 5 (Peças, insumos e materiais) de `analise-manutencao.md` |
 | Preço praticado em compras públicas e valores homologados em certames parecidos | Skill `compras-publicas` |
 | Custos próprios da empresa (salários, encargos, veículos, instrumentos) | O analista informa; sem o dado, use premissa identificada |
 
@@ -51,7 +51,7 @@ Organize os custos em três blocos. Percorra todos os itens e, para cada um, dec
 - ferramentas, analisadores, padrões, calibrações, manutenção e depreciação;
 - EPIs, uniformes, crachás, comunicação e informática;
 - sistema de gestão da manutenção: licenças, implantação, suporte, armazenamento e contingência;
-- peças, insumos e materiais incluídos no preço, kits preventivos, estoque mínimo, perdas e logística (itens da seção 4 da análise marcados como "incluído no preço");
+- peças, insumos e materiais incluídos no preço, kits preventivos, estoque mínimo, perdas e logística (itens da Tabela 5 da análise marcados como "Incluído no preço");
 - treinamentos, documentação, impressão, etiquetas e descarte;
 - mobilização.
 
