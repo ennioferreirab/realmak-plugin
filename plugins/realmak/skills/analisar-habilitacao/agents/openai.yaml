@@ -1,0 +1,5 @@
+interface:
+  display_name: "Analisar Habilitação"
+  short_description: "Qual empresa do grupo atende e o que falta"
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,5 @@
+interface:
+  display_name: "Analisar Edital de Fornecimento"
+  short_description: "Itens, exigências do produto e entrega"
+policy:
+  allow_implicit_invocation: true

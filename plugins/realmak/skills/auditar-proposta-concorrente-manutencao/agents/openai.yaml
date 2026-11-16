@@ -1,0 +1,5 @@
+interface:
+  display_name: "Auditar Proposta Concorrente"
+  short_description: "Auditoria de concorrente e recurso"
+policy:
+  allow_implicit_invocation: true

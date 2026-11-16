@@ -1,0 +1,5 @@
+interface:
+  display_name: "ConLicitação"
+  short_description: "Buscar licitações, boletins e pregões"
+policy:
+  allow_implicit_invocation: true

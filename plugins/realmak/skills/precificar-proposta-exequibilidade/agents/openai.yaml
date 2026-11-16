@@ -1,0 +1,5 @@
+interface:
+  display_name: "Precificar Proposta e Exequibilidade"
+  short_description: "Preço e planilha de exequibilidade"
+policy:
+  allow_implicit_invocation: true

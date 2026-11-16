@@ -1,0 +1,5 @@
+interface:
+  display_name: "Analisar Edital de Manutenção"
+  short_description: "Escopo, peças, equipe e SLA do serviço"
+policy:
+  allow_implicit_invocation: true

@@ -48,6 +48,21 @@ As ferramentas `licitacao_*` agem no Odoo da Realmak como a pessoa que entrou pe
 - Precisa do analista: `licitacao_status` com `aguardando` e o que ele precisa fazer.
 - Terminou: `licitacao_status` com `concluido` e o resultado em uma frase.
 
+## Quando outra skill mandar para cá
+
+As skills de análise, habilitação, precificação e auditoria não citam ferramentas da plataforma. Quando uma delas for usada numa licitação da plataforma, faça assim:
+
+| A skill pede | Na plataforma |
+| --- | --- |
+| Ler o edital e os anexos | Abra a pasta (seção 1) e leia cada documento com `licitacao_ler_texto` (seção 2) |
+| Usar uma análise anterior | Ela está na pasta: nas análises dos agentes, nas notas ou nos arquivos da Saída IA |
+| Entregar arquivos (xlsx, md, html) | Anexe cada um com `licitacao_enviar_arquivo` (seção 4) |
+| Apontar pendência | `licitacao_registrar` com tipo `pendencia`, dizendo o que falta e de quem depende |
+| Registrar achado ou conclusão | `licitacao_registrar` com tipo `observacao`, com documento, página e item |
+| Registrar o que o analista decidiu | `licitacao_registrar` com tipo `decisao` |
+
+Marque `trabalhando` ao começar e `concluido` ou `aguardando` ao terminar (seções 1 e 5). Entrega feita na conversa continua na conversa: registre no card só o resumo e as pendências.
+
 ## Erros
 
 - 403: a pessoa não vê essa licitação ou não tem as licitações liberadas. Diga isso; não tente outra licitação por conta própria.

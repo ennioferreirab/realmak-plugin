@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Análise de fornecimento: [ÓRGÃO] · [MODALIDADE] nº [NÚMERO/ANO]</title>
+<style>
+  :root{--ink:#1f2937;--muted:#6b7280;--line:#d1d5db;--head:#1f3864;--soft:#f3f4f6}
+  *{box-sizing:border-box}
+  body{margin:0;background:#e5e7eb;color:var(--ink);font:14px/1.55 -apple-system,"Segoe UI",Arial,sans-serif}
+  .page{max-width:1000px;margin:24px auto;background:#fff;padding:40px 48px;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+  h1{font-size:22px;margin:0 0 4px;color:var(--head)}
+  h2{font-size:17px;margin:36px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--head);color:var(--head)}
+  h3{font-size:14px;margin:22px 0 8px}
+  p{margin:8px 0}
+  .sub{color:var(--muted);margin:0 0 20px}
+  table{width:100%;border-collapse:collapse;margin:8px 0 14px;font-size:13px}
+  th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+  th{background:var(--head);color:#fff;font-weight:600}
+  table.kv th{background:var(--soft);color:var(--ink);width:260px}
+  tr.total td{font-weight:700;background:var(--soft)}
+  .rec{display:inline-block;padding:10px 18px;border-radius:6px;font-size:16px;font-weight:700;color:#fff;margin:6px 0 10px}
+  .rec.atende{background:#15803d}
+  .rec.condicoes{background:#b45309}
+  .rec.nao{background:#b91c1c}
+  .cards{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0}
+  .card{flex:1;min-width:160px;border:1px solid var(--line);border-radius:6px;padding:10px 14px}
+  .card b{display:block;font-size:20px;color:var(--head)}
+  .card span{color:var(--muted);font-size:12px}
+  .risco-alto{color:#b91c1c;font-weight:700}
+  .risco-medio{color:#b45309;font-weight:700}
+  .risco-baixo{color:#15803d;font-weight:700}
+  .legenda{font-size:12px;color:var(--muted)}
+  @media print{
+    body{background:#fff}
+    .page{box-shadow:none;margin:0;padding:0;max-width:none}
+    h2{break-after:avoid}
+    tr{break-inside:avoid}
+    @page{size:A4;margin:16mm}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>Análise de fornecimento</h1>
+<p class="sub">[ÓRGÃO] · [MODALIDADE] nº [NÚMERO/ANO]</p>
+
+<table class="kv">
+  <tr><th>Órgão / unidade</th><td>[ÓRGÃO E UNIDADE COMPRADORA]</td></tr>
+  <tr><th>Edital e processo</th><td>[NÚMERO DO EDITAL E DO PROCESSO]</td></tr>
+  <tr><th>Objeto</th><td>[OBJETO, COMO CONSTA NO EDITAL]</td></tr>
+  <tr><th>Critério de julgamento</th><td>[POR ITEM, POR LOTE OU GLOBAL]</td></tr>
+  <tr><th>Registro de preços</th><td>[SIM OU NÃO]</td></tr>
+  <tr><th>Data desta análise</th><td>[DATA]</td></tr>
+</table>
+<p class="legenda">Prazos do certame, habilitação jurídica, fiscal e econômica, declarações e impugnação estão na análise geral do edital, não aqui.</p>
+
+<h2>1. Conclusão de atendimento ao objeto</h2>
+
+<!-- Use uma das três classes: "rec atende", "rec condicoes" ou "rec nao". -->
+<div class="rec condicoes">[ATENDE | ATENDE COM CONDIÇÕES | NÃO ATENDE]</div>
+<p>[JUSTIFICATIVA EM ATÉ CINCO LINHAS: O QUE O EDITAL PEDE, QUANTOS ITENS A EMPRESA ATENDE E ONDE ESTÁ O RISCO.]</p>
+
+<div class="cards">
+  <div class="card"><b>[N]</b><span>Itens do edital</span></div>
+  <div class="card"><b>[N]</b><span>Itens que atendemos</span></div>
+  <div class="card"><b>[N]</b><span>Itens a confirmar</span></div>
+  <div class="card"><b>[R$]</b><span>Valor estimado total</span></div>
+</div>
+
+<h3>Condições para atender</h3>
+<ul><li>[CONDIÇÃO 1, OU "NENHUMA"]</li></ul>
+
+<h3>Pontos de maior risco</h3>
+<table>
+  <tr><th>Ponto</th><th>Exigência ou item</th><th>Por que é risco</th><th>Como reduzir</th></tr>
+  <tr><td>[PONTO]</td><td>[E-00 OU LOTE/ITEM]</td><td>[MOTIVO]</td><td>[MEDIDA]</td></tr>
+</table>
+
+<h3>Pontos para a analista decidir</h3>
+<ul><li>[PONTO E PRAZO]</li></ul>
+
+<h2>2. Itens</h2>
+<!-- Em "Atendemos?" use a classe "risco-baixo" para Sim, "risco-alto" para Não e "risco-medio" para A confirmar. -->
+<table>
+  <tr><th>Lote</th><th>Item</th><th>Descrição</th><th>Especificação que restringe</th><th>Marca ou modelo de referência</th><th>Unidade</th><th>Quantidade</th><th>Valor unitário estimado</th><th>Valor total estimado</th><th>Atendemos?</th><th>Fonte</th></tr>
+  <tr><td>[N]</td><td>[N]</td><td>[DESCRIÇÃO, COMO NO EDITAL]</td><td>[REQUISITO QUE LIMITA MARCAS OU MODELOS, OU "—"]</td><td>[MARCA/MODELO OU "—"]</td><td>[UN]</td><td>[N]</td><td>[R$]</td><td>[R$]</td><td class="risco-medio">[SIM, NÃO OU A CONFIRMAR]</td><td>[D-01, ITEM]</td></tr>
+  <tr class="total"><td colspan="8">Total estimado</td><td>[R$]</td><td></td><td></td></tr>
+</table>
+<p>Em edital com muitos itens, mostre aqui os de maior valor e os que não atendemos, e diga que a lista completa está na planilha.</p>
+
+<h2>3. Exigências técnicas do objeto</h2>
+<!-- Na coluna Risco use a classe "risco-alto", "risco-medio" ou "risco-baixo". -->
+<table>
+  <tr><th>ID</th><th>Tipo</th><th>Exigência</th><th>Itens ou lotes</th><th>Fonte</th><th>Quando é exigida</th><th>Prazo</th><th>Risco</th><th>Pendência</th></tr>
+  <tr><td>E-01</td><td>[AMOSTRA, CATÁLOGO, CERTIFICAÇÃO, CARTA DO FABRICANTE, GARANTIA, ASSISTÊNCIA TÉCNICA, VALIDADE MÍNIMA, ATESTADO DE FORNECIMENTO OU OUTRA]</td><td>[EXIGÊNCIA]</td><td>[LOTES/ITENS]</td><td>[D-01, SEÇÃO/ITEM]</td><td>[NA PROPOSTA, NA HABILITAÇÃO, APÓS CONVOCAÇÃO, NA ENTREGA OU NA ASSINATURA]</td><td>[PRAZO]</td><td class="risco-alto">[ALTO, MÉDIO OU BAIXO]</td><td>[P-00 OU "—"]</td></tr>
+</table>
+
+<h2>4. Entrega</h2>
+<table>
+  <tr><th>Local</th><th>Cidade / UF</th><th>Itens ou lotes</th><th>Prazo (dias)</th><th>Conta a partir de</th><th>Parcelada?</th><th>Frete e descarga</th><th>Instalação, montagem ou treinamento</th><th>Recebimento</th><th>Fonte</th></tr>
+  <tr><td>[LOCAL]</td><td>[CIDADE/UF]</td><td>[LOTES/ITENS]</td><td>[N]</td><td>[EMPENHO, ORDEM DE FORNECIMENTO, ASSINATURA...]</td><td>[SIM OU NÃO]</td><td>[CONTRATADA OU ÓRGÃO]</td><td>[O QUE O EDITAL EXIGE, OU "—"]</td><td>[PRAZOS DE RECEBIMENTO PROVISÓRIO E DEFINITIVO]</td><td>[D-01, ITEM]</td></tr>
+</table>
+
+<h2>5. Condições comerciais</h2>
+<table>
+  <tr><th>Condição</th><th>O que o edital diz</th><th>Fonte</th><th>Risco</th></tr>
+  <tr><td>Vigência da ata ou do contrato</td><td>[TEXTO]</td><td>[D-01, ITEM]</td><td>[RISCO]</td></tr>
+  <tr><td>Quantidade mínima por pedido</td><td>[TEXTO]</td><td>[D-01, ITEM]</td><td>[RISCO]</td></tr>
+  <tr><td>Adesão de outros órgãos (carona)</td><td>[TEXTO]</td><td>[D-01, ITEM]</td><td>[RISCO]</td></tr>
+  <tr><td>Cota reservada ou exclusividade para ME/EPP</td><td>[TEXTO]</td><td>[D-01, ITEM]</td><td>[RISCO]</td></tr>
+  <tr><td>Margem de preferência</td><td>[TEXTO]</td><td>[D-01, ITEM]</td><td>[RISCO]</td></tr>
+  <tr><td>Prazo de pagamento</td><td>[TEXTO]</td><td>[D-01, ITEM]</td><td>[RISCO]</td></tr>
+  <tr><td>Reajuste</td><td>[TEXTO]</td><td>[D-01, ITEM]</td><td>[RISCO]</td></tr>
+  <tr><td>Garantia contratual</td><td>[TEXTO]</td><td>[D-01, ITEM]</td><td>[RISCO]</td></tr>
+  <tr><td>Multa por atraso na entrega</td><td>[TEXTO]</td><td>[D-01, ITEM]</td><td>[RISCO]</td></tr>
+  <tr><td>Outras penalidades</td><td>[TEXTO]</td><td>[D-01, ITEM]</td><td>[RISCO]</td></tr>
+  <tr><td>Troca de marca ou modelo durante a execução</td><td>[TEXTO]</td><td>[D-01, ITEM]</td><td>[RISCO]</td></tr>
+  <tr><td>Subcontratação</td><td>[TEXTO]</td><td>[D-01, ITEM]</td><td>[RISCO]</td></tr>
+</table>
+
+<h2>6. Pendências</h2>
+<table>
+  <tr><th>ID</th><th>Tipo</th><th>Descrição</th><th>Fonte</th><th>Impacto</th><th>Ação sugerida</th><th>Prazo</th></tr>
+  <tr><td>P-01</td><td>[DIVERGÊNCIA, DADO AUSENTE, ESCLARECIMENTO, LEVAR À ANÁLISE GERAL OU CONFIRMAR COM A EQUIPE]</td><td>[DESCRIÇÃO]</td><td>[D-00, SEÇÃO]</td><td>[O QUE AFETA]</td><td>[AÇÃO]</td><td>[DATA]</td></tr>
+</table>
+
+<h2>7. Documentos analisados</h2>
+<table>
+  <tr><th>ID</th><th>Arquivo</th><th>Tipo de documento</th><th>Versão ou data</th></tr>
+  <tr><td>D-01</td><td>[NOME DO ARQUIVO]</td><td>[EDITAL, TR, ETP, MINUTA, PLANILHA DE ITENS...]</td><td>[VERSÃO OU DATA]</td></tr>
+</table>
+
+</div>
+</body>
+</html>
