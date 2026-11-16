@@ -181,7 +181,7 @@ async def test_base_de_custos_vem_da_plataforma_e_sobe_por_link_como_a_pessoa(am
             httpx.Response(403, json={"erro": "Esta pessoa não tem a base de custos da precificação liberada no Odoo."}),
         ])
         upload = c.mock.post(f"{API}/base_custos/enviar").mock(return_value=httpx.Response(
-            200, json={"resultado": {"competencia": "2026-01", "planilha": "base-custos-2026-01.xlsx"}}))
+            200, json={"resultado": {"competencia": "2026-01", "nova": False, "alteracoes": 3, "ignoradas": []}}))
 
         assert "precificacao_base_custos" in await nomes(c, token)
         lida = corpo(await chamar(c, "precificacao_base_custos", {}, token))
@@ -194,7 +194,7 @@ async def test_base_de_custos_vem_da_plataforma_e_sobe_por_link_como_a_pessoa(am
         assert invalida["isError"] and leitura.call_count == 2
 
         envio = corpo(await chamar(c, "precificacao_enviar_base_custos", {}, token))
-        assert "-F base=@base-custos.json" in envio["comando"]
+        assert "-F base=@base-custos.json" in envio["comando_json"] and "-F planilha=@" in envio["comando_planilha"]
         caminho = urlsplit(envio["url"]).path
         arquivos = {"base": ("base-custos.json", json.dumps(base).encode(), "application/json"),
                     "planilha": ("base-custos.xlsx", b"PK\x03\x04 planilha", "application/octet-stream")}

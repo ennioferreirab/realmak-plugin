@@ -192,11 +192,12 @@ async def precificacao_base_custos(
 
 
 async def precificacao_enviar_base_custos() -> str:
-    """Link para enviar uma nova base de custos à plataforma: o base-custos.json e a base-custos.xlsx gerados juntos pela ingestão da folha. A competência vem do JSON; reenviar a mesma competência substitui a anterior. O link vale 15 minutos e uma vez; os arquivos não passam pela conversa. Só para quem tem a base de custos liberada no Odoo."""
+    """Link para enviar a base de custos à plataforma: o base-custos.json da ingestão da folha (cria a competência ou substitui a base inteira) ou a planilha modelo editada, baixada na aba Custos (altera os valores da competência que ela traz). Toda mudança fica no histórico da base. O link vale 15 minutos e uma vez; o arquivo não passa pela conversa. Só para quem tem a base de custos liberada no Odoo."""
     settings, email = _settings(), pessoa()
     resultado = arquivos.link(settings, "base-custos/", {"t": "base_custos", "e": email})
     return dumps({**resultado, "limite_mb": arquivos.BASE_CUSTOS_MAX_BYTES // (1024 * 1024),
-                  "comando": f"curl -fsS -F base=@base-custos.json -F planilha=@base-custos.xlsx '{resultado['url']}'"})
+                  "comando_json": f"curl -fsS -F base=@base-custos.json -F 'motivo=<motivo>' '{resultado['url']}'",
+                  "comando_planilha": f"curl -fsS -F planilha=@<planilha>.xlsx -F 'motivo=<motivo>' '{resultado['url']}'"})
 
 
 INSTRUCOES = (

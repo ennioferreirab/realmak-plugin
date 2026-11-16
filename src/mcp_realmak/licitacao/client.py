@@ -4,7 +4,7 @@ Rotas, todas com `Authorization: Bearer <segredo>` e `X-Realmak-Act-As: <e-mail 
     POST {ODOO_MCP_URL}/realmak_mcp/v1/<ferramenta>          corpo JSON; resposta {"resultado": ...} ou {"erro": ...}
     POST {ODOO_MCP_URL}/realmak_mcp/v1/arquivo/<licitacao>   bytes do arquivo; ?nome=&descricao=
     GET  {ODOO_MCP_URL}/realmak_mcp/v1/arquivo/<licitacao>/<documento>
-    POST {ODOO_MCP_URL}/realmak_mcp/v1/base_custos/enviar      multipart: base (JSON) e planilha (xlsx, opcional)
+    POST {ODOO_MCP_URL}/realmak_mcp/v1/base_custos/enviar      multipart: base (JSON) ou planilha (xlsx); motivo
 
 O Odoo roda cada chamada como a pessoa: valem as permissões dela. O segredo nunca aparece em erro ou log.
 """
@@ -61,7 +61,7 @@ class OdooClient:
         )
 
     async def enviar_base_custos(self, conteudo: bytes, content_type: str) -> Any:
-        """Repassa o multipart do analista (`base` e `planilha`) sem abrir: o Odoo valida."""
+        """Repassa o multipart do analista (`base` ou `planilha`, `motivo`) sem abrir: o Odoo valida."""
         return await self._pedir(
             "POST", "/base_custos/enviar", content=conteudo, headers={"Content-Type": content_type},
         )

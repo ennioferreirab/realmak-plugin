@@ -6,7 +6,7 @@ confere a permissão de novo. O link de envio vale uma vez.
 
     GET       {MCP_REALMAK_PUBLIC_URL}/mcp/arquivos/<token>
     PUT/POST  {MCP_REALMAK_PUBLIC_URL}/mcp/arquivos/envio/<token>   corpo = bytes do arquivo
-    POST      {MCP_REALMAK_PUBLIC_URL}/mcp/arquivos/base-custos/<token>   multipart: base (JSON) e planilha (xlsx)
+    POST      {MCP_REALMAK_PUBLIC_URL}/mcp/arquivos/base-custos/<token>   multipart: base (JSON) ou planilha (xlsx)
 
 O link da base de custos fica preso só à pessoa; o Odoo confere se ela tem a base liberada.
 """
@@ -161,7 +161,7 @@ def rotas(transport: httpx.AsyncBaseTransport | None = None) -> list[tuple[str, 
             return _erro(404, "Link de envio inválido ou expirado. Peça outro com precificacao_enviar_base_custos.")
         tipo = request.headers.get("content-type", "")
         if not tipo.startswith("multipart/form-data"):
-            return _erro(400, "Envie os arquivos como formulário: curl -F base=@base-custos.json -F planilha=@base-custos.xlsx.")
+            return _erro(400, "Envie como formulário: curl -F base=@base-custos.json ou -F planilha=@<planilha>.xlsx.")
         limite = f"Envio acima de {BASE_CUSTOS_MAX_BYTES // (1024 * 1024)} MB."
         if int(request.headers.get("content-length") or 0) > BASE_CUSTOS_MAX_BYTES:
             return _erro(413, limite)
