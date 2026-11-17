@@ -85,19 +85,24 @@ As tabelas podem não ter todos os casos. Nunca diga "não tem" só porque o dat
 Cada resultado pode trazer um `original` com:
 
 - `file_path`: caminho do arquivo no servidor de arquivos da empresa consultada. Serve para o analista localizar o arquivo.
-- `brain_link`: link `https://` que abre o arquivo no explorador do Cérebro. Pede o login do Odoo se a pessoa não estiver logada e funciona fora da rede da empresa.
+- `brain_link`: link `https://` que abre o arquivo no explorador do Cérebro, em tela cheia. Pede o login do Odoo se a pessoa não estiver logada e funciona fora da rede da empresa.
+- `brain_download_link`: link `https://` que baixa o mesmo arquivo pelo Cérebro, com o mesmo login, sem passar pelo explorador.
 
-Quando houver `original`, termine a resposta com a seção **Arquivos**, no formato:
+Quando houver `original`, termine a resposta com a seção **Arquivos**, no formato (links em markdown, nunca a URL por extenso):
 
-- **Nome do arquivo** (empresa e assunto, tamanho e data, se vierem)
-  - Link: o `brain_link`, exatamente como veio
-  - Caminho: o `file_path`
+- **Nome do arquivo** (empresa e assunto, tamanho e data, se vierem) · [Abrir](brain_link) · [Baixar](brain_download_link)
+  - Caminho: `file_path`
+
+Exemplo:
+
+- **LUIZ - CAT RECEITA FEDERAL MG.pdf** (AForça, CAT do CREA-MG) · [Abrir](https://realmak.duckdns.org/brain/abrir/aforca/43b3…) · [Baixar](https://realmak.duckdns.org/brain/baixar/aforca/43b3…)
+  - Caminho: `E:\acervo-2.0\aforca\habilitacao\atestados\registrado_cat\LUIZ - CAT RECEITA FEDERAL MG.pdf`
 
 Regras da seção:
 
 - Liste cada arquivo uma vez. Resultados com o mesmo `sha256` são o mesmo arquivo.
 - Mostre no máximo 5 arquivos, só os que sustentam a resposta. Ofereça os outros em uma linha.
-- Se o `original` vier sem `brain_link`, mostre só o `file_path` e diga que o arquivo não abre pelo Cérebro.
+- Use as URLs exatamente como vieram, só como destino do link. Sem `brain_download_link`, mostre só [Abrir]. Sem `brain_link`, mostre só o `file_path` e diga que o arquivo não abre pelo Cérebro.
 - Se o resultado não tiver `original`, diga que a fonte é só texto indexado e não monte link.
 - Nunca invente caminho nem link.
 - O link `file://` só abre se o computador enxergar o compartilhamento de arquivos da empresa. Se não abrir, o analista precisa pedir acesso ao compartilhamento a quem administra a rede.
