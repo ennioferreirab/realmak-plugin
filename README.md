@@ -84,7 +84,7 @@ O plugin `realmak` traz 11 skills e declara o conector do servidor (`https://rea
 | `analisar-edital-manutencao` | Serviço de manutenção: escopo, peças e materiais, equipe, SLA. Entrega Excel, Markdown e HTML |
 | `analisar-edital-fornecimento` | Fornecimento de bens: itens, exigências do produto, entrega. Entrega Excel e HTML |
 | `analisar-habilitacao` | Compara AForça, Realmak, UNA e Nortfort diante da habilitação e lista as pendências |
-| `precificar-proposta-exequibilidade` | Preço e planilha de exequibilidade de manutenção |
+| `precificar-proposta-exequibilidade` | Preço e planilha de exequibilidade de manutenção, com a base de custos do grupo (custo por cargo, encargos e tributos por empresa) |
 | `cotar-pecas-materiais-licitacoes` | Cotação de peças e materiais com link por item |
 | `auditar-proposta-concorrente-manutencao` | Auditoria de proposta concorrente e minuta de recurso |
 | `licitacao` | Trabalhar na licitação da plataforma (Odoo) |
