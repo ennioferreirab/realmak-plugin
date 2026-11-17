@@ -144,25 +144,32 @@ async def test_agente_le_a_pasta_registra_e_deixa_status_como_a_pessoa(ambiente)
 async def test_links_baixam_e_enviam_arquivo_sem_passar_pela_conversa(ambiente):
     async with servidor() as c:
         token = token_de(BIA)
-        download = c.mock.get(f"{API}/arquivo/7/31").mock(return_value=httpx.Response(
-            200, content=b"%PDF-1.7 edital", headers={"Content-Type": "application/pdf",
-                                                      "Content-Disposition": 'attachment; filename="edital.pdf"'}))
+        download = c.mock.get(f"{API}/arquivo/7/6560").mock(side_effect=[
+            httpx.Response(200, content=b"%PDF-1.7 TR", headers={
+                "Content-Type": "application/pdf", "Content-Disposition": 'attachment; filename="tr.pdf"',
+            }) for _ in range(3)
+        ] + [httpx.Response(403, json={"erro": "Você não vê este documento."})])
         upload = c.mock.post(f"{API}/arquivo/7").mock(return_value=httpx.Response(
             200, json={"resultado": {"documento_id": 90, "pasta": "Saída IA / Agentes MCP"}}))
 
-        link = corpo(await chamar(c, "licitacao_link_arquivo", {"licitacao_id": 7, "documento_id": 31}, token))
+        args = {"licitacao_id": 7, "documento_id": 6560}
+        negado = await chamar(c, "licitacao_link_arquivo", args, token_de(ANA))
+        assert negado["isError"] and not download.called
+        link = corpo(await chamar(c, "licitacao_link_arquivo", args, token))
         assert link["comando"] == f"curl -fsSL -OJ '{link['link_baixar']}'"
         ver, baixar = urlsplit(link["link_visualizar"]).path, urlsplit(link["link_baixar"]).path
         for caminho, disposicao in ((ver, "inline"), (baixar, "attachment"), (baixar, "attachment")):
             r = await c.get(caminho)  # sem login; o link vale mais de uma vez
-            assert r.status_code == 200 and r.content == b"%PDF-1.7 edital"
-            assert r.headers["content-disposition"] == f'{disposicao}; filename="edital.pdf"'
+            assert r.status_code == 200 and r.content == b"%PDF-1.7 TR"
+            assert r.headers["content-disposition"] == f'{disposicao}; filename="tr.pdf"'
             assert r.headers["x-content-type-options"] == "nosniff" and r.headers["cache-control"] == "no-store"
         assert download.call_count == 3 and download.calls.last.request.headers["x-realmak-act-as"] == BIA
+        assert (await c.get(baixar)).status_code == 403
         assert (await c.get(baixar[:-3] + "xyz")).status_code == 404  # token adulterado
-        vencido = arquivos.assinar(load_settings(), {"t": "baixar", "e": BIA, "l": 7, "d": 31, "modo": "b",
+        vencido = arquivos.assinar(load_settings(), {"t": "baixar", "e": BIA, "l": 7, "d": 6560, "modo": "b",
                                                      "x": int(time.time()) - 1})
         assert (await c.get(f"/mcp/arquivos/{vencido}")).status_code == 404
+        assert download.call_count == 4
 
         envio = corpo(await chamar(c, "licitacao_enviar_arquivo",
                                    {"licitacao_id": 7, "nome": "planilha.xlsx", "descricao": "Preços"}, token))

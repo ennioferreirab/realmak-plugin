@@ -281,9 +281,11 @@ INSTRUCOES = """Cérebros das empresas do grupo (Realmak, AForça, Nortfort, UNA
   informado pelo analista. cerebro_esquema recebe só empresa; cerebro_consulta recebe sql, limite e empresa.
   cerebro_provas recebe ids como lista de strings reais da consulta, sempre na mesma empresa.
 - Resultado com 'original': termine a resposta com a seção Arquivos, um item por sha256, em markdown e sem URL
-  por extenso: '**nome** · [Visualizar](original.link_visualizar) · [Baixar](original.link_baixar)' e, na linha
-  de baixo, 'Caminho: original.file_path'. URLs exatamente como vieram; os links valem 30 minutos e não pedem
-  login. Sem link_visualizar, use '[Abrir](original.brain_link) · [Baixar](original.brain_download_link)';
+  por extenso: '**nome** · [Visualizar](original.link_visualizar) · [Baixar arquivo](original.link_baixar)' e, na linha
+  de baixo, 'Caminho: original.file_path'. Use as URLs exatamente como vieram. Os links temporários valem
+  30 minutos e não pedem login. Se faltar link_visualizar, use '[Abrir](original.brain_link)' se existir.
+  Se faltar link_baixar, use '[Baixar arquivo](original.brain_download_link)' se existir. Os links legados
+  exigem login do Odoo. Omita ações sem URL.
   sem nenhum link, só o Caminho. Sem 'original', a fonte é só texto indexado: não monte link.
 - Erro do cérebro diz o que mudar; não repita a mesma chamada sem mudar nada.
 """

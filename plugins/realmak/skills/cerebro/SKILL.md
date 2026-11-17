@@ -92,21 +92,21 @@ Cada resultado pode trazer um `original` com:
 
 Quando houver `original`, termine a resposta com a seção **Arquivos**, no formato (links em markdown, nunca a URL por extenso):
 
-- **Nome do arquivo** (empresa e assunto, tamanho e data, se vierem) · [Visualizar](link_visualizar) · [Baixar](link_baixar)
+- **Nome do arquivo** (empresa e assunto, tamanho e data, se vierem) · [Visualizar](link_visualizar) · [Baixar arquivo](link_baixar)
   - Caminho: `file_path`
 
 Exemplo:
 
-- **LUIZ - CAT RECEITA FEDERAL MG.pdf** (AForça, CAT do CREA-MG) · [Visualizar](https://realmak.duckdns.org/mcp/arquivos/cerebro/eyJ0…) · [Baixar](https://realmak.duckdns.org/mcp/arquivos/cerebro/eyJ1…)
+- **LUIZ - CAT RECEITA FEDERAL MG.pdf** (AForça, CAT do CREA-MG) · [Visualizar](https://realmak.duckdns.org/mcp/arquivos/cerebro/eyJ0…) · [Baixar arquivo](https://realmak.duckdns.org/mcp/arquivos/cerebro/eyJ1…)
   - Caminho: `E:\acervo-2.0\aforca\habilitacao\atestados\registrado_cat\LUIZ - CAT RECEITA FEDERAL MG.pdf`
 
-Depois da seção, avise em uma linha que os links valem 30 minutos.
+Se listar links temporários, informe que eles valem 30 minutos. Para links legados, informe que exigem login do Odoo.
 
 Regras da seção:
 
 - Liste cada arquivo uma vez. Resultados com o mesmo `sha256` são o mesmo arquivo.
 - Mostre no máximo 5 arquivos, só os que sustentam a resposta. Ofereça os outros em uma linha.
-- Use as URLs exatamente como vieram, só como destino do link. Sem `link_visualizar`, use [Abrir](brain_link) · [Baixar](brain_download_link); sem `brain_download_link`, só [Abrir]. Sem nenhum link, mostre só o `file_path` e diga que o arquivo não abre pelo Cérebro.
+- Use as URLs exatamente como vieram, só como destino do link. Mostre [Visualizar](link_visualizar) ou, na falta desse campo, [Abrir](brain_link) se existir. Mostre [Baixar arquivo](link_baixar) ou, na falta desse campo, [Baixar arquivo](brain_download_link) se existir. Sem nenhum link, mostre só o `file_path`.
 - Se o resultado não tiver `original`, diga que a fonte é só texto indexado e não monte link.
 - Nunca invente caminho nem link.
 - O link `file://` só abre se o computador enxergar o compartilhamento de arquivos da empresa. Se não abrir, o analista precisa pedir acesso ao compartilhamento a quem administra a rede.

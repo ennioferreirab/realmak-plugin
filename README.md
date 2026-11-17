@@ -23,7 +23,7 @@ As `licitacao_*` só aparecem para quem entrou pelo login de pessoa e tem as lic
 
 1. O servidor chama as rotas internas do módulo `realmak_mcp` do realmak-crm (`{ODOO_MCP_URL}/realmak_mcp/v1/...`) com o segredo compartilhado e `X-Realmak-Act-As: <e-mail>`. O Odoo roda a chamada como essa pessoa: valem as regras de acesso dela.
 2. O segredo é criado pelo Odoo no volume `mcp-realmak-odoo` e lido a cada chamada (`ODOO_MCP_SECRET_FILE`). Nunca aparece em erro nem em log.
-3. Arquivos não passam pela conversa: `licitacao_link_arquivo` e `licitacao_enviar_arquivo` devolvem links `/mcp/arquivos/...` assinados, presos à pessoa e ao arquivo, sem login. `licitacao_link_arquivo` devolve dois: `link_visualizar` (`inline`, o navegador mostra o que sabe exibir) e `link_baixar` (`attachment`), válidos por 30 minutos e por várias vezes. O de envio vale 15 minutos e uma vez. O servidor repassa ao Odoo, que confere a permissão de novo. Envio até 50 MB.
+3. Arquivos não passam pela conversa: `licitacao_link_arquivo` e `licitacao_enviar_arquivo` devolvem links `/mcp/arquivos/...` assinados, presos à pessoa e ao arquivo, sem login. Antes de emitir os links de leitura, `licitacao_link_arquivo` confirma o acesso da pessoa ao módulo de licitações no Odoo. Emite `link_visualizar` (`inline`, o navegador mostra o que sabe exibir) e `link_baixar` (`attachment`), válidos por 30 minutos e por várias vezes. A cada uso, o Odoo confere a permissão sobre o documento. O link de envio vale 15 minutos, uma vez, com limite de 50 MB.
 4. Toda escrita fica no card: nota interna no histórico, arquivo na Saída IA e a faixa "Claude de <pessoa> · <status>".
 
 Uma pessoa só com o Odoo (sem o cérebro) também entra pelo login; ela vê as `licitacao_*` e não vê as `cerebro_*`.
