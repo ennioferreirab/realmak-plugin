@@ -349,8 +349,10 @@ async def test_resposta_sem_os_open_link_e_com_brain_link(monkeypatch):
     async with servidor(monkeypatch) as (c, mock, token, state):
         original = {"file_path": "E:\\acervo-2.0\\x.pdf", "os_open_link": "file://servidor/E/acervo-2.0/x.pdf",
                     "brain_link": "https://exemplo/brain/abrir/realmak/" + "a" * 64,
+                    "brain_download_link": "https://exemplo/brain/baixar/realmak/" + "a" * 64,
                     "copies": [{"file_path": "E:\\c.pdf", "os_open_link": "file://servidor/E/c.pdf"}]}
         mock.post(f"{URL}/retrieve").mock(return_value=httpx.Response(200, json={"hits": [{"slug": "s", "original": original}]}))
         data = result_data(await call_tool(c, "cerebro_buscar", {"query": "x", "os": "windows"}, token))
         assert data["hits"][0]["original"] == {"file_path": "E:\\acervo-2.0\\x.pdf", "brain_link": original["brain_link"],
+                                               "brain_download_link": original["brain_download_link"],
                                                "copies": [{"file_path": "E:\\c.pdf"}]}

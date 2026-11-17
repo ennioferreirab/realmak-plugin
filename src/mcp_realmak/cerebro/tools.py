@@ -27,7 +27,7 @@ Sistema = Literal["macos", "linux", "windows"]
 OS_DESC = (
     "Sistema do computador onde o analista vai abrir os arquivos originais: macos, linux ou "
     "windows. Os analistas da Realmak usam windows: passe 'windows', salvo indicação de outro sistema (o servidor exige). "
-    "O link a entregar é original.brain_link (abre o arquivo no Cérebro, com login), exatamente como veio."
+    "Os links a entregar são original.brain_link (Abrir) e original.brain_download_link (Baixar), exatamente como vieram."
 )
 
 REGISTROS_TAG = "registros"
@@ -225,7 +225,7 @@ async def cerebro_provas(
     os: Annotated[Sistema | None, Field(description=OS_DESC)] = None,
     empresa: Annotated[Empresa, Field(description=EMPRESA_DESC)] = "realmak",
 ) -> str:
-    """Provas dos registros: para cada id devolvido por cerebro_consulta, o documento, a posição e o trecho literal de cada valor, com o arquivo original (original.file_path e original.brain_link). Não gasta LLM."""
+    """Provas dos registros: para cada id devolvido por cerebro_consulta, o documento, a posição e o trecho literal de cada valor, com o arquivo original (original.file_path, original.brain_link e original.brain_download_link). Não gasta LLM."""
     return await executar(empresa, "provas", list(ids), os)
 
 
@@ -252,9 +252,10 @@ INSTRUCOES = """Cérebros das empresas do grupo (Realmak, AForça, Nortfort, UNA
 - Passe os='windows' somente em cerebro_buscar, cerebro_fatos e cerebro_provas, salvo outro sistema
   informado pelo analista. cerebro_esquema recebe só empresa; cerebro_consulta recebe sql, limite e empresa.
   cerebro_provas recebe ids como lista de strings reais da consulta, sempre na mesma empresa.
-- Resultado com 'original': termine a resposta com a seção Arquivos, um item por sha256: o nome, depois
-  'Link:' com original.brain_link exatamente como veio e 'Caminho:' com original.file_path. Sem brain_link,
-  só o Caminho. Sem 'original', a fonte é só texto indexado: não monte link.
+- Resultado com 'original': termine a resposta com a seção Arquivos, um item por sha256, em markdown e sem URL
+  por extenso: '**nome** · [Abrir](original.brain_link) · [Baixar](original.brain_download_link)' e, na linha
+  de baixo, 'Caminho: original.file_path'. URLs exatamente como vieram. Sem brain_download_link, só [Abrir];
+  sem brain_link, só o Caminho. Sem 'original', a fonte é só texto indexado: não monte link.
 - Erro do cérebro diz o que mudar; não repita a mesma chamada sem mudar nada.
 """
 
