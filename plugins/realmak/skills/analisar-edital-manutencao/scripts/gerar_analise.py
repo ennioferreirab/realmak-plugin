@@ -2,12 +2,11 @@
 
 Uso:
     python gerar_analise.py dados.json pasta_de_saida
-    python gerar_analise.py --modelo modelo.xlsx        (planilha em branco)
 
-Saídas na pasta: analise-manutencao.xlsx (planilha), analise-manutencao.html (painel com abas
-e filtros), analise-manutencao-relatorio.html (relatório para impressão),
-analise-manutencao.pdf (se houver Chrome ou Chromium) e analise-manutencao.md.
-Requer Python 3.9+ e openpyxl. O formato do JSON está em assets/exemplo-dados.json.
+Saídas na pasta: analise-manutencao.html (painel com abas e filtros),
+analise-manutencao-relatorio.html (relatório para impressão), analise-manutencao.pdf
+(se houver Chrome ou Chromium) e analise-manutencao.md.
+Requer Python 3.9+, só a biblioteca padrão. O formato do JSON está em assets/exemplo-dados.json.
 """
 
 import json
@@ -20,7 +19,6 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 import calculo  # noqa: E402
 import painel  # noqa: E402
-import planilha  # noqa: E402
 import relatorio  # noqa: E402
 
 NAVEGADORES = [
@@ -62,10 +60,6 @@ def gerar_pdf(html, pdf):
 
 
 def main(argv):
-    if len(argv) == 3 and argv[1] == "--modelo":
-        planilha.build(None, argv[2])
-        print(f"modelo gravado em {argv[2]}")
-        return 0
     if len(argv) != 3:
         print(__doc__)
         return 2
@@ -73,7 +67,6 @@ def main(argv):
     saida = Path(argv[2])
     saida.mkdir(parents=True, exist_ok=True)
     calc = calculo.calcular(dados)
-    planilha.build(dados, saida / "analise-manutencao.xlsx")
     relatorio.build(
         dados, calc, saida / "analise-manutencao-relatorio.html", saida / "analise-manutencao.md"
     )
