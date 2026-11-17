@@ -60,8 +60,17 @@ As skills de análise, habilitação, precificação e auditoria não citam ferr
 | Apontar pendência | `licitacao_registrar` com tipo `pendencia`, dizendo o que falta e de quem depende |
 | Registrar achado ou conclusão | `licitacao_registrar` com tipo `observacao`, com documento, página e item |
 | Registrar o que o analista decidiu | `licitacao_registrar` com tipo `decisao` |
+| Base de custos da precificação | `precificacao_base_custos` (seção 6) |
+| Enviar uma base de custos nova ou alterada | `precificacao_enviar_base_custos` (seção 6) |
 
 Marque `trabalhando` ao começar e `concluido` ou `aguardando` ao terminar (seções 1 e 5). Entrega feita na conversa continua na conversa: registre no card só o resumo e as pendências.
+
+## 6. Base de custos da precificação
+
+- `precificacao_base_custos` devolve a base mais recente; com `competencia` (AAAA-MM), a daquele mês. A resposta traz `competencia`, `gerado_em`, quem enviou, `competencias` disponíveis e a base em `base`.
+- Para os scripts da precificação, grave o objeto `base` como `base-custos.json` numa pasta de trabalho fora do plugin e de qualquer repositório.
+- Enviar: `precificacao_enviar_base_custos` devolve um link de 15 minutos, que vale uma vez. Depois da ingestão da folha, rode `comando_json` na pasta do `base-custos.json` (competência nova cria a base; a mesma substitui). Para trocar valores, rode `comando_planilha` com a planilha modelo editada (a baixada na aba Custos da plataforma). Troque `<motivo>` por uma frase do porquê; fica no histórico da base.
+- A base traz salários, encargos e tributos do grupo. Só abre para quem tem a base de custos liberada no Odoo; sem ela, a ferramenta devolve 403. Não copie a base para documento entregue a terceiros.
 
 ## Erros
 

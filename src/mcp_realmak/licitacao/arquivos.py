@@ -6,6 +6,9 @@ confere a permissão de novo. O link de envio vale uma vez.
 
     GET       {MCP_REALMAK_PUBLIC_URL}/mcp/arquivos/<token>
     PUT/POST  {MCP_REALMAK_PUBLIC_URL}/mcp/arquivos/envio/<token>   corpo = bytes do arquivo
+    POST      {MCP_REALMAK_PUBLIC_URL}/mcp/arquivos/base-custos/<token>   multipart: base (JSON) ou planilha (xlsx)
+
+O link da base de custos fica preso só à pessoa; o Odoo confere se ela tem a base liberada.
 """
 
 from __future__ import annotations
@@ -30,6 +33,7 @@ from .client import OdooApiError, OdooClient, interpretar
 log = logging.getLogger("mcp_realmak.licitacao")
 
 VALIDADE_S = 15 * 60
+BASE_CUSTOS_MAX_BYTES = 20 * 1024 * 1024
 _NO_STORE = {"Cache-Control": "no-store"}
 _REPASSAR = ("content-type", "content-disposition", "content-length", "x-content-type-options")
 
@@ -150,7 +154,36 @@ def rotas(transport: httpx.AsyncBaseTransport | None = None) -> list[tuple[str, 
         log.info("Arquivo enviado pelo link para a licitação %s", dados["l"])
         return JSONResponse({"resultado": resultado}, headers=_NO_STORE)
 
+    async def enviar_base_custos(request: Request) -> Response:
+        settings = load_settings()
+        dados = ler_token(settings, request.path_params["token"], "base_custos")
+        if dados is None or not settings.licitacao_configured:
+            return _erro(404, "Link de envio inválido ou expirado. Peça outro com precificacao_enviar_base_custos.")
+        tipo = request.headers.get("content-type", "")
+        if not tipo.startswith("multipart/form-data"):
+            return _erro(400, "Envie como formulário: curl -F base=@base-custos.json ou -F planilha=@<planilha>.xlsx.")
+        limite = f"Envio acima de {BASE_CUSTOS_MAX_BYTES // (1024 * 1024)} MB."
+        if int(request.headers.get("content-length") or 0) > BASE_CUSTOS_MAX_BYTES:
+            return _erro(413, limite)
+        partes, total = [], 0
+        async for parte in request.stream():
+            total += len(parte)
+            if total > BASE_CUSTOS_MAX_BYTES:
+                return _erro(413, limite)
+            partes.append(parte)
+        if not total:
+            return _erro(400, "Envio vazio.")
+        if not primeiro_uso(dados["j"], dados["x"]):
+            return _erro(409, "Este link de envio já foi usado. Peça outro com precificacao_enviar_base_custos.")
+        try:
+            resultado = await OdooClient(settings, dados["e"], transport).enviar_base_custos(b"".join(partes), tipo)
+        except OdooApiError as exc:
+            return _erro(exc.status or 502, str(exc))
+        log.info("Base de custos enviada pelo link: competência %s", resultado.get("competencia"))
+        return JSONResponse({"resultado": resultado}, headers=_NO_STORE)
+
     return [
         ("/mcp/arquivos/envio/{token}", ["PUT", "POST"], enviar),
+        ("/mcp/arquivos/base-custos/{token}", ["POST"], enviar_base_custos),
         ("/mcp/arquivos/{token}", ["GET"], baixar),
     ]
