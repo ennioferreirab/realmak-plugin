@@ -85,7 +85,7 @@ As tabelas podem não ter todos os casos. Nunca diga "não tem" só porque o dat
 Cada resultado pode trazer um `original` com:
 
 - `file_path`: caminho do arquivo no servidor de arquivos da empresa consultada. Serve para o analista localizar o arquivo.
-- `link_visualizar`: link `https://` que abre o arquivo no navegador quando ele exibe o formato (PDF, imagem); os outros formatos ele baixa. Não pede login.
+- `link_visualizar`: link `https://` que abre o arquivo no navegador quando ele exibe o formato (PDF, imagem). Se a prévia estiver configurada, Word e Excel abrem como PDF. Não pede login.
 - `link_baixar`: link `https://` que sempre baixa o arquivo, com o nome original. Não pede login; serve também para `curl -fsSL -OJ '<link_baixar>'`.
 - `expira_em`: os dois links valem 30 minutos e podem ser usados várias vezes. Depois disso, busque de novo.
 - Sem os links acima (chave de bot ou resultado sem a página de origem), podem vir `brain_link` (abre no explorador do Cérebro) e `brain_download_link` (baixa pelo Cérebro). Os dois pedem o login do Odoo.

@@ -1,0 +1,16 @@
+# Override para os arquivos Compose do Brain, com o perfil arquivos.
+services:
+  bff:
+    networks: [default, brain-visualizador]
+  visualizador:
+    networks:
+      brain-visualizador:
+      realmak-previa:
+        aliases: [realmak-visualizador]
+
+networks:
+  brain-visualizador:
+    internal: true
+  realmak-previa:
+    external: true
+    name: realmak-previa

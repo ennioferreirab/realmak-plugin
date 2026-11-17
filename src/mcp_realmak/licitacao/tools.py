@@ -128,7 +128,7 @@ async def licitacao_link_arquivo(
     licitacao_id: Annotated[int, LICITACAO_ID],
     documento_id: Annotated[int, DOCUMENTO_ID],
 ) -> str:
-    """Dois links de um documento da licitação (original, entrega de agente ou arquivo enviado), sem login, válidos por 30 minutos e por várias vezes: link_visualizar abre no navegador quando ele exibe o formato (senão baixa) e link_baixar sempre baixa. Com terminal, baixe com o `comando` da resposta. Para ler o conteúdo na conversa, use licitacao_ler_texto."""
+    """Dois links de um documento da licitação (original, entrega de agente ou arquivo enviado), sem login, válidos por 30 minutos e por várias vezes: link_visualizar abre no navegador os formatos compatíveis e exibe Word e Excel em PDF se a prévia estiver configurada e link_baixar sempre baixa. Com terminal, baixe com o `comando` da resposta. Para ler o conteúdo na conversa, use licitacao_ler_texto."""
     settings, email = _settings(), pessoa()
     try:
         await OdooClient(settings, email).chamar("acesso")

@@ -78,6 +78,7 @@ class Settings:
     odoo_mcp_secret: str = ""
     odoo_mcp_secret_file: str = ""
     odoo_timeout_s: float = 60.0
+    visualizador_url: str = ""
     arquivo_max_bytes: int = 50 * 1024 * 1024
 
     @property
@@ -154,5 +155,6 @@ def load_settings() -> Settings:
         odoo_mcp_secret=_env("ODOO_MCP_SECRET"),
         odoo_mcp_secret_file=_env("ODOO_MCP_SECRET_FILE"),
         odoo_timeout_s=_int_env("ODOO_MCP_TIMEOUT_MS", 60_000) / 1000,
+        visualizador_url=_env("MCP_REALMAK_VISUALIZADOR_URL").rstrip("/"),
         arquivo_max_bytes=_int_env("MCP_REALMAK_ARQUIVO_MAX_MB", 50) * 1024 * 1024,
     )
