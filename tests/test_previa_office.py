@@ -38,6 +38,18 @@ async def test_previa_e_original(monkeypatch, origem, ext, real):
         prefixo = "/mcp/arquivos/"
         upstream, cabecalho = f"{API}/arquivo/7/31", "x-realmak-act-as"
 
+    pedidos_reais: list[httpx.Request] = []
+    if real:
+        enviar = httpx.AsyncHTTPTransport.handle_async_request
+        endpoint = httpx.URL(f"{url}/pdf")
+
+        async def observar_envio(transport, pedido):
+            if pedido.url.copy_with(query=None) == endpoint:
+                pedidos_reais.append(pedido)
+            return await enviar(transport, pedido)
+
+        monkeypatch.setattr(httpx.AsyncHTTPTransport, "handle_async_request", observar_envio)
+
     app = build_app()
     async with (
         respx.mock(assert_all_called=False) as mock,
@@ -68,7 +80,7 @@ async def test_previa_e_original(monkeypatch, origem, ext, real):
         assert download.headers["content-type"] == "application/octet-stream"
         assert download.headers["content-disposition"] == f'attachment; filename="arquivo.{ext}"'
         assert hashlib.sha256(download.content).digest() == hashlib.sha256(original).digest()
-        assert not rota.called
+        assert not pedidos_reais and not rota.called
 
         pdf = await cliente.get(ver)
         assert pdf.status_code == 200
@@ -78,8 +90,12 @@ async def test_previa_e_original(monkeypatch, origem, ext, real):
         assert pdf.headers["x-content-type-options"] == "nosniff"
         assert pdf.content.startswith(b"%PDF-")
         assert (await cliente.get(ver)).status_code == 403
-        assert rota.call_count == 1 and arquivo.call_count == 3
-        pedido = rota.calls.last.request
+        assert arquivo.call_count == 3
+        # O RESPX pode interceptar pass_through no pool e na conexão.
+        pedidos = pedidos_reais if real else [chamada.request for chamada in rota.calls]
+        assert len(pedidos) == 1
+        pedido = pedidos[0]
+        assert pedido.method == "POST" and dict(pedido.url.params) == {"ext": ext}
         assert pedido.headers["content-length"] == str(len(original))
         assert "authorization" not in pedido.headers
         assert cabecalho not in pedido.headers
