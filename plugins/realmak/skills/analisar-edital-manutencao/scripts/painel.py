@@ -1,4 +1,4 @@
-"""Painel HTML da análise de manutenção: abas como a planilha, busca, filtros e ordenação.
+"""Painel HTML da análise de manutenção: abas, busca, filtros e ordenação.
 
 Arquivo único, sem dependências externas; abre no modo claro e tem botão para o modo escuro.
 """
@@ -391,7 +391,7 @@ const kpi=(v,r,sub='',cls='')=>`<div class="kpi ${cls}"><b>${v}</b><span>${r}</s
 (()=>{const s=P('pecas');s.innerHTML='<h2>Peças, insumos e materiais</h2>';tabela(s,T.pecas)})();
 (()=>{const s=P('pontos');s.innerHTML='<h2>Pontos de atenção, divergências e pendências</h2>';tabela(s,T.pontos)})();
 (()=>{const s=P('documentos');s.innerHTML='<h2>Documentos analisados</h2>';tabela(s,T.documentos)})();
-(()=>{const s=P('checks');s.innerHTML=`<h2>Controles de integridade</h2><p class="legenda">Mesmos controles da aba Checks da planilha. ${alertas?alertas+' alerta(s).':'Todos em OK.'}</p>`;tabela(s,T.checks)})();
+(()=>{const s=P('checks');s.innerHTML=`<h2>Controles de integridade</h2><p class="legenda">Conferência das contas da análise. ${alertas?alertas+' alerta(s).':'Todos em OK.'}</p>`;tabela(s,T.checks)})();
 
 // ---------- Dimensionamento
 (()=>{const s=P('dimens'),C=DADOS.carga,tot=C['Total requerido'][1];

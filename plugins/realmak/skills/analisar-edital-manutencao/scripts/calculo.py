@@ -1,6 +1,6 @@
-"""Contas da análise de manutenção, iguais às fórmulas da planilha.
+"""Contas da análise de manutenção.
 
-O relatório e o painel usam estes valores, para não depender de recalcular a planilha.
+O relatório e o painel usam estes valores.
 """
 
 
