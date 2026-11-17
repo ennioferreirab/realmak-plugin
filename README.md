@@ -23,7 +23,7 @@ As `licitacao_*` só aparecem para quem entrou pelo login de pessoa e tem as lic
 
 1. O servidor chama as rotas internas do módulo `realmak_mcp` do realmak-crm (`{ODOO_MCP_URL}/realmak_mcp/v1/...`) com o segredo compartilhado e `X-Realmak-Act-As: <e-mail>`. O Odoo roda a chamada como essa pessoa: valem as regras de acesso dela.
 2. O segredo é criado pelo Odoo no volume `mcp-realmak-odoo` e lido a cada chamada (`ODOO_MCP_SECRET_FILE`). Nunca aparece em erro nem em log.
-3. Arquivos não passam pela conversa: `licitacao_link_arquivo` e `licitacao_enviar_arquivo` devolvem links `/mcp/arquivos/...` assinados, presos à pessoa e à licitação, válidos por 15 minutos (o de envio, uma vez). O servidor repassa ao Odoo, que confere a permissão de novo. Envio até 50 MB.
+3. Arquivos não passam pela conversa: `licitacao_link_arquivo` e `licitacao_enviar_arquivo` devolvem links `/mcp/arquivos/...` assinados, presos à pessoa e ao arquivo, sem login. `licitacao_link_arquivo` devolve dois: `link_visualizar` (`inline`, o navegador mostra o que sabe exibir) e `link_baixar` (`attachment`), válidos por 30 minutos e por várias vezes. O de envio vale 15 minutos e uma vez. O servidor repassa ao Odoo, que confere a permissão de novo. Envio até 50 MB.
 4. Toda escrita fica no card: nota interna no histórico, arquivo na Saída IA e a faixa "Claude de <pessoa> · <status>".
 
 Uma pessoa só com o Odoo (sem o cérebro) também entra pelo login; ela vê as `licitacao_*` e não vê as `cerebro_*`.
@@ -37,6 +37,8 @@ Resultados grandes são cortados em cerca de 100 mil caracteres, com um aviso pa
 O agente informa que uma resposta sem empresa explícita se refere à Realmak; se houver dúvida no contexto, pergunta antes de consultar. Para o grupo, consulta cada empresa liberada separadamente. No parcial informa as áreas consultadas. Os ids de `cerebro_consulta` só devem ser usados em `cerebro_provas` da mesma empresa.
 
 `cerebro_empresas` recebe `{}`. Nas outras cinco ferramentas, passe `empresa` explicitamente. `os` só é aceito em `cerebro_buscar`, `cerebro_fatos` e `cerebro_provas`; busca e fatos usam `limit`, enquanto SQL usa `limite`. A skill `cerebro` traz a tabela completa de parâmetros e exemplos. Os seletores dos cérebros não se aplicam às ferramentas do Odoo ou das compras públicas. A ordem de atualização do gateway, servidor MCP e skills está na [seção 8 do deploy](DEPLOY.md#8-atualização-multiempresa-gateway-mcp-e-skills).
+
+Para quem entrou pelo login de pessoa, cada `original` com a slug da página ganha `link_visualizar`, `link_baixar` e `expira_em` (30 minutos, sem login), no lugar de `brain_link` e `brain_download_link`. O link passa por `/mcp/arquivos/cerebro/...`: o servidor chama `GET {GALEED_API_URL}/original?slug=` com a chave de serviço da empresa e `X-Galeed-Act-As`, e o gateway confere o escopo da pessoa. Chave de bot continua com os links do painel.
 
 As três ferramentas de registros aparecem se ao menos uma empresa liberada responder `registros: true` em `GET /acesso`. A autorização continua sendo conferida pelo gateway em cada chamada. Respostas definitivas 200/403 ficam em cache por 5 minutos por hash da identidade e empresa; indisponibilidade não entra no cache. Empresa e escopo parcial vêm antes do conteúdo para permanecerem visíveis mesmo em respostas cortadas. Se um cliente guardar a lista de ferramentas, pode ser preciso reconectar.
 

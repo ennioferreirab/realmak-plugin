@@ -8,12 +8,15 @@ from __future__ import annotations
 
 import contextlib
 import json
+import time
 from urllib.parse import urlsplit
 
 import httpx
 import pytest
 import respx
 
+from mcp_realmak.config import load_settings
+from mcp_realmak.licitacao import arquivos
 from mcp_realmak.oauth import OAuthServer
 from mcp_realmak.server import build_app
 
@@ -148,12 +151,18 @@ async def test_links_baixam_e_enviam_arquivo_sem_passar_pela_conversa(ambiente):
             200, json={"resultado": {"documento_id": 90, "pasta": "Saída IA / Agentes MCP"}}))
 
         link = corpo(await chamar(c, "licitacao_link_arquivo", {"licitacao_id": 7, "documento_id": 31}, token))
-        caminho = urlsplit(link["url"]).path
-        r = await c.get(caminho)
-        assert r.status_code == 200 and r.content == b"%PDF-1.7 edital"
-        assert r.headers["content-disposition"] == 'attachment; filename="edital.pdf"'
-        assert download.calls.last.request.headers["x-realmak-act-as"] == BIA
-        assert (await c.get(caminho[:-3] + "xyz")).status_code == 404  # token adulterado
+        assert link["comando"] == f"curl -fsSL -OJ '{link['link_baixar']}'"
+        ver, baixar = urlsplit(link["link_visualizar"]).path, urlsplit(link["link_baixar"]).path
+        for caminho, disposicao in ((ver, "inline"), (baixar, "attachment"), (baixar, "attachment")):
+            r = await c.get(caminho)  # sem login; o link vale mais de uma vez
+            assert r.status_code == 200 and r.content == b"%PDF-1.7 edital"
+            assert r.headers["content-disposition"] == f'{disposicao}; filename="edital.pdf"'
+            assert r.headers["x-content-type-options"] == "nosniff" and r.headers["cache-control"] == "no-store"
+        assert download.call_count == 3 and download.calls.last.request.headers["x-realmak-act-as"] == BIA
+        assert (await c.get(baixar[:-3] + "xyz")).status_code == 404  # token adulterado
+        vencido = arquivos.assinar(load_settings(), {"t": "baixar", "e": BIA, "l": 7, "d": 31, "modo": "b",
+                                                     "x": int(time.time()) - 1})
+        assert (await c.get(f"/mcp/arquivos/{vencido}")).status_code == 404
 
         envio = corpo(await chamar(c, "licitacao_enviar_arquivo",
                                    {"licitacao_id": 7, "nome": "planilha.xlsx", "descricao": "Preços"}, token))
@@ -207,5 +216,5 @@ async def test_base_de_custos_vem_da_plataforma_e_sobe_por_link_como_a_pessoa(am
         assert (await c.post(caminho, files=arquivos)).status_code == 409  # o link vale uma vez
         # O link de um documento da licitação não serve para enviar a base.
         link_doc = corpo(await chamar(c, "licitacao_link_arquivo", {"licitacao_id": 7, "documento_id": 31}, token))
-        token_doc = urlsplit(link_doc["url"]).path.rsplit("/", 1)[-1]
+        token_doc = urlsplit(link_doc["link_baixar"]).path.rsplit("/", 1)[-1]
         assert (await c.post(f"/mcp/arquivos/base-custos/{token_doc}", files=arquivos)).status_code == 404
