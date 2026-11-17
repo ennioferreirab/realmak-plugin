@@ -1,13 +1,13 @@
 ---
 name: analisar-edital-fornecimento
-description: Use quando o edital for de fornecimento de bens (aquisição de equipamentos, peças, materiais ou insumos, com ou sem registro de preços) e a equipe pedir a análise técnica do objeto. Levanta os itens e quantidades, as exigências técnicas do produto (amostra, catálogo, certificação, carta do fabricante, garantia), as condições de entrega e as condições comerciais, e conclui se a empresa consegue atender. Entrega planilha e HTML em formato fixo. Usar depois de analisar-edital, que cuida de prazos, habilitação geral e impugnação. Se o fornecimento for de peças para executar um serviço de manutenção, use analisar-edital-manutencao.
+description: Use quando o edital for de fornecimento de bens (aquisição de equipamentos, peças, materiais ou insumos, com ou sem registro de preços) e a equipe pedir a análise técnica do objeto. Levanta os itens e quantidades, as exigências técnicas do produto (amostra, catálogo, certificação, carta do fabricante, garantia), as condições de entrega e as condições comerciais, pesquisa o preço online de cada item com o link individual da oferta e conclui se a empresa consegue atender. Entrega planilha e HTML em formato fixo. Usar depois de analisar-edital, que cuida de prazos, habilitação geral e impugnação. Se o fornecimento for de peças para executar um serviço de manutenção, use analisar-edital-manutencao.
 ---
 
 # Analisar edital de fornecimento
 
-Atue como especialista em compras públicas de bens, com experiência em especificação técnica e em logística de entrega. Esta skill responde a uma pergunta: **o que o órgão quer comprar e a empresa consegue entregar nas condições do edital?**
+Atue como especialista em compras públicas de bens, com experiência em especificação técnica e em logística de entrega. Esta skill responde a duas perguntas: **o que o órgão quer comprar e a empresa consegue entregar nas condições do edital? Quanto custa comprar cada item no mercado?**
 
-Ela não refaz a análise geral do edital, não forma preço e não decide se a empresa participa. Quem decide é a analista.
+Ela não refaz a análise geral do edital, não forma o preço de venda e não decide se a empresa participa. Quem decide é a analista.
 
 ## Quando usar esta e quando usar a de manutenção
 
@@ -23,7 +23,8 @@ Ela não refaz a análise geral do edital, não forma preço e não decide se a 
 | --- | --- |
 | Prazos do certame, declarações, impugnação, habilitação jurídica, fiscal, trabalhista e econômica | `analisar-edital` |
 | Saber qual empresa do grupo atende à qualificação técnica | `analisar-habilitacao` |
-| Cotação dos itens em fornecedores | `cotar-pecas-materiais-licitacoes` |
+| Preço de venda, tributos e margem da proposta | `precificar-proposta-exequibilidade` |
+| Planilha de cotação completa de peças para manutenção | `cotar-pecas-materiais-licitacoes` |
 | Preço praticado em compras públicas e atas vigentes | `compras-publicas` |
 
 Da habilitação, esta skill trata só da **qualificação técnica** ligada ao objeto: atestado de fornecimento compatível, quantidade mínima e documentos do produto. Ela registra o que o edital exige; não confere documento de empresa.
@@ -43,13 +44,13 @@ Dois arquivos na pasta do processo, com o mesmo conteúdo:
 
 | Arquivo | Para que serve | Modelo |
 | --- | --- | --- |
-| `analise-fornecimento.xlsx` | Lista completa de itens e tabelas. As fórmulas somam valores e contam itens. É a base para a cotação. | `assets/modelo-analise-fornecimento.xlsx` |
+| `analise-fornecimento.xlsx` | Lista completa de itens, preço online de cada item e tabelas. As fórmulas somam valores e contam itens. | `assets/modelo-analise-fornecimento.xlsx` |
 | `analise-fornecimento.html` | Versão de leitura e impressão para a analista e a gestão. | `assets/modelo-analise-fornecimento.html` |
 
 Os dois trazem as mesmas partes:
 
 1. **Conclusão de atendimento ao objeto:** atende, atende com condições ou não atende.
-2. **Itens:** o que o órgão quer comprar, com quantidade e valor estimado.
+2. **Itens:** o que o órgão quer comprar, com quantidade e valor estimado, e o preço online de cada item com o link da oferta.
 3. **Exigências técnicas do objeto:** o que o produto e o fornecedor precisam comprovar.
 4. **Entrega:** onde, em quanto tempo e por conta de quem.
 5. **Condições comerciais:** registro de preços, pagamento, garantia e penalidades.
@@ -133,7 +134,22 @@ Preencha a aba Condições comerciais com o que o edital diz e a fonte de cada l
 - **Penalidades:** multa por dia de atraso e o teto, porque pesam mais em prazo de entrega curto.
 - **Troca de marca ou modelo:** se o edital admite substituição quando o produto sai de linha.
 
-## Passo 5: conclusão
+## Passo 5: preço online por item
+
+Pesquise o custo de compra de cada item na internet, pelo método da skill `cotar-pecas-materiais-licitacoes`. Este é o custo de comprar o produto, não o preço de venda: tributos, frete da proposta e margem ficam na precificação.
+
+- **Ordem.** Comece pelos itens de maior valor estimado e pelos do ramo da empresa; depois os demais. Em edital com muitos itens, cubra pelo menos os itens que somam 80% do valor e diga quantos ficaram sem preço.
+- **Termos de busca.** O produto exigido e os atributos que restringem (Passo 1), a marca ou o modelo de referência e os nomes usuais do equipamento.
+- **Por oferta, registre:** preço real do produto principal, unidade de venda e quantas peças vêm na embalagem (peça vendida em pacote: preço ÷ quantidade), condição comercial (Pix, cupom, quantidade mínima, frete incluso ou não), vendedor, data da consulta e o **link da página individual do produto**. Nunca link de busca, categoria ou vitrine.
+- **Referência aproximada.** Produto com atributo exigido diferente (potência, capacidade, tensão, dimensão, gramatura) ou compatibilidade não confirmada pode servir de base, identificado como `BASE DE CUSTO: <produto real pesquisado>. Compatibilidade não confirmada.` Não renomeie a oferta para parecer o item exato.
+- **Menor preço** entre as ofertas pesquisadas, na mesma unidade. Não diga que é o menor preço da internet.
+- **Compra pública.** O preço pago por outros órgãos (skill `compras-publicas`) é referência de mercado: registre à parte, com órgão e data, sem preencher o custo.
+- **Sem oferta.** Anúncio que só diz "consulte o preço" não comprova valor. Se, depois de ampliar a busca, não houver nenhuma oferta verificável, deixe o preço vazio e escreva o impedimento concreto. Não invente valor.
+- O valor estimado do edital nunca é cotação.
+
+Lance cada oferta usada na aba "Preço online" da planilha e na tabela "Preço online por item" do HTML. Se a cópia do modelo ainda não tiver a aba, acrescente-a depois de "Itens", com as colunas da tabela do HTML (Lote, Item, Produto pesquisado, Vendedor, Preço unitário, Unidade de venda, Condição comercial, Data, Link da oferta), o link como hyperlink clicável e o preço como número.
+
+## Passo 6: conclusão
 
 Escreva a conclusão por último e coloque-a no topo.
 
@@ -150,13 +166,14 @@ Enquanto houver itens em "A confirmar" que mudem o resultado, a conclusão é "A
 - **Rastreabilidade.** Todo item e toda exigência apontam para arquivo e seção, item ou página.
 - **Divergências.** Quando planilha de itens e termo de referência divergirem, mostre as duas versões e diga qual prevalece só se o próprio edital disser.
 - **Sem presunção.** Não afirme que a empresa fornece, representa ou tem em estoque um produto sem fonte para isso.
-- **Sem preço.** Não cote nem estime preço de venda aqui. Valor estimado é o do edital.
+- **Custo, não preço de venda.** O preço online é custo de compra observado, com link e data. Não estime preço de venda aqui. Valor estimado é o do edital.
 - **Tema normativo.** Confirme a redação vigente da norma em fonte oficial na data do trabalho. Não prometa resultado do certame.
 - **Originais.** Não altere os documentos recebidos. Trabalhe em cópias.
 
 ## Pronto quando
 
 - todos os itens do edital estão na planilha, com quantidade, unidade e fonte;
+- cada item tem preço online com link individual, data e unidade de venda, ou o impedimento concreto registrado; as bases aproximadas estão marcadas;
 - cada exigência técnica tem tipo, fonte, momento em que é cobrada e risco;
 - cada local de entrega tem prazo;
 - a conclusão é uma das três opções, com as condições quando houver;
@@ -168,6 +185,5 @@ Enquanto houver itens em "A confirmar" que mudem o resultado, a conclusão é "A
 
 | Situação | Skill |
 | --- | --- |
-| Cotar os itens em fornecedores | `cotar-pecas-materiais-licitacoes`, a partir da aba Itens de `analise-fornecimento.xlsx` |
 | Ver preços praticados e atas vigentes do mesmo objeto | `compras-publicas` |
 | Saber qual empresa do grupo atende à qualificação técnica | `analisar-habilitacao` |
