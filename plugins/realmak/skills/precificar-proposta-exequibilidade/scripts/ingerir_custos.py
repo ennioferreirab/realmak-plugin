@@ -570,7 +570,8 @@ def gravar_xlsx(base, destino):
         "Leia-me",
         "BASE DE CUSTOS DA PRECIFICAÇÃO",
         f"Competência {base['competencia']} · fonte {base['fonte']['arquivo']} · gerada em {base['gerado_em']}. "
-        "Arquivo gerado por ingerir_custos.py: não edite à mão, atualize a planilha de origem e rode de novo.",
+        "Pode editar os valores e enviar esta planilha de volta para a plataforma. "
+        "Mantenha os nomes das abas e os cabeçalhos: a plataforma lê a planilha por eles.",
         [34, 90],
         primeira=True,
     )

@@ -1,6 +1,6 @@
 # Base de custos do grupo: esquema
 
-`base-custos.json` é gerado por `scripts/ingerir_custos.py` a partir da planilha de pessoal do grupo (formato "TODOS_FUNCIONARIOS"). Não edite à mão: corrija a planilha de origem e rode a ingestão de novo.
+`base-custos.json` é gerado por `scripts/ingerir_custos.py` a partir da planilha de pessoal do grupo (formato "TODOS_FUNCIONARIOS"), junto com `base-custos.xlsx`. Os valores podem ser ajustados na plataforma, na tela ou editando `base-custos.xlsx` e enviando de volta. Os nomes das abas e os cabeçalhos da planilha são lidos pela plataforma e não podem mudar.
 
 ## Planilha de origem
 

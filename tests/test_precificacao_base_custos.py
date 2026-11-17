@@ -93,6 +93,7 @@ def planilha_sintetica(destino: Path) -> Path:
 
 @pytest.fixture
 def base(tmp_path):
+    pytest.importorskip("openpyxl")  # ingerir_custos importa openpyxl no topo
     ingerir = carregar("ingerir_custos")
     return ingerir.ingerir(planilha_sintetica(tmp_path / "func.xlsx"), "2026-01")
 
