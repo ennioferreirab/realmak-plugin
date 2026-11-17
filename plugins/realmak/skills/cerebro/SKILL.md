@@ -85,24 +85,28 @@ As tabelas podem não ter todos os casos. Nunca diga "não tem" só porque o dat
 Cada resultado pode trazer um `original` com:
 
 - `file_path`: caminho do arquivo no servidor de arquivos da empresa consultada. Serve para o analista localizar o arquivo.
-- `brain_link`: link `https://` que abre o arquivo no explorador do Cérebro, em tela cheia. Pede o login do Odoo se a pessoa não estiver logada e funciona fora da rede da empresa.
-- `brain_download_link`: link `https://` que baixa o mesmo arquivo pelo Cérebro, com o mesmo login, sem passar pelo explorador.
+- `link_visualizar`: link `https://` que abre o arquivo no navegador quando ele exibe o formato (PDF, imagem); os outros formatos ele baixa. Não pede login.
+- `link_baixar`: link `https://` que sempre baixa o arquivo, com o nome original. Não pede login; serve também para `curl -fsSL -OJ '<link_baixar>'`.
+- `expira_em`: os dois links valem 30 minutos e podem ser usados várias vezes. Depois disso, busque de novo.
+- Sem os links acima (chave de bot ou resultado sem a página de origem), podem vir `brain_link` (abre no explorador do Cérebro) e `brain_download_link` (baixa pelo Cérebro). Os dois pedem o login do Odoo.
 
 Quando houver `original`, termine a resposta com a seção **Arquivos**, no formato (links em markdown, nunca a URL por extenso):
 
-- **Nome do arquivo** (empresa e assunto, tamanho e data, se vierem) · [Abrir](brain_link) · [Baixar](brain_download_link)
+- **Nome do arquivo** (empresa e assunto, tamanho e data, se vierem) · [Visualizar](link_visualizar) · [Baixar](link_baixar)
   - Caminho: `file_path`
 
 Exemplo:
 
-- **LUIZ - CAT RECEITA FEDERAL MG.pdf** (AForça, CAT do CREA-MG) · [Abrir](https://realmak.duckdns.org/brain/abrir/aforca/43b3…) · [Baixar](https://realmak.duckdns.org/brain/baixar/aforca/43b3…)
+- **LUIZ - CAT RECEITA FEDERAL MG.pdf** (AForça, CAT do CREA-MG) · [Visualizar](https://realmak.duckdns.org/mcp/arquivos/cerebro/eyJ0…) · [Baixar](https://realmak.duckdns.org/mcp/arquivos/cerebro/eyJ1…)
   - Caminho: `E:\acervo-2.0\aforca\habilitacao\atestados\registrado_cat\LUIZ - CAT RECEITA FEDERAL MG.pdf`
+
+Depois da seção, avise em uma linha que os links valem 30 minutos.
 
 Regras da seção:
 
 - Liste cada arquivo uma vez. Resultados com o mesmo `sha256` são o mesmo arquivo.
 - Mostre no máximo 5 arquivos, só os que sustentam a resposta. Ofereça os outros em uma linha.
-- Use as URLs exatamente como vieram, só como destino do link. Sem `brain_download_link`, mostre só [Abrir]. Sem `brain_link`, mostre só o `file_path` e diga que o arquivo não abre pelo Cérebro.
+- Use as URLs exatamente como vieram, só como destino do link. Sem `link_visualizar`, use [Abrir](brain_link) · [Baixar](brain_download_link); sem `brain_download_link`, só [Abrir]. Sem nenhum link, mostre só o `file_path` e diga que o arquivo não abre pelo Cérebro.
 - Se o resultado não tiver `original`, diga que a fonte é só texto indexado e não monte link.
 - Nunca invente caminho nem link.
 - O link `file://` só abre se o computador enxergar o compartilhamento de arquivos da empresa. Se não abrir, o analista precisa pedir acesso ao compartilhamento a quem administra a rede.

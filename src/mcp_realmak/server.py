@@ -108,7 +108,7 @@ def build_server(
         RegistrosVisibilityMiddleware(settings.token_cache_ttl_s, transport=galeed_transport)
     )
     mcp.add_middleware(PessoaVisibilityMiddleware(acesso_odoo, acesso_cerebro, transport=galeed_transport))
-    for caminho, metodos, rota in licitacao_arquivos.rotas(odoo_transport):
+    for caminho, metodos, rota in licitacao_arquivos.rotas(odoo_transport, galeed_transport):
         mcp.custom_route(caminho, methods=metodos)(rota)
 
     @mcp.custom_route("/healthz", methods=["GET"])

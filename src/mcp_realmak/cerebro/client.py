@@ -6,6 +6,7 @@ Rotas:
     GET  /consulta/esquema
     POST /consulta            {sql, limite?}
     POST /consulta/provas     {ids, os?}
+    GET  /original            ?slug   bytes do arquivo original da página (em fluxo)
 
 Regra de segurança: a chave nunca aparece em mensagem de erro, log ou exceção.
 """
@@ -82,6 +83,15 @@ class GaleedClient:
             body["os"] = os
         return await self._request("POST", "/consulta/provas", json_body=body)
 
+    def original(self, slug: str) -> tuple[httpx.AsyncClient, httpx.Request]:
+        """Cliente e pedido do original em fluxo; quem chama abre `send(stream=True)` e fecha os dois."""
+        cliente = httpx.AsyncClient(timeout=self._timeout, transport=self._transport, follow_redirects=False)
+        return cliente, cliente.build_request("GET", f"{self._base}/original", params={"slug": slug},
+                                              headers=self._headers())
+
+    def _headers(self) -> dict[str, str]:
+        return {"Authorization": f"Bearer {self._token}", **({"X-Galeed-Act-As": self._act_as} if self._act_as else {})}
+
     async def _request(
         self,
         method: str,
@@ -101,10 +111,7 @@ class GaleedClient:
                     url,
                     json=json_body,
                     params=params,
-                    headers={
-                        "Authorization": f"Bearer {self._token}",
-                        **({"X-Galeed-Act-As": self._act_as} if self._act_as else {}),
-                    },
+                    headers=self._headers(),
                 )
         except httpx.TimeoutException:
             raise GaleedApiError(

@@ -19,6 +19,7 @@ from pydantic import Field
 
 from ..capping import dumps
 from ..config import NOMES_EMPRESAS, Settings, load_settings
+from ..licitacao import arquivos
 from .client import GaleedApiError, GaleedClient
 from .empresas import EMPRESA_DESC, Empresa, EmpresaLiberada, get_empresas
 
@@ -27,7 +28,8 @@ Sistema = Literal["macos", "linux", "windows"]
 OS_DESC = (
     "Sistema do computador onde o analista vai abrir os arquivos originais: macos, linux ou "
     "windows. Os analistas da Realmak usam windows: passe 'windows', salvo indicação de outro sistema (o servidor exige). "
-    "Os links a entregar são original.brain_link (Abrir) e original.brain_download_link (Baixar), exatamente como vieram."
+    "Os links a entregar são original.link_visualizar (Visualizar) e original.link_baixar (Baixar), válidos por 30 minutos; "
+    "sem eles, original.brain_link (Abrir) e original.brain_download_link (Baixar). Sempre exatamente como vieram."
 )
 
 REGISTROS_TAG = "registros"
@@ -77,12 +79,34 @@ async def client_for_request(empresa: Empresa = "realmak") -> tuple[GaleedClient
 
 
 def sem_link_de_arquivo(valor: Any) -> Any:
-    """Tira os links `file://` (os_open_link) que o gateway ainda manda: só abrem na rede interna. Fica o brain_link."""
+    """Tira os links `file://` (os_open_link) que o gateway ainda manda: só abrem na rede interna."""
     if isinstance(valor, dict):
         return {k: sem_link_de_arquivo(v) for k, v in valor.items() if k != "os_open_link"}
     if isinstance(valor, list):
         return [sem_link_de_arquivo(v) for v in valor]
     return valor
+
+
+def com_links_de_arquivo(valor: Any, settings: Settings, email: str, empresa: Empresa) -> Any:
+    """Para a pessoa logada, troca os links do painel (pedem login) pelos links assinados de visualizar e baixar.
+
+    Vale para cada `original` com slug da página (`original.slug` ou `slug` ao lado). Sem slug, fica como veio.
+    """
+    if isinstance(valor, list):
+        return [com_links_de_arquivo(v, settings, email, empresa) for v in valor]
+    if not isinstance(valor, dict):
+        return valor
+    saida = {k: com_links_de_arquivo(v, settings, email, empresa) for k, v in valor.items()}
+    original = saida.get("original")
+    if isinstance(original, dict):
+        slug = next((s for s in (original.get("slug"), valor.get("slug")) if isinstance(s, str) and s), None)
+        if slug:
+            dados = {"t": "cerebro", "e": email, "m": empresa, "s": slug}
+            saida["original"] = {
+                **{k: v for k, v in original.items() if k not in ("brain_link", "brain_download_link")},
+                **arquivos.links_download(settings, "cerebro/", dados),
+            }
+    return saida
 
 
 async def executar(empresa: Empresa, metodo: str, *args, **kwargs) -> str:
@@ -109,6 +133,10 @@ async def executar(empresa: Empresa, metodo: str, *args, **kwargs) -> str:
     if acesso.nivel == "parcial":
         result["acesso"] = {"nivel": "parcial", "areas": list(acesso.areas)}
     payload = sem_link_de_arquivo(data if isinstance(data, dict) else {"resultado": data})
+    email = (request_access().claims or {}).get("email")
+    settings = load_settings()
+    if email and arquivos.links_disponiveis(settings):
+        payload = com_links_de_arquivo(payload, settings, email, empresa)
     result.update({k: v for k, v in payload.items() if k not in ("empresa", "acesso")})
     return dumps(result)
 
@@ -184,7 +212,7 @@ async def cerebro_buscar(
     os: Annotated[Sistema | None, Field(description=OS_DESC)] = None,
     empresa: Annotated[Empresa, Field(description=EMPRESA_DESC)] = "realmak",
 ) -> str:
-    """Busca no cérebro da empresa escolhida (texto e semântica) e devolve trechos com fonte e link do arquivo original, sem redigir resposta. Use para qualquer pergunta sobre funcionários, responsáveis técnicos, atestados, CATs, ARTs, contratos, licitações e atas. Não gasta LLM. Monte a resposta a partir dos trechos e diga o que ficou sem confirmação."""
+    """Busca no cérebro da empresa escolhida (texto e semântica) e devolve trechos com fonte e os links do arquivo original (original.link_visualizar e original.link_baixar, 30 minutos), sem redigir resposta. Use para qualquer pergunta sobre funcionários, responsáveis técnicos, atestados, CATs, ARTs, contratos, licitações e atas. Não gasta LLM. Monte a resposta a partir dos trechos e diga o que ficou sem confirmação."""
     return await executar(empresa, "retrieve", query, limit, include_facts, os)
 
 
@@ -225,7 +253,7 @@ async def cerebro_provas(
     os: Annotated[Sistema | None, Field(description=OS_DESC)] = None,
     empresa: Annotated[Empresa, Field(description=EMPRESA_DESC)] = "realmak",
 ) -> str:
-    """Provas dos registros: para cada id devolvido por cerebro_consulta, o documento, a posição e o trecho literal de cada valor, com o arquivo original (original.file_path, original.brain_link e original.brain_download_link). Não gasta LLM."""
+    """Provas dos registros: para cada id devolvido por cerebro_consulta, o documento, a posição e o trecho literal de cada valor, com o arquivo original (original.file_path, original.link_visualizar e original.link_baixar, válidos por 30 minutos; sem eles, original.brain_link e original.brain_download_link). Não gasta LLM."""
     return await executar(empresa, "provas", list(ids), os)
 
 
@@ -253,9 +281,10 @@ INSTRUCOES = """Cérebros das empresas do grupo (Realmak, AForça, Nortfort, UNA
   informado pelo analista. cerebro_esquema recebe só empresa; cerebro_consulta recebe sql, limite e empresa.
   cerebro_provas recebe ids como lista de strings reais da consulta, sempre na mesma empresa.
 - Resultado com 'original': termine a resposta com a seção Arquivos, um item por sha256, em markdown e sem URL
-  por extenso: '**nome** · [Abrir](original.brain_link) · [Baixar](original.brain_download_link)' e, na linha
-  de baixo, 'Caminho: original.file_path'. URLs exatamente como vieram. Sem brain_download_link, só [Abrir];
-  sem brain_link, só o Caminho. Sem 'original', a fonte é só texto indexado: não monte link.
+  por extenso: '**nome** · [Visualizar](original.link_visualizar) · [Baixar](original.link_baixar)' e, na linha
+  de baixo, 'Caminho: original.file_path'. URLs exatamente como vieram; os links valem 30 minutos e não pedem
+  login. Sem link_visualizar, use '[Abrir](original.brain_link) · [Baixar](original.brain_download_link)';
+  sem nenhum link, só o Caminho. Sem 'original', a fonte é só texto indexado: não monte link.
 - Erro do cérebro diz o que mudar; não repita a mesma chamada sem mudar nada.
 """
 

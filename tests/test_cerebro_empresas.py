@@ -5,6 +5,7 @@ from __future__ import annotations
 import contextlib
 import json
 from collections import Counter
+from urllib.parse import urlsplit
 
 import httpx
 import pytest
@@ -345,14 +346,57 @@ def test_config_nova_invalida_nao_retorna_chave_legada(monkeypatch):
     assert load_settings().service_keys == {}
 
 
-async def test_resposta_sem_os_open_link_e_com_brain_link(monkeypatch):
+async def test_original_ganha_links_assinados_para_pessoa_e_mantem_painel_para_bot(monkeypatch):
     async with servidor(monkeypatch) as (c, mock, token, state):
-        original = {"file_path": "E:\\acervo-2.0\\x.pdf", "os_open_link": "file://servidor/E/acervo-2.0/x.pdf",
-                    "brain_link": "https://exemplo/brain/abrir/realmak/" + "a" * 64,
-                    "brain_download_link": "https://exemplo/brain/baixar/realmak/" + "a" * 64,
+        painel = {"brain_link": "https://exemplo/brain/abrir/aforca/" + "a" * 64,
+                  "brain_download_link": "https://exemplo/brain/baixar/aforca/" + "a" * 64}
+        original = {"file_path": "E:\\acervo-2.0\\x.pdf", "os_open_link": "file://servidor/E/acervo-2.0/x.pdf", **painel,
                     "copies": [{"file_path": "E:\\c.pdf", "os_open_link": "file://servidor/E/c.pdf"}]}
-        mock.post(f"{URL}/retrieve").mock(return_value=httpx.Response(200, json={"hits": [{"slug": "s", "original": original}]}))
-        data = result_data(await call_tool(c, "cerebro_buscar", {"query": "x", "os": "windows"}, token))
-        assert data["hits"][0]["original"] == {"file_path": "E:\\acervo-2.0\\x.pdf", "brain_link": original["brain_link"],
-                                               "brain_download_link": original["brain_download_link"],
-                                               "copies": [{"file_path": "E:\\c.pdf"}]}
+        hits = {"hits": [{"slug": "atestado-x", "original": original}, {"original": dict(painel)}]}
+        mock.post(f"{URL}/retrieve").mock(return_value=httpx.Response(200, json=hits))
+
+        data = result_data(await call_tool(c, "cerebro_buscar", {"query": "x", "os": "windows", "empresa": "aforca"}, token))
+        com_slug, sem_slug = (h["original"] for h in data["hits"])
+        assert set(com_slug) == {"file_path", "copies", "link_visualizar", "link_baixar", "expira_em"}
+        assert com_slug["copies"] == [{"file_path": "E:\\c.pdf"}]
+        assert com_slug["link_visualizar"].startswith("https://mcp.test/mcp/arquivos/cerebro/")
+        assert com_slug["link_visualizar"] != com_slug["link_baixar"]
+        assert sem_slug == painel  # sem slug, não há como pedir o original
+
+        bot = result_data(await call_tool(c, "cerebro_buscar", {"query": "x", "os": "windows", "empresa": "aforca"}, BOT))
+        assert bot["hits"][0]["original"] == {"file_path": "E:\\acervo-2.0\\x.pdf", **painel,
+                                              "copies": [{"file_path": "E:\\c.pdf"}]}
+
+
+async def test_link_do_cerebro_repassa_o_original_e_o_erro_do_gateway(monkeypatch):
+    async with servidor(monkeypatch) as (c, mock, token, state):
+        provas = {"items": [{"id": "r1", "original": {"slug": "atestado-x", "file_path": "E:\\x.doc"}}]}
+        mock.post(f"{URL}/consulta/provas").mock(return_value=httpx.Response(200, json=provas))
+        original = mock.get(f"{URL}/original").mock(side_effect=[
+            httpx.Response(200, content=b"\xd0\xcf\x11\xe0 doc", headers={
+                "Content-Type": "application/msword", "Content-Disposition":
+                "attachment; filename=\"Atestado obra.doc\"; filename*=UTF-8''Atestado%20obra%20%C3%A7.doc"}),
+            httpx.Response(200, content=b"\xd0\xcf\x11\xe0 doc", headers={"Content-Type": "application/msword"}),
+            httpx.Response(403, json={"error": "fora do escopo da pessoa"}),
+            httpx.Response(404, json={"error": "página sem original"}),
+        ])
+        data = result_data(await call_tool(c, "cerebro_provas", {"ids": ["r1"], "empresa": "una"}, token))
+        links = data["items"][0]["original"]
+        ver, baixar = urlsplit(links["link_visualizar"]).path, urlsplit(links["link_baixar"]).path
+
+        r = await c.get(baixar)
+        assert r.status_code == 200 and r.content == b"\xd0\xcf\x11\xe0 doc"
+        assert r.headers["content-disposition"] == (
+            "attachment; filename=\"Atestado obra c.doc\"; filename*=UTF-8''Atestado%20obra%20%C3%A7.doc")
+        assert r.headers["x-content-type-options"] == "nosniff" and r.headers["cache-control"] == "no-store"
+        pedido = original.calls.last.request
+        assert pedido.url.params["slug"] == "atestado-x" and pedido.headers["x-galeed-act-as"] == EMAIL
+        assert pedido.headers["authorization"] == f"Bearer {KEYS['una']}"
+        r = await c.get(ver)
+        assert r.status_code == 200 and r.headers["content-disposition"] == "inline"
+        r = await c.get(ver)
+        assert r.status_code == 403 and "fora do escopo" in r.json()["erro"]
+        r = await c.get(baixar)
+        assert r.status_code == 404 and "sem original" in r.json()["erro"]
+        assert (await c.get(baixar[:-3] + "xyz")).status_code == 404 and original.call_count == 4
+        assert KEYS["una"] not in r.text
