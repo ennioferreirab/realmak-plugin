@@ -26,8 +26,8 @@ Sistema = Literal["macos", "linux", "windows"]
 
 OS_DESC = (
     "Sistema do computador onde o analista vai abrir os arquivos originais: macos, linux ou "
-    "windows. Os analistas da Realmak usam windows: passe 'windows', salvo indicação de outro sistema. O link a entregar "
-    "é original.brain_link (abre o arquivo no Cérebro, com login), exatamente como veio."
+    "windows. Os analistas da Realmak usam windows: passe 'windows', salvo indicação de outro sistema (o servidor exige). "
+    "O link a entregar é original.brain_link (abre o arquivo no Cérebro, com login), exatamente como veio."
 )
 
 REGISTROS_TAG = "registros"
@@ -76,6 +76,15 @@ async def client_for_request(empresa: Empresa = "realmak") -> tuple[GaleedClient
     return client_for_access(access, settings, empresa=empresa), liberada
 
 
+def sem_link_de_arquivo(valor: Any) -> Any:
+    """Tira os links `file://` (os_open_link) que o gateway ainda manda: só abrem na rede interna. Fica o brain_link."""
+    if isinstance(valor, dict):
+        return {k: sem_link_de_arquivo(v) for k, v in valor.items() if k != "os_open_link"}
+    if isinstance(valor, list):
+        return [sem_link_de_arquivo(v) for v in valor]
+    return valor
+
+
 async def executar(empresa: Empresa, metodo: str, *args, **kwargs) -> str:
     client, acesso = await client_for_request(empresa)
     try:
@@ -99,7 +108,7 @@ async def executar(empresa: Empresa, metodo: str, *args, **kwargs) -> str:
     result: dict[str, Any] = {"empresa": empresa}
     if acesso.nivel == "parcial":
         result["acesso"] = {"nivel": "parcial", "areas": list(acesso.areas)}
-    payload = data if isinstance(data, dict) else {"resultado": data}
+    payload = sem_link_de_arquivo(data if isinstance(data, dict) else {"resultado": data})
     result.update({k: v for k, v in payload.items() if k not in ("empresa", "acesso")})
     return dumps(result)
 
@@ -245,7 +254,7 @@ INSTRUCOES = """Cérebros das empresas do grupo (Realmak, AForça, Nortfort, UNA
   cerebro_provas recebe ids como lista de strings reais da consulta, sempre na mesma empresa.
 - Resultado com 'original': termine a resposta com a seção Arquivos, um item por sha256: o nome, depois
   'Link:' com original.brain_link exatamente como veio e 'Caminho:' com original.file_path. Sem brain_link,
-  só o Caminho. Não entregue os_open_link. Sem 'original', a fonte é só texto indexado: não monte link.
+  só o Caminho. Sem 'original', a fonte é só texto indexado: não monte link.
 - Erro do cérebro diz o que mudar; não repita a mesma chamada sem mudar nada.
 """
 

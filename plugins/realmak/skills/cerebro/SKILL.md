@@ -86,7 +86,6 @@ Cada resultado pode trazer um `original` com:
 
 - `file_path`: caminho do arquivo no servidor de arquivos da empresa consultada. Serve para o analista localizar o arquivo.
 - `brain_link`: link `https://` que abre o arquivo no explorador do Cérebro. Pede o login do Odoo se a pessoa não estiver logada e funciona fora da rede da empresa.
-- `os_open_link`: link `file://` que só abre na rede interna. Não entregue.
 
 Quando houver `original`, termine a resposta com a seção **Arquivos**, no formato:
 
