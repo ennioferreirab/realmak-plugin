@@ -20,7 +20,7 @@ A lista de itens a cotar vem de uma destas fontes:
 | Origem | Onde estão os itens |
 | --- | --- |
 | Planilha do analista | Na planilha indicada por ele |
-| Análise de manutenção (`analisar-edital-manutencao`) | Tabela 5 de `analise-manutencao.md` ou aba "Peças e Materiais" de `analise-manutencao.xlsx` |
+| Análise de manutenção (`analisar-edital-manutencao`) | Tabela 5 de `analise-manutencao.md` ou aba "Peças e materiais" do painel `analise-manutencao.html` |
 | Análise de fornecimento (`analisar-edital-fornecimento`) | Aba "Itens" de `analise-fornecimento.xlsx` |
 
 Quando a origem for uma das análises, não grave a cotação dentro do arquivo da análise: crie uma planilha de cotação com os mesmos itens, na mesma ordem, e as colunas desta skill.
