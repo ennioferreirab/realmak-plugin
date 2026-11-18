@@ -198,7 +198,7 @@ A versão multiempresa depende de `GET /v1/acesso`. Atualizar só as skills não
 
 O cache de acesso tem TTL fixo de 5 minutos; falhas de rede não são guardadas. Um 403 de leitura invalida a entrada da empresa antes de conferir o acesso novamente. Para voltar a versão do MCP, use o commit anterior e reconstrua apenas esse serviço, preservando o segredo OAuth e os volumes. O gateway novo mantém compatibilidade com o MCP anterior.
 
-A publicação e a atualização do servidor exigem autorização do Ennio. A validação local não substitui a validação do servidor nesta seção.
+Atualizar o servidor no Stage está autorizado (veja `AGENTS.md`); produção exige autorização do Ennio. A validação local não substitui a validação do servidor nesta seção.
 
 ## Prévia de Word e Excel no Stage
 
