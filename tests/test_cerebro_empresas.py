@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import contextlib
 import json
+import time
 from collections import Counter
 from urllib.parse import urlsplit
 
@@ -17,6 +18,7 @@ from mcp_realmak.cerebro import empresas as empresas_mod
 from mcp_realmak.cerebro.client import GaleedApiError
 from mcp_realmak.cerebro.empresas import Empresas
 from mcp_realmak.config import EMPRESAS, load_settings
+from mcp_realmak.licitacao import arquivos
 from mcp_realmak.oauth import OAuthServer
 from mcp_realmak.server import build_app
 
@@ -369,9 +371,13 @@ async def test_original_ganha_links_assinados_para_pessoa_e_mantem_painel_para_b
 
 
 async def test_link_do_cerebro_repassa_o_original_e_o_erro_do_gateway(monkeypatch):
-    async with servidor(monkeypatch) as (c, mock, token, state):
-        provas = {"items": [{"id": "r1", "original": {"slug": "atestado-x", "file_path": "E:\\x.doc"}}]}
-        mock.post(f"{URL}/consulta/provas").mock(return_value=httpx.Response(200, json=provas))
+    async with servidor(monkeypatch, allowed=["una"], registros=["una"]) as (c, mock, token, state):
+        registro = "at_3403d5caa961"
+        provas = {"provas": [{
+            "registro_id": registro, "slug": "atestado-x",
+            "original": {"file_path": "E:\\x.doc", "brain_download_link": "https://painel.test/arquivo"},
+        }]}
+        consulta = mock.post(f"{URL}/consulta/provas").mock(return_value=httpx.Response(200, json=provas))
         original = mock.get(f"{URL}/original").mock(side_effect=[
             httpx.Response(200, content=b"\xd0\xcf\x11\xe0 doc", headers={
                 "Content-Type": "application/msword", "Content-Disposition":
@@ -380,8 +386,12 @@ async def test_link_do_cerebro_repassa_o_original_e_o_erro_do_gateway(monkeypatc
             httpx.Response(403, json={"error": "fora do escopo da pessoa"}),
             httpx.Response(404, json={"error": "página sem original"}),
         ])
-        data = result_data(await call_tool(c, "cerebro_provas", {"ids": ["r1"], "empresa": "una"}, token))
-        links = data["items"][0]["original"]
+        negado = await call_tool(c, "cerebro_provas", {"ids": [registro], "empresa": "nortfort"}, token)
+        assert negado["isError"] and not consulta.called
+
+        data = result_data(await call_tool(c, "cerebro_provas", {"ids": [registro], "empresa": "una"}, token))
+        links = data["provas"][0]["original"]
+        assert "brain_download_link" not in links
         ver, baixar = urlsplit(links["link_visualizar"]).path, urlsplit(links["link_baixar"]).path
 
         r = await c.get(baixar)
@@ -399,4 +409,10 @@ async def test_link_do_cerebro_repassa_o_original_e_o_erro_do_gateway(monkeypatc
         r = await c.get(baixar)
         assert r.status_code == 404 and "sem original" in r.json()["erro"]
         assert (await c.get(baixar[:-3] + "xyz")).status_code == 404 and original.call_count == 4
+        vencido = arquivos.assinar(load_settings(), {
+            "t": "cerebro", "e": EMAIL, "m": "una", "s": "atestado-x", "modo": "b",
+            "x": int(time.time()) - 1,
+        })
+        assert (await c.get(f"/mcp/arquivos/cerebro/{vencido}")).status_code == 404
+        assert original.call_count == 4
         assert KEYS["una"] not in r.text

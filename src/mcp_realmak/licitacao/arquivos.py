@@ -30,6 +30,7 @@ import unicodedata
 from collections.abc import Callable
 from email.message import Message
 from email.utils import collapse_rfc2231_value
+from pathlib import PurePosixPath
 from typing import Any
 from urllib.parse import quote
 
@@ -40,6 +41,7 @@ from starlette.responses import JSONResponse, Response, StreamingResponse
 
 from ..cerebro.client import GaleedClient
 from ..config import NOMES_EMPRESAS, Settings, load_settings
+from . import previa
 from .client import OdooApiError, OdooClient, interpretar
 
 log = logging.getLogger("mcp_realmak.licitacao")
@@ -147,7 +149,7 @@ def _erro(status: int, mensagem: str) -> JSONResponse:
 
 async def _transmitir(
     cliente: httpx.AsyncClient, pedido: httpx.Request, modo: str,
-    erro: Callable[[httpx.Response], JSONResponse], sem_resposta: str,
+    erro: Callable[[httpx.Response], JSONResponse], sem_resposta: str, visualizador_url: str,
 ) -> Response:
     """Repassa o arquivo em fluxo, com o `Content-Disposition` do modo do link; erro da origem vira `erro(resp)`."""
     pedido.headers["Accept-Encoding"] = "identity"  # os bytes passam crus: sem compressão no caminho
@@ -161,15 +163,27 @@ async def _transmitir(
         await resp.aclose()
         await cliente.aclose()
         return erro(resp) if resp.status_code >= 400 else _erro(502, f"Resposta inesperada da origem (HTTP {resp.status_code}).")
-    cabecalhos = {k: v for k, v in resp.headers.items() if k.lower() in _REPASSAR}
-    cabecalhos["Content-Disposition"] = disposicao(modo, nome_do_arquivo(resp.headers.get("content-disposition", "")))
-    cabecalhos["X-Content-Type-Options"] = "nosniff"
-
     async def fechar() -> None:
         await resp.aclose()
         await cliente.aclose()
 
-    return StreamingResponse(resp.aiter_raw(), headers={**cabecalhos, **_NO_STORE}, background=BackgroundTask(fechar))
+    nome = nome_do_arquivo(resp.headers.get("content-disposition", ""))
+    arquivo = PurePosixPath(nome)
+    ext = arquivo.suffix.lower()
+    cabecalhos = {**_NO_STORE, "X-Content-Type-Options": "nosniff"}
+    if modo == "v" and visualizador_url and ext in previa.EXTENSOES:
+        try:
+            pdf = await previa.converter(visualizador_url, ext, resp)
+        except previa.ErroPrevia as exc:
+            return _erro(exc.status, str(exc))
+        finally:
+            await fechar()
+        cabecalhos["Content-Disposition"] = disposicao("v", f"{arquivo.stem}.pdf")
+        return Response(pdf, media_type="application/pdf", headers=cabecalhos)
+
+    cabecalhos.update({k: v for k, v in resp.headers.items() if k.lower() in _REPASSAR})
+    cabecalhos["Content-Disposition"] = disposicao(modo, nome)
+    return StreamingResponse(resp.aiter_raw(), headers=cabecalhos, background=BackgroundTask(fechar))
 
 
 def _erro_odoo(resp: httpx.Response) -> JSONResponse:
@@ -220,7 +234,7 @@ def rotas(
             cliente, pedido = OdooClient(settings, dados["e"], transport).baixar(dados["l"], dados["d"])
         except OdooApiError as exc:
             return _erro(503, f"Licitações indisponíveis: {exc}.")
-        return await _transmitir(cliente, pedido, dados["modo"], _erro_odoo, "O Odoo não respondeu. Tente de novo.")
+        return await _transmitir(cliente, pedido, dados["modo"], _erro_odoo, "O Odoo não respondeu. Tente de novo.", settings.visualizador_url)
 
     async def baixar_cerebro(request: Request) -> Response:
         settings = load_settings()
@@ -233,7 +247,7 @@ def rotas(
         cliente, pedido = GaleedClient(settings.galeed_api_url, chave, timeout=settings.galeed_timeout_s,
                                        transport=galeed_transport, act_as=dados["e"]).original(dados["s"])
         return await _transmitir(cliente, pedido, dados["modo"], _erro_cerebro(chave),
-                                 "O cérebro não respondeu. Tente de novo.")
+                                 "O cérebro não respondeu. Tente de novo.", settings.visualizador_url)
 
     async def enviar(request: Request) -> Response:
         settings = load_settings()

@@ -199,3 +199,46 @@ A versão multiempresa depende de `GET /v1/acesso`. Atualizar só as skills não
 O cache de acesso tem TTL fixo de 5 minutos; falhas de rede não são guardadas. Um 403 de leitura invalida a entrada da empresa antes de conferir o acesso novamente. Para voltar a versão do MCP, use o commit anterior e reconstrua apenas esse serviço, preservando o segredo OAuth e os volumes. O gateway novo mantém compatibilidade com o MCP anterior.
 
 A publicação e a atualização do servidor exigem autorização do Ennio. A validação local não substitui a validação do servidor nesta seção.
+
+## Prévia de Word e Excel no Stage
+
+Habilite a prévia após validar uma imagem do Brain cujo `POST /pdf?ext=...`
+aceite `doc`, `docx`, `xls` e `xlsx`. O MCP usa o visualizador já existente
+e só envia o corpo do arquivo e a extensão, depois de a origem confirmar o acesso.
+A identificação usa a extensão do nome informado pela origem em `Content-Disposition`.
+**Baixar arquivo** continua entregando o original diretamente pela origem.
+
+1. Prepare a rede compartilhada uma vez com
+   `docker network create --internal realmak-previa`. Confira que `Internal`
+   é `true` e que participam dela apenas o MCP e o visualizador.
+2. Aplique `compose.brain.previa.yaml` como último override no Compose do Brain junto aos arquivos do Stage.
+   Mantenha ativo o perfil `arquivos`. O BFF preserva sua rede padrão e alcança
+   o visualizador pela rede interna própria. O visualizador fica apenas nas duas
+   redes internas e sem portas publicadas. Valide o Compose renderizado e o
+   isolamento de saída antes de ligar o MCP. Preserve o perfil de macros
+   desativadas do Brain, o limite de CPU e memória do Stage, o prazo de
+   conversão de até 60 s e a política local de retenção do cache de PDFs.
+
+3. Registre a revisão e a imagem atualmente em uso antes de trocar o MCP.
+   Renderize `docker compose -f compose.yaml -f compose.vps.yaml -f compose.previa.yaml config --quiet`.
+   Use os mesmos arquivos com `up -d --build --wait mcp-realmak` após aprovação.
+   O override liga `MCP_REALMAK_VISUALIZADOR_URL=http://realmak-visualizador:8080`.
+   O MCP aceita uma prévia por processo, com limites de 16 MiB de entrada,
+   24 MiB de PDF e 85 s para ler e converter. Quando a prévia falha, a resposta
+   orienta a baixar o original. O MCP não guarda os documentos.
+4. Valide com documentos fictícios. Com a imagem do visualizador de teste
+   acessível apenas no ambiente de teste, configure `TESTE_VISUALIZADOR_URL`
+   (URL sem `/pdf`) e `TESTE_VISUALIZADOR_FIXTURES` (diretório com
+   `arquivo.doc`, `arquivo.docx`, `arquivo.xls`, `arquivo.xlsx`). Rode
+   `uv run --locked pytest -q tests/test_previa_office.py -k visualizador-real`.
+   A suíte chama o visualizador real com origens simuladas para conferir PDF
+   inline, SHA-256 do original, vencimento e permissão nas duas rotas.
+   No Stage, repita o smoke test com os originais fictícios cadastrados nas duas
+   origens e links já autenticados, sem registrar os caminhos assinados.
+
+Para desativar a prévia, recrie o MCP só com `compose.yaml` e
+`compose.vps.yaml`, com `MCP_REALMAK_VISUALIZADOR_URL` ausente do `.env`.
+Para reverter também o código, volte à revisão ou à imagem registrada no
+passo 3 e recrie o MCP. Preserve o segredo OAuth e os volumes. Coordene a
+remoção do override do Brain com o responsável pelo BFF. Depois de verificar
+que a rede dedicada está sem participantes, ela pode ser removida.

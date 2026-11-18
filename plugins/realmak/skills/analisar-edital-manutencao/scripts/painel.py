@@ -13,42 +13,7 @@ html_esc = _html.escape
 def build(D, calc, destino):
     from relatorio import _fmt_campos
 
-    lim = calc["limites"]
     tabelas = {
-        "nobreaks": {
-            "titulo": "Nobreaks",
-            "cols": [
-                ["Qtd", "num"],
-                ["Potência (kVA)", "num"],
-                ["Fabricante", "filtro"],
-                ["Localização", "filtro"],
-                ["Faixa", "chip"],
-            ],
-            "linhas": [[q, k, f, loc, fx] for q, k, f, loc, fx, *_ in D.get("nobreaks", [])],
-            "soma": [0],
-            "destaque": {
-                "col": 1,
-                "min": lim["nobreak"],
-                "rotulo": f"≥ {lim['nobreak']} kVA (exigência do item)",
-            },
-        },
-        "geradores": {
-            "titulo": "Grupos geradores",
-            "cols": [
-                ["Qtd", "num"],
-                ["Potência (kVA)", "num"],
-                ["Fabricante", "filtro"],
-                ["Localização", "texto"],
-                ["Faixa", "chip"],
-            ],
-            "linhas": [[q, k, f, loc, fx] for q, k, f, loc, fx, *_ in D.get("geradores", [])],
-            "soma": [0],
-            "destaque": {
-                "col": 1,
-                "min": lim["gerador"],
-                "rotulo": f"≥ {lim['gerador']} kVA (exigência do item)",
-            },
-        },
         "requisitos": {
             "titulo": "Matriz de requisitos de execução",
             "cols": [
@@ -162,11 +127,7 @@ def build(D, calc, destino):
         "carga": calc["carga"],
         "ciclo": calc["ciclo"],
         "tabelas": tabelas,
-        "nb60": calc["nb_ok"],
-        "g150": calc["gr_ok"],
-        "nNb": calc["nNb"],
-        "nGr": calc["nGr"],
-        "lim": lim,
+        "inventarios": calc["inventarios"],
         "servico": servico,
         "leitura": [[a, _fmt_campos(t, calc)] for a, t in D["leitura_rapida"]],
         "chave": D.get("id", "analise"),
@@ -195,10 +156,10 @@ html[data-tema=escuro]{--fundo:#0b1220;--card:#111827;--linha:#273449;--tx:#e5e7
 body{margin:0;background:var(--fundo);color:var(--tx);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
 header{background:var(--pet);color:#fff;padding:14px 20px 0;position:sticky;top:0;z-index:5;box-shadow:0 2px 6px rgba(0,0,0,.18)}
 .topo{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px}
-@media (min-width:1000px){.topo{flex-wrap:nowrap}.topo h1{white-space:nowrap}}.pilulas{flex:1;min-width:0;overflow:hidden}
+@media (min-width:1000px){.topo{flex-wrap:nowrap}.topo h1{white-space:nowrap}}.pilulas{flex:1;min-width:0}
 .topo h1{font-size:18px;margin:0;font-weight:700;letter-spacing:.2px}
 .pilulas{display:flex;flex-wrap:wrap;gap:6px}
-.pilula{background:rgba(255,255,255,.14);border-radius:999px;padding:2px 10px;font-size:12px}
+.pilula{max-width:100%;overflow-wrap:anywhere;background:rgba(255,255,255,.14);border-radius:999px;padding:2px 10px;font-size:12px}
 .selo{margin-left:auto;border-radius:6px;padding:4px 10px;font-weight:700;font-size:13px}
 .selo.cond{background:#ffedd5;color:#9a3412}.selo.ok{background:#dcfce7;color:#166534}.selo.nao{background:#fee2e2;color:#991b1b}
 nav{display:flex;gap:2px;overflow-x:auto;margin-top:12px;scrollbar-width:thin}
@@ -227,7 +188,7 @@ html[data-tema=escuro] h2{color:#7dd3fc}
 .concl{display:flex;gap:10px;align-items:center;margin-bottom:8px}
 .lista-check{list-style:none;margin:0;padding:0}
 .lista-check li{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--linha)}
-.lista-check li:last-child{border-bottom:0}
+.lista-check li:last-child{border-bottom:0;top:auto}
 .lista-check input{margin-top:3px;width:16px;height:16px;accent-color:var(--verde)}
 .lista-check .ref{margin-left:auto;color:var(--tx2);font-size:12px;white-space:nowrap;padding-left:10px}
 .lista-check li.feito span.t{text-decoration:line-through;color:var(--tx2)}
@@ -250,7 +211,7 @@ tbody tr:hover td{background:var(--azul2)}
 tr.dest td{background:color-mix(in srgb,var(--verde) 14%,transparent)!important;font-weight:600}tr.dest td:first-child{box-shadow:inset 4px 0 0 var(--verde)}
 td.id{white-space:nowrap;font-weight:600}
 td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-tfoot td{font-weight:700;background:var(--azul2);position:sticky;bottom:0}
+tfoot td,tfoot th{font-weight:700;background:var(--azul2);position:sticky;bottom:0;top:auto}
 .chip{display:inline-block;border-radius:999px;padding:1px 9px;font-size:12px;background:var(--azul2);white-space:nowrap}
 .r-Alto{background:var(--albg);color:var(--al);font-weight:600}.r-Médio{background:var(--mdbg);color:var(--md);font-weight:600}.r-Baixo{background:var(--okbg);color:var(--ok);font-weight:600}
 .s-OK{background:var(--okbg);color:var(--ok);font-weight:600}.s-ALERTA{background:var(--mdbg);color:var(--md);font-weight:600}
@@ -266,7 +227,7 @@ tfoot td{font-weight:700;background:var(--azul2);position:sticky;bottom:0}
 .leg i{width:10px;height:10px;border-radius:2px;display:inline-block}
 .atalho{color:var(--tx2);font-size:11px}
 kbd{border:1px solid var(--linha);border-radius:4px;padding:0 4px;font-size:11px}
-@media (max-width:700px){header{position:static;padding:12px 12px 0}.topo h1{font-size:16px}.pilula:nth-child(n+3){display:none}.selo{margin-left:0}main{padding:12px}.kpi b{font-size:18px}.barra-ferr select{max-width:100%;flex:1 1 140px}nav{position:sticky;top:0}}
+@media (max-width:700px){header{position:static;padding:12px 12px 0}.topo h1{font-size:16px;flex-basis:100%}.pilulas{flex:1 0 100%}.selo{margin-left:0}main{padding:12px}.kpi b{font-size:18px}.barra-ferr select{max-width:100%;flex:1 1 140px}nav{position:sticky;top:0}}
 @media print{header{position:static}nav,.barra-ferr,.atalho{display:none}section[role=tabpanel]{display:block;break-before:page}
  section[role=tabpanel]:first-of-type{break-before:auto}.tab-wrap{max-height:none;overflow:visible;box-shadow:none}
  th{position:static}body{background:#fff}}
@@ -295,12 +256,12 @@ let temaIni='claro';try{temaIni=localStorage.getItem('analise-tema')||'claro'}ca
 tb.onclick=()=>aplicaTema(document.documentElement.dataset.tema==='escuro'?'claro':'escuro');
 const selo=document.getElementById('selo');
 selo.textContent=D.conclusao;selo.className='selo '+({'Atende':'ok','Atende com condições':'cond','Não atende':'nao'}[D.conclusao]||'cond');
-document.getElementById('pilulas').innerHTML=(D.pilulas||[]).map(t=>`<span class="pilula">${t}</span>`).join('');
+document.getElementById('pilulas').innerHTML=(D.pilulas||[]).map(t=>`<span class="pilula">${esc(t)}</span>`).join('');
 
 const alertas=T.checks.linhas.filter(r=>r[2]==='ALERTA').length;
 const altos=T.requisitos.linhas.filter(r=>r[6]==='Alto').length;
 const ABAS=[
- ['resumo','Resumo'],['servico','Dados do serviço'],['equip','Equipamentos',DADOS.nNb+DADOS.nGr],['requisitos','Requisitos',T.requisitos.linhas.length,altos?altos+' altos':''],
+ ['resumo','Resumo'],['servico','Dados do serviço'],...(DADOS.inventarios.length?[['equip','Equipamentos',DADOS.inventarios.reduce((n,g)=>n+g.total,0)]]:[]),['requisitos','Requisitos',T.requisitos.linhas.length,altos?altos+' altos':''],
  ['escopo','Escopo e carga',T.escopo.linhas.length],['dimens','Dimensionamento'],['pecas','Peças e materiais',T.pecas.linhas.length],
  ['pontos','Pontos de atenção',T.pontos.linhas.length],['documentos','Documentos',T.documentos.linhas.length],['checks','Checks',alertas?alertas+' alerta(s)':'OK']];
 const nav=document.getElementById('abas'),painel=document.getElementById('painel');
@@ -344,13 +305,23 @@ function tabela(alvo,cfg,opts={}){
   if(estado.ord!==null){const i=estado.ord;ls=[...ls].sort((a,b)=>{const x=a[i],y=b[i];const r=(typeof x==='number'&&typeof y==='number')?x-y:String(x??'').localeCompare(String(y??''),'pt',{numeric:true});return estado.asc?r:-r})}
   tb.innerHTML=ls.length?ls.map(r=>`<tr class="${cfg.destaque&&+r[cfg.destaque.col]>=cfg.destaque.min?'dest':''}">${cols.map((c,i)=>cel(r[i],c)).join('')}</tr>`).join(''):`<tr><td class="vazio" colspan="${cols.length}">Nada encontrado com esses filtros.</td></tr>`;
   cont.textContent=`${ls.length} de ${cfg.linhas.length}`;
-  if(ft){ft.innerHTML=cols.map((c,i)=>i===0?`<td>Total (filtrado)</td>`:cfg.soma.includes(i)?`<td class="num">${esc(fmt(ls.reduce((s,r)=>s+(+r[i]||0),0)))}</td>`:'<td></td>').join('')}
-  el.querySelectorAll('th').forEach(th=>{const i=+th.dataset.i;th.querySelector('.seta').textContent=estado.ord===i?(estado.asc?'▲':'▼'):'↕'})}
+  if(ft){
+   const rotulo=cols.findIndex((_,i)=>!cfg.soma.includes(i));
+   ft.innerHTML=cols.map((_,i)=>{
+    if(cfg.soma.includes(i)){
+     const total=ls.reduce((s,r)=>s+(+r[i]||0),0);
+     const texto=esc(fmt(total,Number.isInteger(total)?0:1));
+     return `<td class="num">${rotulo<0&&i===0?'Total (filtrado): ':''}${texto}</td>`;
+    }
+    return i===rotulo?'<th scope="row">Total (filtrado)</th>':'<td></td>';
+   }).join('');
+  }
+  el.querySelectorAll('thead th').forEach(th=>{const i=+th.dataset.i;th.querySelector('.seta').textContent=estado.ord===i?(estado.asc?'▲':'▼'):'↕'})}
  el.querySelector('input[type=search]').oninput=e=>{estado.q=e.target.value.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu,'');render()};
  el.querySelectorAll('select').forEach(s=>s.onchange=()=>{estado.f[s.dataset.i]=s.value;render()});
  const d=el.querySelector('[data-dest]');if(d)d.onchange=()=>{estado.dest=d.checked;render()};
  el.querySelector('[data-limpar]').onclick=()=>{estado.q='';estado.f={};estado.ord=null;estado.dest=false;el.querySelectorAll('select').forEach(s=>s.value='');el.querySelector('input[type=search]').value='';if(d)d.checked=false;render()};
- el.querySelectorAll('th').forEach(th=>th.onclick=()=>{const i=+th.dataset.i;if(estado.ord===i)estado.asc=!estado.asc;else{estado.ord=i;estado.asc=true}render()});
+ el.querySelectorAll('thead th').forEach(th=>th.onclick=()=>{const i=+th.dataset.i;if(estado.ord===i)estado.asc=!estado.asc;else{estado.ord=i;estado.asc=true}render()});
  render();return el}
 const P=id=>document.getElementById('p-'+id);
 const kpi=(v,r,sub='',cls='')=>`<div class="kpi ${cls}"><b>${v}</b><span>${r}</span>${sub?`<small>${sub}</small>`:''}</div>`;
@@ -358,8 +329,8 @@ const kpi=(v,r,sub='',cls='')=>`<div class="kpi ${cls}"><b>${v}</b><span>${r}</s
 // ---------- Resumo
 (()=>{const s=P('resumo');
  const chave=DADOS.chave+'-condicoes';let marc={};try{marc=JSON.parse(localStorage.getItem(chave)||'{}')}catch(e){}
- s.innerHTML=`<div class="grade kpis">${kpi(fmt(N.req),'Horas requeridas / mês','Carga estimada (C)')}${kpi(fmt(N.disp),'Horas disponíveis / mês','2 técnicos (P)')}${kpi(fmt(N.cob*100)+'%','Cobertura da equipe','Disponíveis ÷ requeridas')}${kpi(fmt(N.folga),'Folga (h/mês)','Disponíveis − requeridas')}
-  ${kpi(DADOS.nNb,'Nobreaks',DADOS.nb60+' com '+DADOS.lim.nobreak+' kVA ou mais')}${kpi(DADOS.nGr,'Geradores',DADOS.g150+' com '+DADOS.lim.gerador+' kVA ou mais')}${(D.kpis_extras||[]).map(k=>kpi(esc(k[0]),esc(k[1]),esc(k[2]||''),k[3]?'alerta':'')).join('')}</div>
+ s.innerHTML=`<div class="grade kpis">${kpi(fmt(N.req),'Horas requeridas / mês','Carga estimada (C)')}${kpi(fmt(N.disp),'Horas disponíveis / mês','Equipe informada (P)')}${kpi(fmt(N.cob*100)+'%','Cobertura da equipe','Disponíveis ÷ requeridas')}${kpi(fmt(N.folga),'Folga (h/mês)','Disponíveis − requeridas')}
+  ${DADOS.inventarios.map(g=>kpi(g.total,esc(g.titulo),esc(g.resumo))).join('')}${(D.kpis_extras||[]).map(k=>kpi(esc(k[0]),esc(k[1]),esc(k[2]||''),k[3]?'alerta':'')).join('')}</div>
  <div class="grade dois" style="margin-top:12px">
   <div class="caixa"><h3>Conclusão</h3><div class="concl"><span class="selo ${selo.className.split(' ')[1]}">${esc(D.conclusao)}</span></div><p style="margin:0">${esc(D.justificativa)}</p>
    <h3 style="margin-top:14px">Leitura rápida</h3><ul class="rapida">${DADOS.leitura.map(([a,t])=>`<li><b>${esc(a)}:</b> ${esc(t).replace(/==(.+?)==/g,'<mark>$1</mark>')}</li>`).join('')}</ul></div>
@@ -381,8 +352,10 @@ const kpi=(v,r,sub='',cls='')=>`<div class="kpi ${cls}"><b>${v}</b><span>${r}</s
 (()=>{const s=P('servico');s.innerHTML='<h2>Dados do serviço</h2>';tabela(s,{titulo:'Dados do serviço',cols:[['Grupo','chip'],['Campo','texto'],['Informação','texto'],['Onde consta','texto']],linhas:DADOS.servico})})();
 
 // ---------- Equipamentos
-(()=>{const s=P('equip');s.innerHTML=`<div class="grade kpis">${kpi(DADOS.nNb,'Nobreaks','no inventário do TR')}${kpi(DADOS.nb60,'Nobreaks ≥ '+DADOS.lim.nobreak+' kVA','referência da habilitação')}${kpi(DADOS.nGr,'Geradores','no inventário do TR')}${kpi(DADOS.g150,'Geradores ≥ '+DADOS.lim.gerador+' kVA','referência da habilitação')}</div><h2>Nobreaks</h2><div id="a"></div><h2>Grupos geradores</h2><div id="b"></div>`;
- tabela(s.querySelector('#a'),T.nobreaks);tabela(s.querySelector('#b'),T.geradores)})();
+DADOS.inventarios.forEach(g=>{
+ const s=P('equip'),titulo=document.createElement('h2'),area=document.createElement('div');
+ titulo.textContent=g.titulo;s.appendChild(titulo);s.appendChild(area);tabela(area,g);
+});
 
 // ---------- Requisitos, Escopo, Peças, Pontos, Documentos, Checks
 (()=>{const s=P('requisitos');s.innerHTML='<h2>Requisitos de execução</h2><p class="legenda">Filtre por grupo, risco ou pendência. Clique no cabeçalho para ordenar.</p>';tabela(s,T.requisitos)})();
@@ -401,7 +374,7 @@ const kpi=(v,r,sub='',cls='')=>`<div class="kpi ${cls}"><b>${v}</b><span>${r}</s
   <div class="leg">${['Programada','Não programada','Indireta'].map(t=>`<span><i style="background:${cor[t]}"></i>${t}: ${fmt(C[t][1])} h</span>`).join('')}<span><i style="background:#cbd5e1"></i>Folga: ${fmt(N.folga)} h</span></div>
   <table style="margin-top:8px"><thead><tr><th>Tipo de carga</th><th style="text-align:right">Horas/ano</th><th style="text-align:right">Horas/mês</th><th>Base</th></tr></thead><tbody>
   ${['Programada','Não programada','Indireta','Total requerido'].map(t=>`<tr><td>${t==='Total requerido'?'<b>Total</b>':t}</td><td class="num">${fmt(C[t][0])}</td><td class="num">${fmt(C[t][1])}</td><td>${esc(D.base_carga[t]||'')}</td></tr>`).join('')}</tbody></table>
-  <p class="legenda">A barra inteira representa as ${fmt(N.disp)} h disponíveis por mês (${D.equipe[0][1]} × ${D.equipe[0][2]-D.equipe[0][3]} h produtivas).</p></div>
+  <p class="legenda">A barra inteira representa as ${fmt(N.disp)} h disponíveis por mês ${D.equipe.map(q=>` · ${esc(q[0])}: ${fmt(q[1])} × ${fmt(q[2]-q[3])} h produtivas`).join('')}.</p></div>
   <div class="caixa"><h3>Testes</h3><ul class="lista-check">
    <li><span class="t"><b>Primeiro ciclo:</b> ${esc(D.testes.ciclo[0])} — carga ${fmt(D.testes.ciclo[1])} h × capacidade ${fmt(D.testes.ciclo[2])} h</span><span class="ref"><span class="chip ${DADOS.ciclo==='Atende'?'s-OK':'s-ALERTA'}">${esc(DADOS.ciclo)}</span></span></li>
    <li><span class="t"><b>Pior SLA:</b> ${esc(D.testes.sla[0])}. ${esc(D.testes.sla[4])}</span><span class="ref"><span class="chip s-OK">${esc(D.testes.sla[3])}</span></span></li></ul>

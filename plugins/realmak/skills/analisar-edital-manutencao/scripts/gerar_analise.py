@@ -6,7 +6,7 @@ Uso:
 Saídas na pasta: analise-manutencao.html (painel com abas e filtros),
 analise-manutencao-relatorio.html (relatório para impressão), analise-manutencao.pdf
 (se houver Chrome ou Chromium) e analise-manutencao.md.
-Requer Python 3.9+, só a biblioteca padrão. O formato do JSON está em assets/exemplo-dados.json.
+Requer Python 3.10+, só a biblioteca padrão. O formato do JSON está em assets/exemplo-dados.json.
 """
 
 import json
@@ -18,6 +18,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 import calculo  # noqa: E402
+import entrada  # noqa: E402
 import painel  # noqa: E402
 import relatorio  # noqa: E402
 
@@ -63,7 +64,12 @@ def main(argv):
     if len(argv) != 3:
         print(__doc__)
         return 2
-    dados = json.loads(Path(argv[1]).read_text(encoding="utf-8"))
+    try:
+        dados = json.loads(Path(argv[1]).read_text(encoding="utf-8"))
+        entrada.validar(dados)
+    except (OSError, ValueError) as exc:
+        print(f"Dados de análise inválidos: {exc}", file=sys.stderr)
+        return 2
     saida = Path(argv[2])
     saida.mkdir(parents=True, exist_ok=True)
     calc = calculo.calcular(dados)

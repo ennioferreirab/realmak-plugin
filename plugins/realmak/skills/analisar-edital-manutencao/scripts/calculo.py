@@ -8,8 +8,50 @@ def _n(x):
     return x if isinstance(x, (int, float)) else 0
 
 
+def inventarios(D):
+    tabelas = []
+    limites = D.get("limites", {})
+    for campo, chave, titulo in (
+        ("nobreaks", "nobreak", "Nobreaks"),
+        ("geradores", "gerador", "Grupos geradores"),
+    ):
+        linhas = [list(linha[:5]) for linha in D.get(campo, [])]
+        if not linhas:
+            continue
+        tabela = {
+            "titulo": titulo,
+            "cols": [["Qtd", "num"], ["Potência (kVA)", "num"], ["Fabricante", "filtro"],
+                     ["Localização", "filtro"], ["Faixa", "chip"]],
+            "linhas": linhas,
+            "soma": [0],
+            "total": sum(_n(linha[0]) for linha in linhas),
+            "resumo": "",
+        }
+        limite = limites.get(chave)
+        if isinstance(limite, (int, float)):
+            quantidade = sum(_n(q) for q, potencia, *_ in linhas
+                             if isinstance(potencia, (int, float)) and potencia >= limite)
+            tabela["destaque"] = {"col": 1, "min": limite, "rotulo": f"≥ {limite} kVA (exigência do item)"}
+            tabela["resumo"] = f"{quantidade} com {limite} kVA ou mais"
+        tabelas.append(tabela)
+
+    for grupo in D.get("inventario", []):
+        if not grupo["linhas"]:
+            continue
+        tabelas.append({
+            "titulo": grupo["categoria"],
+            "cols": [["Qtd", "num"], ["Equipamento", "texto"], ["Especificação", "texto"],
+                     ["Localização", "filtro"], ["Onde consta", "texto"]],
+            "linhas": grupo["linhas"],
+            "soma": [0],
+            "total": sum(_n(linha[0]) for linha in grupo["linhas"]),
+            "resumo": "",
+        })
+    return tabelas
+
+
 def calcular(D):
-    limites = D.get("limites", {"nobreak": 60, "gerador": 150})
+    limites = D.get("limites", {})
     horas = []
     for e in D["escopo"]:
         fq, vol, t = (e[4], e[5], e[7])
@@ -57,7 +99,8 @@ def calcular(D):
         "checks": [(n, v, "OK" if v == 0 else "ALERTA") for n, v in checks],
         "nNb": sum(_n(x[0]) for x in nb),
         "nGr": sum(_n(x[0]) for x in gr),
-        "nb_ok": sum(_n(x[0]) for x in nb if _n(x[1]) >= limites["nobreak"]),
-        "gr_ok": sum(_n(x[0]) for x in gr if _n(x[1]) >= limites["gerador"]),
+        "nb_ok": sum(_n(x[0]) for x in nb if "nobreak" in limites and isinstance(x[1], (int, float)) and x[1] >= limites["nobreak"]),
+        "gr_ok": sum(_n(x[0]) for x in gr if "gerador" in limites and isinstance(x[1], (int, float)) and x[1] >= limites["gerador"]),
         "limites": limites,
+        "inventarios": inventarios(D),
     }
