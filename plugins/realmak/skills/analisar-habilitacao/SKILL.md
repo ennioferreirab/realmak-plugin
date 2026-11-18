@@ -1,6 +1,6 @@
 ---
 name: analisar-habilitacao
-description: Use quando a equipe de licitações pedir para analisar ou conferir a habilitação de uma disputa, ou perguntar qual empresa do grupo deve disputar. Cruza cada exigência de habilitação do edital com os documentos de AForça, Realmak, UNA e Nortfort (atestados, CATs, responsáveis técnicos, certidões, balanço), avalia as quatro em separado e entrega qual é a mais aderente e as pendências de habilitação de cada uma. Usar depois de analisar-edital.
+description: "Use quando a equipe de licitações pedir para analisar ou conferir a habilitação de uma disputa, ou perguntar qual empresa do grupo deve disputar. Cruza cada exigência de habilitação do edital com os documentos de AForça, Realmak, UNA e Nortfort (atestados, CATs, responsáveis técnicos, certidões, balanço), avalia as quatro em separado e entrega qual é a mais aderente e as pendências de habilitação de cada uma. Usar depois de analisar-edital."
 ---
 
 # Analisar habilitação
@@ -18,15 +18,21 @@ Avalie sempre as quatro, cada uma na sua seção, mesmo que o analista cite só 
 | UNA | `una` |
 | Nortfort | `nortfort` |
 
-Documento de uma empresa não serve a outra. Certidão, balanço, registro e atestado valem para o CNPJ em que foram emitidos: confira o CNPJ de cada documento antes de atribuí-lo.
+Leia `descricao-empresa` para o contexto estratégico e confirme no Cérebro a razão social, o CNPJ participante e a cobertura da pesquisa. O perfil só prioriza a pesquisa. Ele não comprova atendimento, não elimina empresa e não desempata a recomendação. Documento de uma empresa não serve a outra. Certidão, balanço, registro e atestado valem para o CNPJ em que foram emitidos: confira o CNPJ de cada documento antes de atribuí-lo.
 
 ## Entrada
 
 - **Exigências:** a lista de habilitação da análise do edital (skill `analisar-edital`). Se ela não existir, rode antes essa skill, ou peça ao analista o edital e o TR. Confira cada exigência no TR ou no edital, porque a análise pode ter resumido demais. Quando existir análise específica do objeto (`analisar-edital-manutencao` ou `analisar-edital-fornecimento`), use dela o detalhe da qualificação técnica.
 - **Documentos das empresas:** o cérebro de cada empresa e os arquivos que o analista anexar (certidões, balanço, contrato social, registros no conselho, atestados, ARTs, declarações).
-- **Data da sessão:** os prazos de validade se contam a partir dela. Se não souber, pergunte.
+- **Data da sessão:** registre também a fase e a data exigida para cada prova. Se não souber, identifique a lacuna e consulte o edital ou a analista.
 
 Se o trabalho for feito na plataforma de licitações, leia a skill `licitacao` para abrir a licitação, achar a análise do edital e registrar as pendências.
+
+## Triagem por empresa e lote
+
+Leia parcelas relevantes, local, prazo, volume, vistoria, obrigações e impedimentos expressos. Cruze com os perfis das quatro empresas e registre quem avança e por quê. Se uma incógnita puder mudar a decisão, faça uma busca curta. Ausência de termo na busca inicial mantém a questão em aberto. Encerre a coleta aprofundada quando nenhuma empresa puder atender por impedimento demonstrado, citando a cláusula. Registre o escopo das empresas e lotes antes de comparar.
+
+Para quem avançar, passe ao `cerebro` um pedido por requisito com empresa/CNPJ, lote, cláusula e página, prova aceita, alternativas, fase e data exigida. Reaproveite prova entre lotes quando as condições coincidirem. Se a pesquisa voltar inconclusiva, procure pela pista mais específica ou indique o motivo e a ação restante.
 
 ## Onde procurar
 
@@ -34,7 +40,7 @@ Faça a busca completa para cada empresa, nesta ordem, e anote de onde veio cada
 
 1. **Anexos da conversa.** Leia o documento para confirmar o que é, de qual empresa é (CNPJ) e a validade. A validade costuma estar no nome do arquivo ou no corpo do documento. Sem data legível, a validade fica como "não confirmada".
 2. **Cérebro da empresa.** Siga a skill `cerebro`: veja primeiro quais empresas estão liberadas para quem está conversando e consulte cada uma pelo seu alias. Procure atestados e CATs por serviço, sistema e quantidade, além de responsáveis técnicos, contratos e certidões. Não reaproveite resultado de uma empresa para outra.
-3. **Arquivos originais** que o cérebro apontar. Quando o resultado trouxer o arquivo original, liste-o na seção Arquivos como a skill `cerebro` orienta, para o analista abrir e anexar. Nunca invente caminho nem link.
+3. **Arquivos originais** que o cérebro apontar. Baixe e arquive todos os documentos encontrados que possam atender a uma exigência, conforme a seção a seguir. Abra a cópia salva e confira a prova antes de marcar **Tem**. Liste o arquivo na seção Arquivos conforme a skill `cerebro`, com identificador recuperável, página/trecho, resultado e lacuna. Separe cobertura de cadastro oficial aceito, documento a emitir e documento aberto e conferido. Nunca invente caminho nem link.
 
 Três situações que não são "não tem":
 
@@ -42,52 +48,83 @@ Três situações que não são "não tem":
 - **Acesso parcial:** avalie, mas diga quais áreas foram consultadas e que pode haver documentos fora delas.
 - **Cérebro não achou:** as tabelas podem não ter todos os atestados. Escreva "não achei no cérebro nem nos anexos", nunca "a empresa não tem".
 
+## Arquivar e conferir os originais
+
+Use [a trilha documental e a fila retomável](references/dossie.md) durante a coleta e no fechamento. Execute as ações da fila pelo MCP da sessão, incluindo a consulta estruturada de versões ao encontrar minuta. Use a reconciliação por empresa, ID e hash quando provas e busca divergirem, e confirme o hash de origem depois do download. Distinga candidato de documento exigido pela cláusula e de descarte justificado. Registre via, resultado real ou etapa não executada. Reconcilie cada cópia com a matriz ou com o descarte antes de concluir.
+
+1. Use a pasta de trabalho da licitação, fora do repositório do plugin. Crie a pasta do certame se ainda não existir. Escolha o alias ou o CNPJ participante sem pontuação e mantenha a mesma chave nas reexecuções. Salve em `documentos_empresa/<empresa ou CNPJ>/` dentro da pasta do certame. Mantenha a pasta em local autorizado para documentos empresariais.
+2. Baixe todos os documentos exigidos encontrados, mesmo quando não forem decisivos para a recomendação. Inclua cartão CNPJ, atos societários, certidões, atestados, balanços e os demais documentos aplicáveis. Para anexos já locais, arquive uma cópia dos bytes recebidos. Para o Cérebro, use o link original de download conforme a skill `cerebro`; se houver apenas prévia, trecho ou referência, procure a via original autorizada. Confira que o resultado é o arquivo esperado e não página de login ou de erro.
+3. Baixe para arquivo temporário e rode `python scripts/guardar_original.py <pasta-da-licitacao> <alias-ou-cnpj> <arquivo-local> --nome <nome-original>`. O script guarda os bytes em subpasta pelo SHA-256, mantém o nome seguro com extensão, reaproveita conteúdo idêntico e preserva versões diferentes com mesmo nome. Use o caminho devolvido. Não substitua o original por prévia, OCR ou conversão. Guarde derivados separadamente, quando necessários.
+4. Após registrar cada cópia salva, execute [o controle e o despacho real da leitura](references/delegacao.md), usando [a agenda e os leitores por formato](references/leitura.md). Abra a cópia salva e vincule caminho relativo, SHA-256, página ou seção e resultado à cláusula. Confira titular e matriz/filial, vigência na fase exigida, exercício, emissão, assinatura e escopo conforme o tipo. Se um arquivo servir a várias cláusulas, referencie a mesma cópia. Se houver documento incompatível encontrado durante a conferência, preserve a cópia e explique por que não atende.
+5. Para cada arquivo ou exigência, registre separadamente **download pendente**, **leitura pendente** ou **validação pendente**, com causa e ação. Em falha transitória, renove o link pelo ID e tente novamente. Se não vier link ou a via falhar, busque o documento pelo identificador, título, slug ou hash em fontes autorizadas. Se for digitalizado, leia as páginas relevantes visualmente ou confira o OCR contra a imagem e cite o trecho observado. Em ambiente sem acesso ao arquivo, à pasta ou a um leitor, indique a etapa pendente e a limitação. Nunca marque **Tem** com base em link, nome ou trecho indexado.
+
+### Candidatos com equivalência em aberto
+
+Se o serviço, ambiente ou equipamento tiver sobreposição plausível com a exigência, trate o candidato como material. Falta de termo literal ou equivalência não confirmada no índice não permite descarte. Baixe e abra a via emitida, confronte função, aplicação, complexidade, manutenção executada, titularidade e período com a cláusula. Registre o trecho e a diferença observada. Se a equivalência material continuar incerta, encaminhe pergunta específica ao técnico. Caso as vias de recuperação se esgotem, registre a lacuna e a causa, sem substituir por descarte de mérito.
+
 ## Situação de cada exigência
 
 Classifique cada exigência, para cada empresa:
 
 | Situação | Quando |
 | --- | --- |
-| **Tem** | Há documento que atende e vale até 5 dias depois da sessão (a convocação para enviar documentos pode atrasar) |
-| **Vence** | Documento que não se emite na hora (registro no conselho, balanço, alvará) e que vence antes desse prazo |
-| **Emitível na hora** | Documento que se emite pela internet: SICAF, CND federal, FGTS, CNDT, certidão estadual ou distrital, falência, cartão CNPJ. Vale quando a cópia achada não cobre esse prazo ou não foi achada. Esses documentos nunca ficam como **Vence** |
-| **Falta** | Não foi achado em nenhuma fonte |
-| **Técnico decide** | Existe documento parecido, mas a equivalência é técnica: outro tipo de sistema, quantidade menor, outro serviço. Leve a pergunta ao responsável técnico |
+| **Tem** | Prova aceita, aberta e conferida, válida na fase e data exigidas. Use cinco dias após a sessão apenas como margem operacional, se útil, sem transformar a margem em exigência |
+| **Vence** | Documento com validade expirada ou insuficiente na data exigida, sem emissão imediata quando aplicável |
+| **Emitível na hora** | Documento que se emite pela internet: SICAF, CND federal, FGTS, CNDT, certidão estadual ou distrital, falência, cartão CNPJ. Vale quando a cópia achada não cobre esse prazo ou não foi achada. Confirme o canal aceito e a possibilidade e prazo de emissão ou regularização. A cópia vencida continua identificada como tal e a providência permanece aberta |
+| **Falta** | Comprovação pendente ou incompatibilidade demonstrada. Registre qual das duas e por quê. Requisito não pesquisado fica **Não avaliado**, sem entrar como Falta |
+| **Técnico decide** | Existe incerteza técnica específica e material após a leitura da prova e da cláusula. Indique o que precisa ser validado e por quem. Déficit numérico demonstrado ou incompatibilidade inequívoca não vira pergunta técnica |
 | **Declaração** | Atende-se com declaração da empresa. Liste o texto exigido pelo edital para a analista preparar |
+
+## Conferência por cláusula
+
+- **Jurídica e cadastral.** Confirme CNPJ, situação cadastral e atos societários vigentes, incluindo alterações, objeto social e poderes de representação. O cartão CNPJ identifica a empresa. Confira o objeto e os poderes nos atos.
+- **Fiscal, social e trabalhista.** Confira certidão ou cadastro aceito, CNPJ, sede ou filial, jurisdição, distribuidor competente quando aplicável, escopo, vigência na sessão e na fase exigida, prazo e possibilidade de emissão ou regularização. Para requisitos jurídicos, cadastrais e fiscais, peça busca estruturada por cláusula no Cérebro, com prioridade à emissão mais recente e conferência do original. Separe evidência documental do que ainda depende de consulta ao vivo no SICAF quando admitido.
+- **Econômico-financeira.** Determine, com a cláusula, a fase e a data de referência, quais exercícios e demonstrações são aplicáveis. Transcreva fórmula e operador do limite, cite as contas e páginas do balanço, mostre os valores substituídos e o resultado reproduzível por exercício. Registre arredondamento quando interferir no resultado. Se o índice não atender, confira se o edital aceita capital ou patrimônio líquido como alternativa. Mostre a base, percentual, valor exigido, saldo comprovado e resultado por lote e por combinação quando prevista. Balanço de outro exercício não satisfaz a cláusula. Se o balanço aplicável não foi localizado, registre a cobertura, a lacuna e a ação, sem chamá-lo de inexistente.
+- **Técnico-profissional.** Confira pessoa, registro de conselho, vínculo, acervo individual e fase de comprovação. Se o edital admitir contratação de profissional, identifique a qualificação a buscar e quando comprovar o vínculo. Mantenha a comprovação pendente até existir evidência.
+- **Demais provas.** Confira titular, fase e prazo de licenças, garantias, vistoria ou declaração substitutiva e modelos assináveis.
 
 ## Atestados
 
-- Compare a exigência com cada atestado: objeto ou tipo de sistema, serviço executado, quantidade e unidade, e período.
-- Só marque **Tem** quando o atestado disser o que é exigido. Se ele atender só em parte, ou se vários atestados juntos atenderem, marque **Técnico decide** e explique o que cada atestado cobre.
-- Confira se o atestado está em nome da empresa avaliada e se o profissional citado ainda tem vínculo com ela.
+- Extraia do TR as classes de emissores e os ambientes operacionais aceitos. Execute [as passadas de descoberta e a união por ID](references/descoberta.md) antes de alimentar a fila e reconciliar os originais. Passe a linha bruta à [triagem técnica da fila](references/dossie.md#triagem-técnica-antes-do-descarte) antes de qualquer descarte. Siga a pesquisa de atestados por emissor e ambiente da skill `cerebro`: cruze identidade, nome e variantes do emissor com beneficiária, contrato, objeto e equipamento, em buscas complementares. Aprofunde candidatos de consultas amplas, obtenha provas pelos IDs e registre a cobertura, os limites e as tentativas após falhas recuperáveis. Abra o documento emitido e confira assinatura, titularidade, matriz ou filial conforme a cláusula e as datas. Distinga pedido e minuta de atestado emitido. Documentos de terceiros na pasta da empresa não comprovam seu acervo. Compare função, aplicação, complexidade e manutenção executada para similares e explicite a dúvida técnica. Compare a exigência com cada atestado: objeto ou tipo de sistema, serviço executado, quantidade e unidade, e período.
+- Se a cláusula exigir mínimo quantitativo, só marque **Tem** quando o original comprovar a quantidade e a unidade exigidas. Se a cláusula não exigir mínimo quantitativo, indique **quantitativo não exigido** e decida pelo objeto, serviço e equivalência documentados, sem cobrar número por padrão. Cite o valor, a unidade, o item e a página de cada prova. Converta unidades apenas com equivalência demonstrável. Some quantidades apenas quando os termos aplicáveis do edital permitirem a composição, sem dupla contagem. Mostre as parcelas e o total comparado ao mínimo. Quando houver mínimo aplicável, quantidade ausente ou unidade ambígua fica indeterminada até comprovação. Déficit demonstrado sem complemento admitido é incompatibilidade. Leve ao técnico apenas dúvida real de equivalência que possa alterar a conclusão.
+- Pesquise também cada família do inventário do TR por nome, sinônimos e serviços, independentemente do emissor. Informe o destino de cada linha candidata por ID e aprofunde as que podem mudar a conclusão, como orienta `cerebro`.
+- Equivalência técnica material ainda não resolvida fica **Técnico decide**. Faça pergunta concreta ao responsável técnico, citando requisito, prova, diferença de função, aplicação, complexidade ou manutenção, e indicando como a resposta muda a decisão. Mantenha o requisito indeterminado enquanto faltar resposta.
+- Se o atestado foi emitido antes do marco exigido e o contrato já encerrou, avalie solicitar nova via ao emissor com período executado e conclusão. Confira se a cláusula e o prazo permitem usar essa via. Até receber e conferir o original, registre como providência ou pendência, sem presumir atendimento ou emissão a tempo.
+- Confira se o atestado está em nome da empresa avaliada e confira vínculo em uma prova separada quando a cláusula exigir capacidade técnico-profissional.
 - Há entendimento do TCU de que atestado emitido depois da sessão vale se o serviço foi executado antes. Use esse ponto em recurso, não como plano para a habilitação, e confirme com a assessoria jurídica.
 
 ## Qual empresa é a mais aderente
 
-Ordene as empresas avaliadas por este critério, nesta ordem:
+Preencha a matriz para cada empresa e lote. Avalie também as combinações pretendidas quando o edital exigir capacidade cumulativa, limites de adjudicação ou outro critério conjunto.
 
-1. menos exigências em **Falta** ou **Vence**, que são as que impedem a habilitação;
-2. no empate, menos exigências em **Técnico decide**;
-3. no empate, mais exigências em **Tem**.
+| Empresa/CNPJ | Lote ou combinação | Situação da habilitação | Cláusula e prova decisiva | Ação, responsável e prazo |
+| --- | --- | --- | --- | --- |
 
-**Emitível na hora** e **Declaração** não pesam contra a empresa, porque dependem só de providência da analista.
+- **Comprovada:** todos os requisitos aplicáveis da habilitação estão sustentados por prova aceita e conferida.
+- **Condicionada a ação viável no prazo:** a ação resolve a pendência conforme a cláusula, com responsável, meio e prazo executáveis identificados. Se a viabilidade não estiver demonstrada, a situação é indeterminada.
+- **Incompatibilidade demonstrada:** há requisito eliminatório descumprido, sem alternativa admissível demonstrada. Cite a cláusula e a prova.
+- **Indeterminada:** falta evidência, cobertura, acesso ou confirmação decisiva. Diga o que resolveria a dúvida.
 
-Se a diferença entre duas empresas estiver só em itens **Técnico decide**, diga que o resultado depende da resposta do técnico e não aponte uma vencedora firme. Se nenhuma empresa ficar sem **Falta**, diga isso com clareza e mostre a que está mais perto.
+Quando houver mais de uma situação, o impedimento demonstrado prevalece. Se houver dúvida decisiva, ela prevalece sobre condições viáveis já identificadas. Separe habilitação de capacidade de execução e conclusão comercial.
+
+Use a análise de execução por objeto indicada em `analisar-edital`. Em manutenção, confira equipe acionável, deslocamento, SLA, peças, mobilização e capital de giro. Em fornecimento, confira equivalência, entrega e garantia. Em obras, confronte quantitativos, cronograma, equipe e acervo com o projeto. Identifique a premissa de custo ou execução que muda a recomendação e quem pode verificá-la.
+
+Compare dentro de cada lote ou combinação e apenas entre coberturas equivalentes. Priorize a situação comprovada e a capacidade técnica e comercial sustentada. Uma eliminatória prevalece sobre qualquer contagem. Use os totais da tabela existente apenas para resumir a cobertura. A ordem de entrada não é critério e empates sem diferença material permanecem. Se o edital limitar a adjudicação, examine quais combinações permanecem viáveis antes de recomendar os lotes. Se nenhuma empresa puder avançar ou se a escolha depender de evidência, diga isso e identifique a decisão ou prova que falta.
 
 ## Saída
 
-Entregue na conversa, sem gravar arquivos. Comece pelo resultado, depois as pendências, depois o detalhe por empresa.
+Entregue a análise na conversa e mantenha os originais na pasta da licitação, conforme a seção de arquivamento. Comece pelo resultado, depois as pendências, depois o detalhe por empresa. Mostre em linhas separadas o estado operacional da aquisição e o resultado da análise documental do verificador. Inclua os vínculos pendentes por cláusula mesmo com fila operacional encerrada.
 
 ```markdown
 # Habilitação: <Modalidade nº>, <Órgão>, sessão em <data>
 
 ## Resultado
 
-Mais aderente: <empresa>. <Motivo em uma ou duas frases, com os números do quadro.>
+Mais aderente: <empresa e lote, ou nenhuma>. <Recomende seguir, seguir com condição ou encerrar; cite fato decisivo, fonte, impacto, próxima ação e prazo. Informe cobertura e o que pode mudar a conclusão.>
 
 | Empresa | Tem | Emitível na hora | Declaração | Técnico decide | Vence | Falta |
 | --- | --- | --- | --- | --- | --- | --- |
-(uma linha por empresa, da mais aderente para a menos; empresa não avaliada vai no fim, com o motivo)
+(resumo de cobertura por empresa; inclua também a matriz por empresa/lote ou combinação descrita acima. Na coluna Falta, discrimine as exigências com prova pendente das que têm impedimento demonstrado. Abaixo da tabela, liste as cláusulas não avaliadas e o motivo, inclusive quando o balanço aplicável não foi localizado e seu conteúdo não pôde ser avaliado. A prova econômica continua pendente e não constitui impedimento demonstrado por si só.)
 
 ## Pendências de habilitação
 
@@ -95,7 +132,7 @@ Mais aderente: <empresa>. <Motivo em uma ou duas frases, com os números do quad
 
 | Exigência | Fonte | Situação | O que fazer | Quem faz |
 | --- | --- | --- | --- | --- |
-(só o que está em Falta, Vence ou Técnico decide)
+(inclua também os requisitos não avaliados que podem alterar a decisão)
 
 ### <Demais empresas, em ordem de aderência>
 
@@ -128,10 +165,10 @@ Mais aderente: <empresa>. <Motivo em uma ou duas frases, com os números do quad
 
 ## Arquivos
 
-<Arquivos originais apontados pelo cérebro, por empresa.>
+<Originais salvos por empresa e vinculados às exigências, com arquivo, página, estado de download/leitura/validação e pendências com causa.>
 ```
 
-Na coluna Documento, coloque o nome do arquivo anexado ou o título do documento no cérebro. Na coluna Origem, informe de onde veio: anexo da conversa ou cérebro da empresa.
+Na coluna Documento, coloque o nome do arquivo anexado ou o título do documento no cérebro. Na coluna Origem, informe anexo ou Cérebro, identificador recuperável e página/trecho. Na coluna Fonte, informe cláusula e página do edital. Para cada requisito mantenha status, fundamento, fonte e ação, limitando dados pessoais e financeiros ao necessário. Registre a decisão somente conforme `licitacao`, quando autorizada.
 
 As seções das quatro empresas aparecem sempre, nessa ordem. Empresa não avaliada mantém a seção, com o motivo no lugar da tabela.
 

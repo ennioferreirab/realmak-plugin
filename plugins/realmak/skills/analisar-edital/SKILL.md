@@ -1,17 +1,26 @@
 ---
 name: analisar-edital
-description: Use quando a equipe de licitações pedir para analisar um edital ou uma disputa, de qualquer objeto. Lê o edital, o termo de referência, o ETP e os anexos e entrega a análise preliminar na conversa, com prazos (sessão, impugnação, vistoria), exigências de habilitação por grupo, declarações, restrições que podem inabilitar e oportunidades de impugnação. É o primeiro passo de qualquer licitação. Depois dela vêm analisar-edital-manutencao (serviço de manutenção), analisar-edital-fornecimento (aquisição de bens) e analisar-habilitacao (qual empresa do grupo atende).
+description: "Use quando a equipe de licitações pedir para analisar um edital ou uma disputa, de qualquer objeto. Lê o edital, o termo de referência, o ETP e os anexos e entrega a análise preliminar na conversa, com prazos (sessão, impugnação, vistoria), exigências de habilitação por grupo, declarações, restrições que podem inabilitar e oportunidades de impugnação. É o primeiro passo de qualquer licitação. Depois dela vêm analisar-edital-manutencao (serviço de manutenção), analisar-edital-fornecimento (aquisição de bens) e analisar-habilitacao (qual empresa do grupo atende)."
 ---
 
 # Analisar edital
 
 Quem decide é a analista. Esta skill entrega uma análise preliminar para ela decidir mais rápido. Não decida se a empresa participa e não dê a disputa como perdida.
 
-Esta é a análise geral, que vale para qualquer objeto. O que é próprio de serviço de manutenção ou de fornecimento de bens fica nas skills específicas (veja "Próximo passo").
+Esta é a análise geral, que classifica cada lote e encaminha manutenção e fornecimento às respectivas skills. Obras, outros serviços e lotes mistos que exigem avaliação conjunta seguem os critérios de “Próximo passo”.
 
 ## Onde estão os documentos
 
-A análise precisa de todos os documentos do certame: edital, termo de referência e seus anexos, ETP quando publicado, planilhas, minuta de contrato e de ata, avisos, retificações e as respostas a esclarecimentos e impugnações. Busque-os nesta ordem e pare quando tiver o conjunto completo.
+A análise precisa de todos os documentos do certame: edital, termo de referência e seus anexos, ETP quando publicado, planilhas, minuta de contrato e de ata, avisos, retificações e as respostas a esclarecimentos e impugnações. Identifique órgão, UASG, modalidade, número/ano, processo e itens/lotes antes de cruzar as fontes. Confira a versão vigente e as publicações posteriores até a data da consulta. O ConLicitação é uma pista de descoberta. Confira PNCP, portal oficial do órgão e portal da disputa, conforme disponíveis, mesmo quando houver arquivos na pasta da plataforma.
+
+Abra ZIPs, inventarie seu conteúdo e percorra índice, remissões e páginas do edital. Conte como localizado o anexo incorporado, indicando página ou seção. Procure TR, projeto básico ou equivalente, ETP, minutas, orçamento/quantidades/composições/cronograma, modelos, declarações e documentos específicos do objeto. Distinga valor divulgado, planilha separada e orçamento expressamente sigiloso.
+
+| Documento e aliases | Motivo e cláusula | Fonte oficial, versão e data da consulta | Situação e página/seção | Impacto, ação e prazo |
+| --- | --- | --- | --- | --- |
+
+Use situações distintas: **localizado e lido**, **citado e não localizado**, **procurado sem referência expressa e não localizado**, **localizado com acesso ou leitura impedida**, **expressamente dispensado, sigiloso ou inaplicável** (com fundamento) e **pendente de verificação**. Reserve “inexistente” para manifestação expressa da fonte competente. Sem eventos publicados na consulta, registre o resultado sem criar pendência apenas por isso.
+
+Para o ETP, procure pelo índice, remissões e processo nas fontes oficiais. Se o ler, extraia histórico, condições anteriores, alternativas, justificativas, quantitativos e pontos relevantes que ficaram sem resposta. Se faltar, informe onde procurou, qual premissa continua desconhecida e qual lote, restrição, estimativa ou decisão isso afeta. Se a decisão depender dessa premissa, condicione a recomendação e diga o que a liberaria. Se a lacuna não mudar a decisão, justifique com os documentos já lidos. Use fatos identificados no TR, vistoria ou outro documento para a parte que puder concluir. Quando útil, deixe pedido de acesso ou esclarecimento em rascunho com destinatário e prazo conferidos.
 
 ### Na plataforma de licitações da Realmak
 
@@ -52,9 +61,13 @@ Entregue a análise na própria conversa, sem gravar arquivos. Use esta estrutur
 ```markdown
 # <Modalidade nº>, <Órgão> (UASG <n>)
 
-Objeto: <uma frase>. Tipo de objeto: <serviço de manutenção | fornecimento de bens | outro serviço | misto>.
+Objeto: <uma frase>. Tipo de objeto: <serviço de manutenção | fornecimento de bens | obras | outro serviço | misto>.
 Valor estimado: R$ <valor>. Critério: <menor preço global/por item/lote>. Modo de disputa: <aberto, aberto e fechado>.
 Portal: <Compras.gov.br / outro>. Link: <link da licitação, se houver>
+
+## Recomendação
+
+<Próximo passo por lote e, quando avaliada, por empresa. Fato decisivo, lacuna que pode mudar a conclusão, impacto na execução ou no preço e ação com responsável e prazo. Se a habilitação ainda não foi feita, indique isso e deixe a empresa em aberto.>
 
 ## Atenção
 
@@ -99,6 +112,17 @@ Portal: <Compras.gov.br / outro>. Link: <link da licitação, se houver>
 
 <Avisos, esclarecimentos e impugnações em ordem de data, com o que cada um mudou. Se não foram consultados, diga isso.>
 
+## Inventário documental
+
+<Tabela de documentos, versões, fontes, situações e ações.>
+
+## Indícios de direcionamento
+
+| Cláusula e página | Efeito sobre alternativas ou fornecedores | Justificativa no TR/ETP e exceções | Questão a esclarecer |
+| --- | --- | --- | --- |
+
+<Quando a leitura não sustentar indício, registre isso em uma linha.>
+
 ## Não lido
 
 <Arquivos sem texto ou que não abriram.>
@@ -111,7 +135,7 @@ A seção Habilitação lista o que o edital exige. Ela não diz se a empresa at
 ## Prazos
 
 - **Impugnação:** use o prazo do edital. Se o edital não disser, a regra geral é até 3 dias úteis antes da sessão (Lei 14.133, art. 164). Conte os dias úteis excluindo fins de semana e feriados nacionais, e diga que os feriados locais não foram conferidos.
-- **Esclarecimentos:** em geral, o mesmo prazo da impugnação.
+- **Esclarecimentos:** confira prazo, hora e canal no edital vigente, incluindo retificações. Se não estiverem expressos, verifique a regra aplicável e identifique o que precisa de confirmação. Não copie o prazo de impugnação por padrão.
 - **Recurso:** a intenção é registrada na sessão. As razões têm 3 dias úteis, e o prazo abre no fim do certame.
 - Mostre as datas no horário de Brasília.
 
@@ -119,7 +143,7 @@ A seção Habilitação lista o que o edital exige. Ela não diz se a empresa at
 
 Procure especialmente o que costuma tirar a empresa de disputas:
 
-- **Fabricante:** credenciamento, autorização, declaração ou parceria com fabricante ou marca. Também licença de software do fabricante. Marque como grave e veja se cabe impugnação.
+- **Fabricante:** credenciamento, autorização, declaração ou parceria com fabricante ou marca. Também licença de software do fabricante. Identifique quem emite o documento e o efeito concreto da exigência. Em manutenção, distinga marca e modelo dos ativos instalados, marca exigida para peças e aceitação de equivalentes ou exceções. Compare a restrição com a justificativa e alternativas documentadas. Uma marca no inventário, por si só, não comprova direcionamento.
 - **Atestados específicos:** objeto exigido, quantitativo mínimo, parcela de maior relevância e prazo dos atestados. Anote a exigência exata, com as palavras do edital, para a analista e o técnico compararem com os atestados das empresas.
 - **Responsável técnico:** registro no conselho da UF (CREA, CFT ou outro), vínculo exigido (CLT, sócio ou contrato) e comprovação.
 - **Sede ou escritório na região:** declaração de sede ou de que vai montar escritório na cidade do órgão. Pode ser restrição indevida.
@@ -144,5 +168,9 @@ Depois da análise, ofereça o passo seguinte conforme o tipo de objeto:
 | Saber qual empresa do grupo atende à habilitação | `analisar-habilitacao` |
 | Objeto é serviço de manutenção, com ou sem peças e materiais | `analisar-edital-manutencao` |
 | Objeto é fornecimento de bens | `analisar-edital-fornecimento` |
+| Objeto é obra | Conduza a análise técnica nesta skill e encaminhe a habilitação para `analisar-habilitacao`. |
+| Outro serviço | Conduza a análise de execução nesta skill e encaminhe a habilitação para `analisar-habilitacao`. |
 
-Objeto misto, em que a manutenção inclui o fornecimento de peças, insumos ou materiais para executar o serviço, segue pela `analisar-edital-manutencao`.
+Para obras, confira projeto básico/executivo, memoriais, planilha de quantitativos e preços, composições, BDI, cronograma físico-financeiro, local e interferências. Cruze parcelas relevantes, equipe, acervo, mobilização, medição e pagamento. Em outros serviços, examine equipe, regime de execução, níveis de serviço, prazo e medição. Informe o impacto de lacunas e quem precisa validar as premissas.
+
+Classifique por lote conforme parcelas, finalidade, regime de execução e critério de adjudicação. Quando a manutenção inclui peças e insumos para executar o serviço, use `analisar-edital-manutencao`. Se um lote indivisível combinar parcelas relevantes de tipos diferentes, aplique as verificações de cada parcela e consolide viabilidade técnica e comercial do conjunto. Em obra ou lote misto, sustente a recomendação com fontes para quantidades, acervo, equipe, cronograma, mobilização, interfaces, preço e pagamento. Quando faltar insumo decisivo, informe a pendência específica, cláusula e impacto em execução, preço ou decisão.

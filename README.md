@@ -2,7 +2,7 @@
 
 Servidor MCP remoto (Streamable HTTP, caminho `/mcp`) que dá aos analistas de licitação da Realmak, dentro do Claude e do Codex, quatro grupos de ferramentas, e um plugin com as skills que ensinam a usá-las, instalável nos dois. Só as ferramentas `licitacao_*` escrevem, e só na licitação do Odoo, como a pessoa que entrou.
 
-Esta é uma versão de teste (MVP). Veja os [limites](#limites-do-mvp) no fim.
+A versão atual do plugin é **0.9.0**. Veja os [limites](#limites-do-mvp) no fim.
 
 ## Ferramentas
 
@@ -23,7 +23,7 @@ As `licitacao_*` só aparecem para quem entrou pelo login de pessoa e tem as lic
 
 1. O servidor chama as rotas internas do módulo `realmak_mcp` do realmak-crm (`{ODOO_MCP_URL}/realmak_mcp/v1/...`) com o segredo compartilhado e `X-Realmak-Act-As: <e-mail>`. O Odoo roda a chamada como essa pessoa: valem as regras de acesso dela.
 2. O segredo é criado pelo Odoo no volume `mcp-realmak-odoo` e lido a cada chamada (`ODOO_MCP_SECRET_FILE`). Nunca aparece em erro nem em log.
-3. Arquivos não passam pela conversa: `licitacao_link_arquivo` e `licitacao_enviar_arquivo` devolvem links `/mcp/arquivos/...` assinados, presos à pessoa e ao arquivo, sem login. Antes de emitir os links de leitura, `licitacao_link_arquivo` confirma o acesso da pessoa ao módulo de licitações no Odoo. Emite `link_visualizar` (`inline`, o navegador mostra o que sabe exibir) e `link_baixar` (`attachment`), válidos por 30 minutos e por várias vezes. A cada uso, o Odoo confere a permissão sobre o documento. O link de envio vale 15 minutos, uma vez, com limite de 50 MB.
+3. Arquivos não passam pela conversa: `licitacao_link_arquivo` e `licitacao_enviar_arquivo` devolvem links `/mcp/arquivos/...` assinados, presos à pessoa e ao arquivo, sem login. Antes de emitir os links de leitura, `licitacao_link_arquivo` confirma o acesso da pessoa ao módulo de licitações no Odoo. Emite `link_visualizar` (`inline`, incluindo prévia PDF para Word e Excel quando configurada) e `link_baixar` (`attachment`, com nome, formato e bytes originais), válidos por 30 minutos e por várias vezes. A cada uso, o Odoo confere a permissão sobre o documento. O link de envio vale 15 minutos, uma vez, com limite de 50 MB.
 4. Toda escrita fica no card: nota interna no histórico, arquivo na Saída IA e a faixa "Claude de <pessoa> · <status>".
 
 Uma pessoa só com o Odoo (sem o cérebro) também entra pelo login; ela vê as `licitacao_*` e não vê as `cerebro_*`.
@@ -86,6 +86,7 @@ O plugin `realmak` traz 11 skills e declara o conector do servidor (`https://rea
 | `analisar-edital-manutencao` | Serviço de manutenção: escopo, peças e materiais, equipe, SLA. Entrega Excel, Markdown e HTML |
 | `analisar-edital-fornecimento` | Fornecimento de bens: itens, exigências do produto, entrega. Entrega Excel e HTML |
 | `analisar-habilitacao` | Compara AForça, Realmak, UNA e Nortfort diante da habilitação e lista as pendências |
+| `descricao-empresa` | Registra o contexto estratégico por empresa para priorizar a pesquisa de habilitação |
 | `precificar-proposta-exequibilidade` | Preço e planilha de exequibilidade de manutenção, com a base de custos do grupo (custo por cargo, encargos e tributos por empresa) |
 | `cotar-pecas-materiais-licitacoes` | Cotação de peças e materiais com link por item |
 | `auditar-proposta-concorrente-manutencao` | Auditoria de proposta concorrente e minuta de recurso |

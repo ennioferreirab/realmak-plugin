@@ -1,6 +1,6 @@
 ---
 name: cerebro
-description: Use para qualquer pergunta sobre a Realmak e as empresas do grupo (AForça, Nortfort, UNA, Sublime; funcionários, responsáveis técnicos, atestados, CATs, ARTs, contratos, licitações, atas, documentos da empresa). Consulta o cérebro pelas ferramentas cerebro_* do servidor MCP da Realmak e entrega as respostas com a fonte e o link do arquivo original.
+description: "Use para qualquer pergunta sobre a Realmak e as empresas do grupo (AForça, Nortfort, UNA, Sublime; funcionários, responsáveis técnicos, atestados, CATs, ARTs, contratos, licitações, atas, documentos da empresa). Consulta o cérebro pelas ferramentas cerebro_* do servidor MCP da Realmak e entrega as respostas com a fonte e o link do arquivo original."
 ---
 
 # Consultar o cérebro
@@ -79,6 +79,38 @@ Quando a pergunta pede contar, somar, listar ou comparar (quantos atestados, qua
 Se a consulta voltar com erro 400, leia a mensagem, confira os nomes no esquema e corrija. Não repita a mesma consulta.
 
 As tabelas podem não ter todos os casos. Nunca diga "não tem" só porque o dataset não achou: faça também a busca por texto com `cerebro_buscar`.
+
+## Pesquisa dirigida por cláusula
+
+Receba empresa/CNPJ, lote, cláusula/página, prova aceita, alternativas, fase e data exigida. Comece pela cobertura de `cerebro_empresas` e busque por beneficiária, emissor, contrato, equipamento e termos equivalentes, uma empresa por vez. Use esquema, consulta e provas quando o dataset oferecer os registros necessários. Faça também busca textual quando o dataset não cobrir o caso. Reaproveite a prova entre lotes apenas se as condições coincidirem.
+
+- Jurídica/cadastral: cartão CNPJ, situação cadastral, contrato social e alterações, objeto e poderes. Confira titular e versão de cada documento.
+- Fiscal/social/trabalhista: certidões e consultas aceitas, CNPJ, jurisdição, validade, fase, emissão ou regularização. Distinga cadastro aceito de certidão a emitir.
+- Econômico-financeira: balanço, demonstrações, exercícios e forma exigida. Para índices, traga data de referência, exercício aplicável, fórmula e operador do edital, valores das contas com páginas, resultado e limite. Quando prevista, traga base, percentual e valor da alternativa patrimonial por lote e combinação. Se o balanço aplicável não for localizado, declare a lacuna e a cobertura.
+- Técnica: atestado emitido versus pedido ou minuta. Confira beneficiária, emissor, assinatura, período, serviço, equipamento, quantidades com unidades e páginas, e matriz/filial. Identifique sobreposições e fundamente qualquer somatório nos termos do edital. Para profissionais, confira registro, vínculo e acervo individual, separados do acervo da empresa.
+- Outras condições: licenças, garantias, vistoria e declarações, conforme titular, fase e prazo.
+
+### Pesquisa de atestados por emissor e ambiente
+
+1. Extraia da cláusula e do TR as classes de emissores admitidas, ambientes de operação, famílias de equipamentos e serviços equivalentes. Separe os requisitos obrigatórios das palavras usadas só para ampliar a pesquisa.
+2. Consulte o esquema da empresa. Quando oferecer `atestados` e `entidades`, junte `atestados.emissor_id` a `entidades.entidade_id`. Procure por identidade (CNPJ, UASG ou identificador), nome, sigla e variantes verificadas em `nome` ou `nomes`, além de classe, ramo ou órgão superior quando disponíveis. Se os nomes forem um array conforme o esquema, pesquise também os elementos com `unnest` e `EXISTS`, sem multiplicar atestados. Vincule a beneficiária em uma junção separada e confira seu CNPJ. Em buscas complementares, varie objeto, equipamentos, aplicação, modalidade de manutenção e número de contrato.
+3. Uma consulta ampla é triagem. Se devolver candidatos, recorte por classes de emissores, nomes/identidades descobertos, equipamento, período ou contrato, em buscas separadas. Retorne os IDs reais do atestado no resultado. Se atingir o limite, volte com recortes ou ordenação estável e paginação conforme o esquema. Identifique o que foi coberto e o que ficou fora. Faça também busca textual com variantes de emissor, contrato e equipamento para cobrir lacunas do dataset.
+4. Use `cerebro_provas` com os IDs dos candidatos para recuperar os originais. Abra cada prova relevante e confirme se é um atestado emitido, sua assinatura, beneficiária, emissor, objeto e alcance. Se a prova apontar só para pedido, minuta ou referência, procure o atestado emitido pelo mesmo emissor, contrato e beneficiária, inclusive entre outros resultados do mesmo recorte. Quando uma falha for recuperável, corrija a consulta, reduza lotes de IDs, renove o link pelo ID e repita em falha transitória; se não houver link ou persistir a falha, pesquise o arquivo pelo identificador, slug, SHA-256 ou título nas vias disponíveis, e anote o resultado de cada tentativa ou bloqueio. Registre o motivo quando ainda não puder abrir.
+5. Registre buscas feitas, restrições de acesso, extração pendente, limites atingidos e candidatos abertos ou descartados. Só encerre após esgotar as rotas razoáveis disponíveis ou identificar um bloqueio concreto. Sem prova aberta e aderente, mantenha a comprovação pendente.
+
+### Passadas obrigatórias antes de conciliar originais
+
+Na habilitação, siga o procedimento executável em `analisar-habilitacao/references/descoberta.md`. Rode buscas separadas pela expressão composta do edital, por termos amplos de atividade ou material e suas variantes, por equipamento e por serviço. Equipamento e serviço devem encontrar candidatos mesmo sem coincidência de ambiente ou emissor. Use a união dos IDs paginados, preserve a origem de cada ocorrência e faça triagem individual. Termo amplo serve para encontrar candidatos e exige confirmação individual do objeto e da beneficiária.
+
+### Cobertura independente do inventário
+
+Para cada família do inventário do TR, pesquise nome, sinônimos, variantes de modelo e serviços associados em passadas próprias, sem exigir correspondência de emissor. Registre termos, empresa/CNPJ, cobertura e limites por família. Dê uma destinação a cada linha candidata pelo ID real: prova aberta, descartada com motivo, duplicada com referência, ou pendente com ação. Se aparecer pedido, minuta ou referência, procure separadamente outras versões do mesmo emissor, beneficiária e contrato, inclusive por variantes do número e do título. Preserve os IDs distintos até conferir a versão emitida. Antes de fechar, confronte os IDs retornados em cada recorte com as destinações registradas; não deixe um recorte anterior, uma falha de link ou a presença de uma minuta eliminar o candidato assinado. Quando uma linha puder mudar a decisão, aprofunde pelo objeto, contrato, família e beneficiária; use as provas por ID e abra o original. Candidato relevante sem desfecho mantém a decisão condicional ou indeterminada conforme a lacuna.
+
+### Provas jurídicas, cadastrais e fiscais
+
+Para cada cláusula aplicável, pesquise pelo CNPJ participante nos registros estruturados de certidões, cadastros e atos societários conforme o esquema vigente da empresa. Se o dataset não cobrir o requisito, complemente com texto e anexos. Ordene pela emissão mais recente, sem confundir data de indexação com emissão. Preserve as versões pertinentes e abra o original da prova que pode atender. Confira CNPJ, sede ou filial, jurisdição e distribuidor competente quando aplicável, âmbito da certidão, exercício ou versão do ato, e vigência na sessão e em qualquer outra fase exigida. Uma certidão recente de outro escopo ou jurisdição não resolve a cláusula. Identifique o que depende de confirmação ao vivo no SICAF, quando admitido, com responsável e prazo. Cópia ou trecho indexado não confirma a situação atual do cadastro.
+
+Para cada requisito, informe empresa/CNPJ, cláusula, documento e identificador estável (registro, caminho autorizado ou SHA-256), página ou trecho, resultado da abertura e lacuna. Link temporário serve para abrir a prova. Em habilitação, siga a seção de arquivamento de `analisar-habilitacao`: baixe todos os originais exigidos que forem encontrados, arquive por licitação e empresa, abra a cópia salva e vincule arquivo e página à cláusula. Use o link de baixar, pois o link de visualizar pode devolver uma prévia em outro formato. Registre separadamente falhas de download, leitura e validação. Se abrir for impossível, registre o motivo. Não transforme trecho indexado, nome, pasta ou ausência de resultado em conclusão documental.
 
 ## 3. Entregar os arquivos
 

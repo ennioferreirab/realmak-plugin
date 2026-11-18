@@ -92,13 +92,25 @@ class Doc:
                 t.append(
                     "<thead><tr>"
                     + "".join(f"<th>{esc(h)}</th>" for h in cab)
-                    + "</tr></thead><tbody>"
+                    + "</tr></thead>"
                 )
-                for ln in linhas:
+                # Não separe o título do grupo da primeira linha, nem o total
+                # da última linha de dados. O restante da tabela pode paginar.
+                rodape_tabela = opt.get("rodape")
+                vinculos = {i for i, ln in enumerate(linhas[:-1]) if isinstance(ln, str)}
+                if len(linhas) > 1 and opt.get("total"):
+                    vinculos.add(len(linhas) - 2)
+                if linhas and rodape_tabela:
+                    vinculos.add(len(linhas) - 1)
+                for n, ln in enumerate(linhas):
+                    if n - 1 not in vinculos:
+                        t.append('<tbody class="linhas-juntas">' if n in vinculos else "<tbody>")
                     if isinstance(ln, str):
                         t.append(f'<tr class="grupo"><td colspan="{len(cab)}">{esc(ln)}</td></tr>')
+                        if n not in vinculos:
+                            t.append("</tbody>")
                         continue
-                    cls = ' class="total"' if opt.get("total") and ln is linhas[-1] else ""
+                    cls = ' class="total"' if opt.get("total") and n == len(linhas) - 1 else ""
                     tds = []
                     for i, c in enumerate(ln):
                         klass = ""
@@ -110,9 +122,13 @@ class Doc:
                             klass = ' class="num"'
                         tds.append(f"<td{klass}>{esc(c)}</td>")
                     t.append(f"<tr{cls}>" + "".join(tds) + "</tr>")
-                t.append("</tbody></table>")
-                if opt.get("rodape"):
-                    t.append(f'<p class="rodtab">{esc(opt["rodape"])}</p>')
+                    if n not in vinculos:
+                        t.append("</tbody>")
+                if rodape_tabela:
+                    if not linhas:
+                        t.append("<tbody>")
+                    t.append(f'<tr class="total"><td colspan="{len(cab)}">{esc(rodape_tabela)}</td></tr></tbody>')
+                t.append("</table>")
                 out.append("".join(t))
             elif k == "passos":
                 out.append(
@@ -203,12 +219,11 @@ HTML = """<!doctype html>
   td.num{text-align:right;white-space:nowrap}
   td.r-a{color:#991b1b;font-weight:700}td.r-m{color:#9a3412;font-weight:700}td.r-b{color:#166534;font-weight:700}
   p.nota{margin:4px 0 6px;color:var(--tx2)}
-  p.rodtab{margin:2px 0 10px;font-weight:700;color:var(--azul);font-size:9pt}
   ul.passos{padding-left:18px}ul.passos li{margin:3px 0}
   @page{size:A4 landscape;margin:12mm 12mm 14mm;
     @bottom-center{content:"{{RODAPE}} | Página " counter(page) " de " counter(pages);font:8pt Arial,sans-serif;color:#4b5563}}
   @media print{html{background:#fff}.pagina{box-shadow:none;margin:0;padding:0;max-width:none}
-    h2,h3{break-after:avoid}tr{break-inside:avoid}thead{display:table-header-group}mark{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    h2,h3,thead{break-after:avoid}tr,.linhas-juntas{break-inside:avoid}thead{display:table-header-group}mark{-webkit-print-color-adjust:exact;print-color-adjust:exact}
     th,tr.grupo td,.conclusao span{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style>
 </head>
@@ -229,8 +244,8 @@ def _fmt_campos(texto, calc):
         "gr_ok": calc["gr_ok"],
         "n_nobreaks": calc["nNb"],
         "n_geradores": calc["nGr"],
-        "lim_nobreak": calc["limites"]["nobreak"],
-        "lim_gerador": calc["limites"]["gerador"],
+        "lim_nobreak": calc["limites"].get("nobreak", "não informado"),
+        "lim_gerador": calc["limites"].get("gerador", "não informado"),
     }
     try:
         return str(texto).format_map(campos)
@@ -286,35 +301,17 @@ def build(D, calc, destino_html, destino_md):
         {"larguras": [18, 60, 22]},
     )
 
-    lim = calc["limites"]
-    d.add("h2", "Tabela 2 - Equipamentos cobertos")
-    if D.get("nobreaks"):
-        d.add("h3", "Tabela 2A - Nobreaks")
-        d.add(
-            "table",
-            ["Qtd", "Potência (kVA)", "Fabricante", "Localização", "Faixa"],
-            [
-                (q, fmt_num(k, 2 if k % 1 else 1), f, loc, fx)
-                for q, k, f, loc, fx, *_ in D["nobreaks"]
-            ],
-            {
-                "num": [0, 1],
-                "larguras": [6, 11, 24, 47, 12],
-                "rodape": f"TOTAL: {calc['nNb']} nobreaks. Com {lim['nobreak']} kVA ou mais: {calc['nb_ok']}.",
-            },
-        )
-    if D.get("geradores"):
-        d.add("h3", "Tabela 2B - Geradores")
-        d.add(
-            "table",
-            ["Qtd", "Potência (kVA)", "Fabricante", "Localização", "Faixa"],
-            [(q, fmt_num(k, 0), f, loc, fx) for q, k, f, loc, fx, *_ in D["geradores"]],
-            {
-                "num": [0, 1],
-                "larguras": [6, 11, 24, 47, 12],
-                "rodape": f"TOTAL: {calc['nGr']} geradores. Com {lim['gerador']} kVA ou mais: {calc['gr_ok']}.",
-            },
-        )
+    if calc["inventarios"]:
+        d.add("h2", "Tabela 2 - Equipamentos cobertos")
+    for tabela in calc["inventarios"]:
+        d.add("h3", tabela["titulo"])
+        resumo = f"TOTAL: {tabela['total']}."
+        if tabela["resumo"]:
+            resumo += f" {tabela['resumo']}."
+        d.add("table", [nome for nome, _ in tabela["cols"]], tabela["linhas"], {
+            "num": [i for i, (_, tipo) in enumerate(tabela["cols"]) if tipo == "num"],
+            "rodape": resumo,
+        })
 
     d.add("h2", "Tabela 3 - Escopo e carga de trabalho")
     rows = []
@@ -441,7 +438,7 @@ def build(D, calc, destino_html, destino_md):
         "table",
         ["ID", "Requisito", "Onde consta", "Risco", "Pendência"],
         linhas,
-        {"risco": 3, "larguras": [6, 60, 20, 7, 7]},
+        {"risco": 3, "larguras": [6, 55, 19, 8, 12]},
     )
 
     d.add("h2", "Tabela 7 - Pontos de atenção e divergências")
