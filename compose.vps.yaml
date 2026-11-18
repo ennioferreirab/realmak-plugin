@@ -2,11 +2,13 @@
 # Uso: docker compose -f compose.yaml -f compose.vps.yaml up -d --build --wait
 services:
   mcp-realmak:
-    networks: [default, mcp-realmak]
+    # realmak-previa: rede interna com o visualizador do Brain (alias realmak-visualizador) para a prévia de Word/Excel.
+    networks: [default, mcp-realmak, realmak-previa]
     # Licitações do Odoo: segredo criado pelo realmak-crm no volume compartilhado; rotas internas pela rede.
     environment:
       ODOO_MCP_URL: http://web:8069
       ODOO_MCP_SECRET_FILE: /run/realmak-mcp/secret
+      MCP_REALMAK_VISUALIZADOR_URL: http://realmak-visualizador:8080
     volumes:
       - mcp-realmak-odoo:/run/realmak-mcp:ro
     # A VPS controla o orçamento de memória de cada serviço; em uso o servidor fica perto de 70 MiB.
@@ -16,6 +18,10 @@ networks:
   mcp-realmak:
     external: true
     name: mcp-realmak
+  # Criada pelo scripts/vps/deploy.sh do realmak-brain (docker network create --internal realmak-previa).
+  realmak-previa:
+    external: true
+    name: realmak-previa
 
 volumes:
   mcp-realmak-odoo:
