@@ -13,7 +13,7 @@ Parta da lista de peças e kits, do edital e do TR. Identifique itens pelo códi
 
 Preencher a planilha fornecida pelo usuário com custos de aquisição de materiais e execução de serviços para elaboração interna de proposta de licitação. Trabalhar em português do Brasil, com valores em reais.
 
-A prioridade deste fluxo é completar todos os itens com preços comerciais reais encontrados na internet. A referência pode ser original, genérica, de outra marca, de outro modelo ou de outro equipamento do mesmo segmento, inclusive sem compatibilidade confirmada. Essa liberdade de referência não autoriza inventar valores nem declarar compatibilidade inexistente.
+Priorize referências verificáveis e informe a cobertura alcançada no tempo disponível. A referência pode ser original, genérica, de outra marca, de outro modelo ou de outro equipamento do mesmo segmento, inclusive sem compatibilidade confirmada. Essa liberdade de referência não autoriza inventar valores nem declarar compatibilidade inexistente.
 
 As instruções expressas do usuário prevalecem sobre os padrões desta skill. Se ele exigir peças originais, equivalência técnica comprovada ou outro critério mais restrito, respeitar esse limite.
 
@@ -52,14 +52,12 @@ Preservar as descrições e demais dados originais. Se alguma dessas colunas est
 
 ## Pesquisa e escolha de referências
 
-1. Identificar o componente solicitado e pesquisar ofertas de fornecedores, distribuidores, fabricantes e marketplaces.
-2. Priorizar o menor custo entre as ofertas efetivamente pesquisadas, considerando a mesma unidade de comparação. Não afirmar que foi encontrado o menor preço de toda a internet.
-3. Procurar primeiro o componente solicitado, aceitando marcas genéricas. Quando faltar oferta, ampliar para outros modelos e equipamentos do mesmo segmento.
-4. Quando necessário, adotar produto de função, construção ou família semelhante como base de custo. Registrar o produto realmente pesquisado, mesmo quando ele diferir da peça solicitada. Não renomear a referência para fazê-la parecer a peça exata.
-5. Preencher todos os itens. Não encerrar a entrega com células de material vazias ou apenas com expressões como “cotação necessária”, “a consultar” ou “não localizado”. Continuar a pesquisa e ampliar as referências dentro do critério autorizado.
-6. Se uma fonte estiver bloqueada, exigir acesso indisponível ou não exibir preço, procurar outro fornecedor. A falta de preço de um anúncio não impede usar outra referência comercial real.
+1. Consulte primeiro o histórico do Cérebro, quando disponível, pelas tabelas `precos` e `custos` descritas no esquema. Use consultas agrupadas por família, código, descrição ou equipamento com poucos resultados. Compare unidade, data, quantidade e tipo de valor. Distinga custo de aquisição, proposta e preço homologado. Falha ou teto do Cérebro fica registrado e a pesquisa segue pela web ou por outra base disponível.
+2. Pesquise ofertas da peça ou de alternativas comerciais e compare preços para a mesma unidade, embalagem e condição. Registre links individuais das ofertas. Reaproveite a busca para componentes equivalentes.
+3. Para item sem oferta confirmada, use a melhor estimativa justificável: histórico comparável, peça análoga ou faixa observada. Identifique “estimativa”, valor adotado, faixa se conhecida, fonte, data, unidade e diferenças. Se nenhuma base permitir um número responsável, escreva o impedimento específico. “Não pesquisado” sozinho não explica a lacuna.
+4. Informe a cobertura: total de itens, quantos têm oferta, quantos têm estimativa e quantos ficaram sem referência. Entregue o resultado possível. Não há cobertura mínima nem veto à precificação.
 
-O padrão desta skill dispensa solicitar confirmação para cada peça genérica ou referência aproximada. Se, apesar da ampliação, não houver nenhuma referência comercial verificável para um item, explicar concretamente o impedimento; não inventar um preço para simular conclusão.
+**Exemplo.** Sem oferta para um filtro, use R$ 80 por unidade estimados de uma faixa histórica de R$ 70–90 para filtro análogo. Registre a base, a unidade e a compatibilidade ainda não verificada. Com consumo estimado de duas unidades por mês **(P)**, a referência mensal é R$ 160.
 
 ### Preço de compras públicas
 
@@ -115,8 +113,8 @@ Preservar as abas, fórmulas, quantidades, descrições, identificação dos ite
 
 Antes da entrega:
 
-- Conferir cada linha de item: material com preço numérico maior que zero, fornecedor e produto identificados, link individual preenchido e clicável.
-- Confirmar que nenhuma linha ficou apenas com um marcador de ausência de cotação. Não preencher linhas de títulos, grupos ou separadores como se fossem itens.
+- Conferir as ofertas com preço, fornecedor e link individual. Nas estimativas, conferir o número, a base e o rótulo; nas lacunas, conferir o impedimento.
+- Distinguir ausência de referência, estimativa e oferta confirmada. Não preencher linhas de títulos, grupos ou separadores como se fossem itens.
 - Conferir preços, embalagens, conversões e condições de pagamento. Usar zero somente quando for um custo efetivamente nulo e justificado, nunca como substituto de pesquisa ausente.
 - Verificar que as referências sem compatibilidade comprovada estão identificadas como BASE DE CUSTO, sem afirmação indevida de equivalência.
 - Recalcular as fórmulas afetadas e conferir erros, referências deslocadas, totais e preservação dos dados originais.
@@ -125,12 +123,12 @@ Antes da entrega:
 
 ## Destino e entrega
 
-- Salvar em `.xlsx` na pasta solicitada pelo usuário. Na ausência de nome específico, usar `[NOME DA PLANILHA] - cotação completa.xlsx`.
+- Salvar em `.xlsx` na pasta solicitada pelo usuário. Na ausência de nome específico, usar `[NOME DA PLANILHA] - cotação.xlsx`.
 - Se o usuário pedir para mover um arquivo existente para outra pasta, mover o arquivo e verificar o destino. Não deixar uma cópia na origem como se o movimento tivesse sido concluído.
 - Se o arquivo estiver aberto ou bloqueado, preservar o trabalho existente e salvar uma versão completa identificada na mesma pasta de destino, informando o ocorrido. Não fechar o Excel do usuário nem descartar alterações não salvas.
 - Entregar o arquivo e um resumo curto: total de itens cotados, quantidade de referências aproximadas, premissas relevantes e localização do resultado.
-- Não declarar a cotação completa enquanto houver itens sem valor ou sem fonte. Distinguir ofertas pesquisadas de bases aproximadas e estimativas de mão de obra.
+- Informar a cobertura alcançada, inclusive lacunas de valor ou fonte. Distinguir ofertas pesquisadas de bases aproximadas e estimativas de mão de obra.
 
 ## Exemplo de solicitação
 
-“Use a skill cotar-pecas-materiais-licitacoes para preencher a planilha anexada. Pesquise os custos de todos os itens, priorize os menores preços encontrados e aceite peças genéricas ou referências de outros equipamentos do mesmo segmento. Não deixe itens sem cotação. Use links individuais e identifique as bases sem compatibilidade confirmada. Salve a planilha completa na pasta que informei.”
+“Use a skill cotar-pecas-materiais-licitacoes para preencher a planilha anexada. Pesquise os custos de todos os itens, priorize os menores preços encontrados e aceite peças genéricas ou referências de outros equipamentos do mesmo segmento. Informe a cobertura e use referências estimadas onde fizer sentido. Use links individuais nas ofertas e identifique as bases sem compatibilidade confirmada. Salve a planilha na pasta que informei.”

@@ -24,6 +24,8 @@ Três perguntas, pontos em `score.pontos` (AGENTS §2). Não precisa ser exato; 
 
 Quando `tecnica.json` ou `precificacao.json` tiver `premissa_decisiva: true`, trate a respectiva dimensão como inconclusiva e registre o motivo. A premissa isolada não aciona trava nem nota 1; outras travas sustentadas pelos dados continuam valendo.
 
+Use `tributos_pct`, `margem_pct` e `margem_minima_pct` da precificação quando disponíveis. Exemplo: tributos de 19,29% e margem calculada de 4,82% entram na nota explicativa; use a margem mínima aplicada se vier da precificação. Assinale como hipótese apenas o valor padrão que precisou ser usado.
+
 ## Saída
 `relatorio/topo.json`: `score` (número), `nota`, `rotulo`, `termos[]` {`rotulo`, `pontos`, `maximo`, `motivo`}, `trava`, `avisos`, `hipotese_precificacao`, `tip_score`. Não é chance de vencer.
 

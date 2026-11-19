@@ -27,7 +27,7 @@ Se o trabalho for feito na plataforma de licitações, leia a skill `licitacao` 
 | Preço praticado em compras públicas e valores homologados em certames parecidos | Skill `compras-publicas` |
 | Custos que a base não tem (veículo dedicado, instrumentos, CMMS) | O analista informa; sem o dado, use premissa identificada |
 
-No fluxo do agente, se `fontes/pecas.json` estiver ausente ou incompleto, registre cada lacuna e a premissa adotada. Prossiga com a precificação sem reabrir a pesquisa de peças neste item.
+No fluxo do agente, use as ofertas e estimativas de `fontes/pecas.json` com suas bases. Para peças incluídas no lance, multiplique o preço unitário pelo consumo mensal estimado de cada item e some os custos; marque o consumo estimado como **(P)** e declare a cobertura. Exemplo: filtro a R$ 80, consumo estimado de duas unidades por mês, reserva de R$ 160/mês. Na planilha, use quantidade anual equivalente para a aba de peças; o script leva o total à reserva operacional uma vez. Se os dados não permitirem estimar a verba por itens, use verba global **(P)** com fundamento, sem somá-la de novo ao subtotal das mesmas peças. A entrega segue com a cobertura disponível.
 
 Preço de referência pública serve para situar a proposta diante do mercado. O custo da empresa vem dos custos reais dela.
 
@@ -158,6 +158,8 @@ Indicadores mínimos:
 - ponto de equilíbrio, quando útil.
 
 A conclusão diz em quais premissas a proposta é exequível e quais controles operacionais são indispensáveis para que continue sendo.
+
+Em `analise/precificacao.json`, grave a margem operacional do cenário-base em `margem_pct`, a alíquota efetiva usada em `tributos_pct` e a margem mínima aplicada, quando definida, em `margem_minima_pct`. Use pontos percentuais (ex.: `19.29`, e não `0.1929`). Cite a fonte dos tributos e da margem mínima. Exemplo: se a base da empresa informa 19,29% e o preço calculado deixa 4,82%, grave `tributos_pct: 19.29` e `margem_pct: 4.82`.
 
 ## Passo 3: planilha
 

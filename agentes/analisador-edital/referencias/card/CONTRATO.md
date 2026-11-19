@@ -27,7 +27,7 @@ O agente grava em `licitacoes/<id>/agents/analisador-edital/analise/`. Toda list
 Quando houver original de habilitação, `prova` cita arquivo, página, seção ou aba, trecho literal e confronto com os dados aplicáveis à exigência (titular/CNPJ, datas, validade, exercício ou escopo). A mesma prova indica o endereço permanente da cópia na licitação. Sem leitura do original, a exigência documental fica `verificar` se não houver outra prova válida, com “Validação pendente” e a lacuna documental descrita. Uma cópia disponível permite download mesmo com a conferência pendente. O Odoo acrescenta `controle_validacao[]` à resposta da habilitação somente a partir do dossiê privado do usuário autenticado, sem anexá-lo ao JSON compartilhado. Cada registro vincula empresa, SHA-256 e exigência ao original. Inclui arquivo, localizador, trecho literal, parecer `confere|diverge|pendente`, conclusão ou motivo e modelo efetivo. O parecer do leitor não substitui a avaliação de habilitação.
 
 
-No card, `mais_aderente` vira a sugestão de empresa que disputa (`empresa_disputante`, origem `ia`). A escolha de uma pessoa (origem `manual`) não é sobrescrita por nova análise.
+Se houver diferença material na ordenação, indique em `mais_aderente` a primeira empresa, inclusive se a avaliação continuar indeterminada. Use `null` em empate material ou impedimento demonstrado em todas. Declare a situação em `resultado`. No card, `mais_aderente` vira a sugestão de empresa que disputa (`empresa_disputante`, origem `ia`). A escolha de uma pessoa (origem `manual`) não é sobrescrita por nova análise.
 
 ```json
 {"versao": 1, "gerado_em": "", "mais_aderente": "aforca|realmak|una|nortfort|null", "resultado": "",
@@ -65,7 +65,7 @@ Cada `analise/habilitacao/<alias>.json` usa o mesmo envelope v1, com apenas a em
 
 ### Pesquisa de peças
 
-`fontes/pecas.json` contém `versao: 1`, `estado: "concluida"|"parcial"|"nao_se_aplica"`, `cotacoes_online` com a linha de oferta descrita em `tecnica.json` e `pendencias` com `item` e `motivo`. Cada oferta identifica a peça ou kit e preserva compatibilidade, embalagem e frete em `observacao`. Preço sem oferta confirmada fica em `pendencias` sem valor fictício. Se a análise técnica ainda não existir, extraia o escopo do edital/TR e use os identificadores dele; a precificação faz a correspondência. Peças sob demanda fora do lance ficam identificadas à parte em `pendencias` e não entram no custo recorrente.
+`fontes/pecas.json` contém `versao: 1`, `estado: "concluida"|"parcial"|"nao_se_aplica"`, `cotacoes_online` com a linha de oferta descrita em `tecnica.json` e `pendencias` com `item` e `motivo`. Cada oferta identifica a peça ou kit e preserva compatibilidade, embalagem e frete em `observacao`. Preço sem oferta confirmada fica em `pendencias` sem valor fictício. Se a análise técnica ainda não existir, extraia o escopo do edital/TR e use os identificadores dele; a precificação faz a correspondência. Peças sob demanda fora do lance ficam identificadas à parte em `pendencias` e não entram no custo recorrente. Registre em `estimativas[]` cada referência sem oferta confirmada com `item`, `preco_unit`, `unidade`, `base`, `data` se conhecida e `observacao`. A base identifica a faixa, o histórico ou o produto análogo. Use `cobertura` com `total`, `com_oferta`, `com_estimativa` e `sem_referencia`, contando cada item uma vez. A precificação usa as duas listas e declara a cobertura; o campo de ofertas mantém o formato atual.
 
 `tecnica.json` (`analisar-edital-manutencao` ou `analisar-edital-fornecimento`):
 
@@ -95,6 +95,8 @@ Cada `analise/habilitacao/<alias>.json` usa o mesmo envelope v1, com apenas a em
  "cotacoes_online": [{"item": "", "preco_unit": 0, "unidade": "", "fornecedor": "", "link": "", "data": "", "observacao": ""}],
  "arquivos": [{"rotulo": "", "caminho": ""}]}
 ```
+
+Em `precificacao.json`, `tributos_pct` e `margem_minima_pct` opcionais registram os pontos percentuais efetivamente usados no cenário-base, e `margem_pct` fica com a margem calculada. O score lê esses valores e só identifica como hipótese o padrão utilizado por falta de dado. Na ausência de alíquota explícita, o score pode calculá-la com o componente mensal de tributos e o preço mensal do mesmo cenário-base.
 
 Em `tecnica.json` e `precificacao.json`, `premissa_decisiva` (booleano opcional) indica que a conclusão-base ainda depende de hipótese que muda equipe ou recomendação. Marque `true` somente se a hipótese ainda afetar a conclusão publicada. Cite a hipótese e a lacuna no resumo e mantenha o seu efeito em cenário alternativo. O score trata essa dimensão como inconclusiva. Saídas antigas continuam válidas.
 
