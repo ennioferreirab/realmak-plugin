@@ -59,7 +59,7 @@ def test_skills_unicas_e_frontmatter():
 
 def test_fluxo_e_referencias():
     fluxo = ler_json(ANALISADOR / "fluxo.json")
-    assert fluxo["versao"] >= 4
+    assert fluxo["versao"] >= 5
     ids = set()
     saidas = {}
     etapas = {}
@@ -102,9 +102,15 @@ def test_fluxo_e_referencias():
     e2 = {i["id"]: i for i in etapas["E2"]["itens"]}
     parciais = {f"habilitacao-{empresa}" for empresa in EMPRESAS}
     for empresa in EMPRESAS:
+        pesquisa = e2[f"pesquisa-habilitacao-{empresa}"]
+        assert (pesquisa["skill"], pesquisa["tier"]) == ("analisar-habilitacao", "T1")
+        assert empresa in pesquisa["passos"] and pesquisa["depende_de"] == ["cerebro"]
+        assert pesquisa["tolera_falha"] is True
+        assert pesquisa["saida"] == f"fontes/habilitacao/{empresa}/candidatos.json"
         item = e2[f"habilitacao-{empresa}"]
-        assert (item["skill"], item["tier"]) == ("analisar-habilitacao", "T1")
-        assert empresa in item["passos"] and not item.get("depende_de")
+        assert (item["skill"], item["tier"]) == ("analisar-habilitacao", "T2")
+        assert empresa in item["passos"] and item["depende_de"] == [pesquisa["id"]]
+        assert item["tolera_falha"] is True
         assert item["saida"] == f"analise/habilitacao/{empresa}.json"
     final = e2["habilitacao"]
     assert set(final["depende_de"]) == parciais and final["tolera_falha"] is True

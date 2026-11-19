@@ -1,5 +1,5 @@
 {
-  "versao": 4,
+  "versao": 5,
   "etapas": [
     {
       "id": "E0",
@@ -80,40 +80,108 @@
           "passos": "histórico de preços, compras, BDI, atas e recursos para a análise do edital"
         },
         {
-          "id": "habilitacao-aforca",
-          "titulo": "Habilitação · AForça",
+          "id": "pesquisa-habilitacao-aforca",
+          "titulo": "Pesquisar habilitação · AForça",
           "modo": "skill",
           "tier": "T1",
           "skill": "analisar-habilitacao",
-          "passos": "pesquisa, leitura e análise por exigência somente para aforca",
-          "saida": "analise/habilitacao/aforca.json"
+          "passos": "fase de pesquisa e localização somente para aforca: buscar por exigência e pelas pistas do G1 e do histórico; listar candidatos para o daemon",
+          "saida": "fontes/habilitacao/aforca/candidatos.json",
+          "depende_de": [
+            "cerebro"
+          ],
+          "tolera_falha": true
+        },
+        {
+          "id": "habilitacao-aforca",
+          "titulo": "Cruzamento documental · AForça",
+          "modo": "skill",
+          "tier": "T2",
+          "skill": "analisar-habilitacao",
+          "passos": "fase de cruzamento documental somente para aforca: abra e confronte todos os originais arquivados pelo daemon",
+          "saida": "analise/habilitacao/aforca.json",
+          "depende_de": [
+            "pesquisa-habilitacao-aforca"
+          ],
+          "tolera_falha": true
+        },
+        {
+          "id": "pesquisa-habilitacao-realmak",
+          "titulo": "Pesquisar habilitação · Realmak",
+          "modo": "skill",
+          "tier": "T1",
+          "skill": "analisar-habilitacao",
+          "passos": "fase de pesquisa e localização somente para realmak: buscar por exigência e pelas pistas do G1 e do histórico; listar candidatos para o daemon",
+          "saida": "fontes/habilitacao/realmak/candidatos.json",
+          "depende_de": [
+            "cerebro"
+          ],
+          "tolera_falha": true
         },
         {
           "id": "habilitacao-realmak",
-          "titulo": "Habilitação · Realmak",
+          "titulo": "Cruzamento documental · Realmak",
+          "modo": "skill",
+          "tier": "T2",
+          "skill": "analisar-habilitacao",
+          "passos": "fase de cruzamento documental somente para realmak: abra e confronte todos os originais arquivados pelo daemon",
+          "saida": "analise/habilitacao/realmak.json",
+          "depende_de": [
+            "pesquisa-habilitacao-realmak"
+          ],
+          "tolera_falha": true
+        },
+        {
+          "id": "pesquisa-habilitacao-una",
+          "titulo": "Pesquisar habilitação · UNA",
           "modo": "skill",
           "tier": "T1",
           "skill": "analisar-habilitacao",
-          "passos": "pesquisa, leitura e análise por exigência somente para realmak",
-          "saida": "analise/habilitacao/realmak.json"
+          "passos": "fase de pesquisa e localização somente para una: buscar por exigência e pelas pistas do G1 e do histórico; listar candidatos para o daemon",
+          "saida": "fontes/habilitacao/una/candidatos.json",
+          "depende_de": [
+            "cerebro"
+          ],
+          "tolera_falha": true
         },
         {
           "id": "habilitacao-una",
-          "titulo": "Habilitação · UNA",
+          "titulo": "Cruzamento documental · UNA",
+          "modo": "skill",
+          "tier": "T2",
+          "skill": "analisar-habilitacao",
+          "passos": "fase de cruzamento documental somente para una: abra e confronte todos os originais arquivados pelo daemon",
+          "saida": "analise/habilitacao/una.json",
+          "depende_de": [
+            "pesquisa-habilitacao-una"
+          ],
+          "tolera_falha": true
+        },
+        {
+          "id": "pesquisa-habilitacao-nortfort",
+          "titulo": "Pesquisar habilitação · Nortfort",
           "modo": "skill",
           "tier": "T1",
           "skill": "analisar-habilitacao",
-          "passos": "pesquisa, leitura e análise por exigência somente para una",
-          "saida": "analise/habilitacao/una.json"
+          "passos": "fase de pesquisa e localização somente para nortfort: buscar por exigência e pelas pistas do G1 e do histórico; listar candidatos para o daemon",
+          "saida": "fontes/habilitacao/nortfort/candidatos.json",
+          "depende_de": [
+            "cerebro"
+          ],
+          "tolera_falha": true
         },
         {
           "id": "habilitacao-nortfort",
-          "titulo": "Habilitação · Nortfort",
+          "titulo": "Cruzamento documental · Nortfort",
           "modo": "skill",
-          "tier": "T1",
+          "tier": "T2",
           "skill": "analisar-habilitacao",
-          "passos": "pesquisa, leitura e análise por exigência somente para nortfort",
-          "saida": "analise/habilitacao/nortfort.json"
+          "passos": "fase de cruzamento documental somente para nortfort: abra e confronte todos os originais arquivados pelo daemon",
+          "saida": "analise/habilitacao/nortfort.json",
+          "depende_de": [
+            "pesquisa-habilitacao-nortfort"
+          ],
+          "tolera_falha": true
         },
         {
           "id": "tecnica",

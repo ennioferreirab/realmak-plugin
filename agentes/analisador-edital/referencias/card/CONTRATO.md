@@ -51,6 +51,8 @@ O contrato segue na versão 1. Os quatro campos são opcionais tanto no consolid
 
 ### Parciais de habilitação
 
+A [pesquisa, aquisição e leitura](../habilitacao-aquisicao.md) geram os insumos de cada parcial. Estes insumos são operacionais e ficam fora do contrato v1 do card.
+
 Cada `analise/habilitacao/<alias>.json` usa o mesmo envelope v1, com apenas a empresa do item, `mais_aderente: null` e uma avaliação por exigência do edital. Acrescente `cobertura[]` na raiz; a consolidação reúne os registros dos quatro parciais, preserva os campos por linha e reúne os motivos de pesquisa incompleta por alias sem duplicar.
 
 ```json
