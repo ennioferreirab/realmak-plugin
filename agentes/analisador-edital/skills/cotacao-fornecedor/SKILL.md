@@ -1,6 +1,7 @@
 ---
 name: cotacao-fornecedor
-description: Só quando o analista pede no card (botão "Pesquisar fornecedores e gerar e-mails"): pesquisa fornecedores na internet (fabricante primeiro) e redige um e-mail de cotação por fornecedor, enviados pelo carteiro depois da aprovação. Na leitura de resposta, lê cada resposta e, se o preço não serve, redige contraproposta para aprovação. Não é item da análise.
+description: >-
+  Só quando o analista pede no card (botão "Pesquisar fornecedores e gerar e-mails"): pesquisa fornecedores na internet (fabricante primeiro) e redige um e-mail de cotação por fornecedor, enviados pelo carteiro depois da aprovação. Na leitura de resposta, lê cada resposta e, se o preço não serve, redige contraproposta para aprovação. Não é item da análise.
 ---
 
 # Cotação com fornecedor
