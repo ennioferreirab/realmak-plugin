@@ -91,6 +91,9 @@ def test_fluxo_e_referencias():
                 nome = item["skill"]
                 assert item["tier"] in ("T1", "T2") and item["saida"]
                 assert any((base / nome / "SKILL.md").is_file() for base in (ANALISADOR / "skills", SKILLS)), nome
+            elif item["modo"] == "baixar":
+                assert item["tier"] == "T0" and item["empresa"] in EMPRESAS
+                assert "cmd" not in item and "skill" not in item
             else:
                 assert (item["modo"], item["tier"], item["cmd"][0]) == ("script", "T0", "python3")
                 cmd = item["cmd"]
@@ -107,9 +110,14 @@ def test_fluxo_e_referencias():
         assert empresa in pesquisa["passos"] and pesquisa["depende_de"] == ["cerebro"]
         assert pesquisa["tolera_falha"] is True
         assert pesquisa["saida"] == f"fontes/habilitacao/{empresa}/candidatos.json"
+        baixar = e2[f"baixar-habilitacao-{empresa}"]
+        assert (baixar["modo"], baixar["tier"], baixar["empresa"]) == ("baixar", "T0", empresa)
+        assert baixar["depende_de"] == [pesquisa["id"]]
+        assert baixar["entrada"] == pesquisa["saida"]
+        assert baixar["saida"] == f"fontes/habilitacao/{empresa}/downloads.json"
         item = e2[f"habilitacao-{empresa}"]
         assert (item["skill"], item["tier"]) == ("analisar-habilitacao", "T2")
-        assert empresa in item["passos"] and item["depende_de"] == [pesquisa["id"]]
+        assert empresa in item["passos"] and item["depende_de"] == [baixar["id"]]
         assert item["tolera_falha"] is True
         assert item["saida"] == f"analise/habilitacao/{empresa}.json"
     final = e2["habilitacao"]
