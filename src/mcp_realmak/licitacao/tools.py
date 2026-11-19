@@ -108,13 +108,30 @@ async def licitacao_criar(
     numero_edital: Annotated[str | None, Field(description="Número do edital no formato número/ano.")] = None,
     processo: Annotated[str | None, Field(description="Número exato do processo administrativo.")] = None,
     data: Annotated[date | None, Field(description="Data oficial conhecida, em AAAA-MM-DD.")] = None,
-    empresa: Annotated[Literal["realmak", "aforca", "nortfort", "una", "sublime"] | None, Field(description="Empresa disputante escolhida manualmente.")] = None,
+    empresa: Annotated[Literal["realmak", "aforca", "nortfort", "una", "sublime"] | None, Field(description="Empresa disputante escolhida manualmente para um card de fonte externa.")] = None,
     somente_conferir: Annotated[bool, Field(description="Confere a fonte, a chave e a existência do card sem criar.")] = False,
+    titulo: Annotated[str | None, Field(description="Título para o card.")] = None,
+    objeto: Annotated[str | None, Field(description="Objeto conforme o portal ou edital.")] = None,
+    cidade: Annotated[str | None, Field(description="Município informado na fonte.")] = None,
+    uf: Annotated[str | None, Field(description="Sigla da UF informada na fonte.")] = None,
+    situacao: Annotated[str | None, Field(description="Situação do certame na fonte.")] = None,
+    abertura: Annotated[str | None, Field(description="Abertura de propostas em AAAA-MM-DD ou data e hora ISO.")] = None,
+    prazo: Annotated[str | None, Field(description="Fim do envio de propostas em AAAA-MM-DD ou data e hora ISO.")] = None,
+    visita: Annotated[str | None, Field(description="Data ou prazo da visita técnica em AAAA-MM-DD ou data e hora ISO.")] = None,
+    retirada: Annotated[str | None, Field(description="Prazo de retirada do edital em AAAA-MM-DD ou data e hora ISO.")] = None,
+    cidade_local: Annotated[str | None, Field(description="Município do local de execução, se diferente do município do órgão.")] = None,
+    uf_local: Annotated[str | None, Field(description="UF do local de execução, se diferente da UF do órgão.")] = None,
+    valor_estimado: Annotated[float | None, Field(ge=0, allow_inf_nan=False, description="Valor estimado em reais.")] = None,
 ) -> str:
-    """Localiza ou cria um card. Procura primeiro no ConLicitação, depois no PNCP e em Compras.gov/Dados Abertos quando houver identificadores suficientes. Use link oficial do portal após a busca, com processo ou UASG e edital para cruzar fontes. Devolve card, fonte, chave, duplicidade e próximos passos, inclusive anexar o edital com licitacao_enviar_arquivo."""
-    dados = {k: v.strip() for k, v in (
+    """Localiza ou cria um card. Procura primeiro no ConLicitação, depois no PNCP e em Compras.gov/Dados Abertos quando houver identificadores suficientes. Para link de portal, leia a fonte e envie os metadados confirmados. Em cards externos existentes, preenche campos vazios. Devolve card, fonte, chave, duplicidade e próximos passos, inclusive anexar o edital com licitacao_enviar_arquivo."""
+    dados: dict[str, Any] = {k: v.strip() for k, v in (
         ("orgao", orgao), ("uasg", uasg), ("edital", numero_edital), ("processo", processo),
+        ("titulo", titulo), ("objeto", objeto), ("cidade", cidade), ("uf", uf), ("situacao", situacao),
+        ("abertura", abertura), ("prazo", prazo), ("visita", visita), ("retirada", retirada),
+        ("cidade_local", cidade_local), ("uf_local", uf_local),
     ) if v and v.strip()}
+    if valor_estimado is not None:
+        dados["valor_estimado"] = valor_estimado
     if not (link or id_conlicitacao or numero_controle_pncp or dados.get("processo")
             or (dados.get("edital") and (dados.get("uasg") or dados.get("orgao")))):
         raise ToolError("Informe link, ID, controle PNCP, processo ou edital com órgão/UASG.")
@@ -271,8 +288,9 @@ async def precificacao_enviar_base_custos() -> str:
 INSTRUCOES = (
     "Licitações da Realmak no Odoo (licitacao_*), como a pessoa que entrou:\n"
     "- Comece por licitacao_pasta (ou licitacao_buscar para achar a licitação). O JSON traz ids de documentos.\n"
-    "- Para adicionar licitação, use licitacao_criar. Se a busca não localizar, procure o edital no portal oficial, "
-    "informe o link e anexe os originais faltantes com licitacao_enviar_arquivo. Use chave para cards externos.\n"
+    "- Para adicionar licitação, use licitacao_criar, que importa do ConLicitação quando encontra o certame. "
+    "Se precisar buscar no portal oficial, leia a página e o edital, informe o link e os dados confirmados "
+    "e anexe os originais faltantes com licitacao_enviar_arquivo. Use chave para cards externos.\n"
     "- Ao começar a trabalhar numa licitação, chame licitacao_status com estado trabalhando; ao terminar, "
     "concluido; se precisar do analista, aguardando.\n"
     "- Leia o edital com licitacao_ler_texto; edital prevalece sobre manifesto e resumo do ConLicitação. "
