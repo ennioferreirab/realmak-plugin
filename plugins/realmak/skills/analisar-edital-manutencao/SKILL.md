@@ -129,13 +129,19 @@ Quando o edital não disser quem paga uma peça, isso é pendência, porque muda
 
 ## Passo 4: dimensionamento da capacidade
 
+Comece pela memória de dimensionamento do órgão. Leia o TR, o ETP e suas planilhas anexas, inclusive as extraídas dos arquivos compactados. Para o cenário-base, use as horas, reservas, produtividade, equipe e jornada que o órgão forneceu e cite o arquivo e a página, seção ou aba de cada número. Um valor que o órgão chama de “premissa” é **(D)** como referência documental do órgão; registre que é estimativa e que pode não haver histórico. Separe referência de mínimo contratual. Célula vazia, zero usado como marcador, ou unidade sem definição fica como lacuna. Só use **(P)** do agente para dados que o conjunto documental não fornece.
+
 Calcule três blocos de carga:
 
 1. **Programada:** quantidade por classe de ativo × frequência anual × tempo padrão.
-2. **Não programada:** corretivas, retornos, emergências e retrabalho. Sem histórico, adote uma premissa e declare-a.
+2. **Não programada:** corretivas, retornos, emergências e retrabalho. Use a reserva de horas do órgão, se houver. Sem reserva ou histórico aplicável, registre a lacuna e teste uma premissa explícita. Não trate o saldo entre unidade de contratação indefinida e eventos preventivos como número comprovado de corretivas.
 3. **Indireta:** deslocamentos, liberação de equipamento, documentação, reuniões, gestão, estoque, sistema de gestão, treinamento e mobilização.
 
 Faça a conta pelo arquivo de dados: lance as atividades em `escopo` e a equipe em `equipe`. O script converte a carga anual em horas mensais e compara com as horas produtivas reais da equipe. Nos descontos, considere férias, feriados, pausas, deslocamentos, indisponibilidades e reserva para pico. Informe cobertura e folga.
+
+Uma **(P)** cuja variação muda o número de técnicos ou a recomendação fica em cenário alternativo. Mantenha a carga, a equipe e a conclusão do cenário-base livres desse cenário. Se faltar um dado decisivo para calcular o cenário-base, deixe a conclusão condicionada e mostre a faixa apenas como sensibilidade. Identifique a premissa e o que precisa ser confirmado. No fluxo do card, use `premissa_decisiva: true` em `tecnica.json` se essa lacuna ainda condicionar a conclusão-base.
+
+**Exemplo.** A planilha do TR informa reserva de **28 h/mês** para corretivas e declara falta de histórico. Use 28 h/mês no cenário-base e cite a planilha. Um saldo obtido de serviços em “SV” sem definição, menos eventos preventivos, não substitui a reserva. Só examine um volume maior como cenário alternativo **(P)**, com unidade e efeito na equipe explicitados.
 
 Faça dois testes à parte, porque é neles que a equipe costuma faltar: o **primeiro ciclo** (todo o inventário passa por preventiva e cadastro ao mesmo tempo) e o **pior SLA** do edital.
 

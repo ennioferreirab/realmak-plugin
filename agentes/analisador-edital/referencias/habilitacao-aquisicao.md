@@ -27,11 +27,14 @@ Exemplo fictício:
 }
 ```
 
-Cada candidato tem `id` aceito por `cerebro_provas` na empresa do item, além de `titulo` e `motivo`. Inclua `sha256` quando disponível, para conferência do download. Candidato recebido sem ID falha com motivo “candidato sem id do cérebro”. Preserve números de CATs, atestados e contratos como texto, com zeros à esquerda. A união de `pistas[]` e dos números nos achados de `fontes/cerebro_g1.json` e `fontes/cerebro.json` é a pauta de buscas dirigidas do alias. Uma mesma pista pode servir a várias cláusulas. Registre o resultado ou o motivo documentado de descarte. Sem pista fechada ou prova, preserve a lacuna.
+Prefira o `id` de registro aceito por `cerebro_provas` na empresa do item. Inclua `sha256` quando disponível. Quando só houver o hash completo, informe `sha256` sem preencher `id`: o daemon usa busca por hash e arquiva apenas a correspondência exata. Inclua `titulo` e `motivo` em qualquer caso. Pista sem ID e sem hash completo fica nas tentativas.
+
+A união de `pistas[]` e dos números nos achados de `fontes/cerebro_g1.json` e `fontes/cerebro.json` é a pauta de buscas dirigidas do alias. Preserve os números como texto, inclusive os zeros iniciais. Para cada lista vazia, as tentativas distinguem busca sem achados, exclusão fundamentada e pesquisa incompleta (por exemplo, ferramenta ausente). Em pesquisa incompleta, informe a causa e preserve as pistas. O T2 reflete a lacuna na saída do card.
+
 
 ## Aquisição pelo daemon e entrada do cruzamento
 
-O item `baixar` tem `empresa`, `entrada` com a lista, `saida` com os downloads e depende da pesquisa do mesmo alias. O daemon chama `cerebro_provas` por ID e arquiva em área privada, vinculando a exigência. Em falhas passageiras, repete com esperas de 3, 10 e 30 segundos. Uma falha individual recebe causa após as tentativas e o item conclui com os resultados disponíveis. Entrada ausente ou ilegível faz falhar o item.
+O item `baixar` tem `empresa`, `entrada` com a lista, `saida` com os downloads e depende da pesquisa do mesmo alias. O daemon chama `cerebro_provas` por ID ou confirma o hash em `cerebro_buscar` e arquiva em área privada, vinculando a exigência. Em falhas passageiras, repete com esperas de 3, 10 e 30 segundos. Uma falha individual recebe causa após as tentativas e o item conclui com os resultados disponíveis. Entrada ausente ou ilegível faz falhar o item.
 
 `fontes/habilitacao/<alias>/downloads.json` contém o mesmo agrupamento. Cada candidato recebe `estado: "baixado"|"falha"`. Para `baixado`, informe `arquivo`, `sha256`, `caminho` absoluto para o leitor e `url` permanente da cópia. Para `falha`, informe `motivo_falha` e o número de `tentativas` de aquisição. Se o ID devolver mais cópias verificadas, o daemon também lista `outras_copias[]`, cada qual com `arquivo`, `sha256`, `caminho` e `url`. Quando a pesquisa indicar o hash, use as cópias desse conteúdo. Caminhos, hashes e endereços de prova vêm do daemon.
 

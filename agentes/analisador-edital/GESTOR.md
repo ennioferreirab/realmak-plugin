@@ -54,16 +54,20 @@ Persistindo a lacuna após a nova rodada, decida `seguir` e precifique sob condi
 | Decisão | Quando |
 |---|---|
 | `rerodar` | Primeira rodada com exigência eliminatória sem prova lida e busca falha ou incompleta. |
-| `parar` | Nenhuma empresa do grupo comprovadamente habilitável a tempo (`habilitacao.json`, todas `nao_atende`), ou análise técnica "não atende" sem condição realista (`tecnica.json`). Preço online dos itens muito acima do valor estimado em fornecimento, sem alternativa. `orientacao: 1`. |
+| `parar` | Nenhuma empresa do grupo comprovadamente habilitável a tempo (`habilitacao.json`, todas `nao_atende`), ou análise técnica "não atende" apoiada em dados documentais, sem condição realista (`tecnica.json`). Preço online dos itens muito acima do valor estimado em fornecimento, sem alternativa. `orientacao: 1`. |
 | `humano` | Três condições ou exceção estratégica. |
 | `seguir` | Demais casos. Itens sem preço online ou habilitação "técnico decide" não seguram a precificação; ficam como lacuna. E-mail a fornecedor não é decisão do portão: o analista pede no card. |
 
 ## G3 · Fechamento (depois da precificação e do score)
 
+Antes de `seguir`, confronte a recomendação e cada trava com a origem das horas, da equipe, dos custos e da margem em `tecnica.json`, `precificacao.json` e na memória do TR/ETP. Verifique `premissa_decisiva` nas duas saídas e procure premissas **(P)** nos fundamentos, inclusive em saídas antigas. Confirme que margem de cenário alternativo ficou fora da trava.
+
+Se a recomendação ou a trava depender de **(P)** decisiva, use `rerodar` uma vez. Se a origem do erro for a carga ou a equipe, indique `tecnica`, `precificacao` e `score`; se for apenas custo ou preço, indique `precificacao` e `score`. Em `porque`, identifique o dado documental, a fonte e a premissa a mover para cenário alternativo. Se o documento for omisso ou a incerteza persistir após a nova rodada, publique a conclusão condicionada e a pendência. Uma premissa isolada não justifica a trava nem a nota 1.
+
 | Decisão | Quando |
 |---|---|
-| `seguir` | Relatório coerente. `orientacao` 1–5 obrigatória, igual à nota de `topo.json` (trava → 1). |
-| `rerodar` | Uma saída contradiz outra (ex.: `topo.json` × `precificacao.json`; empresa da precificação × `mais_aderente`). Indique os ids. Uma vez por análise; nunca para esperar cotação. |
+| `seguir` | Relatório coerente e fundamento documental conferido, ou conclusão condicionada com lacuna explícita. `orientacao` 1–5 obrigatória, igual à nota de `topo.json` (trava → 1). |
+| `rerodar` | Premissa decisiva sustenta recomendação ou trava, ou uma saída contradiz outra (ex.: `topo.json` × `precificacao.json`; empresa da precificação × `mais_aderente`). Indique os ids. Uma vez por análise; nunca para esperar cotação. |
 | `humano` | Três condições ou exceção estratégica. |
 
 ## Documento novo (portão `documento`)

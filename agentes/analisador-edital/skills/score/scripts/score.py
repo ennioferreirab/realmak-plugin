@@ -144,6 +144,8 @@ def termo_participar(hab, maximo):
 
 
 def termo_executar(tec, maximo):
+    if (tec or {}).get("premissa_decisiva") is True:
+        return round(maximo / 3), "Capacidade depende de premissa sem confirmação"
     conclusao = (tec or {}).get("conclusao") or {}
     fator = VIAVEL.get(conclusao.get("viavel"))
     if fator is None:
@@ -154,6 +156,8 @@ def termo_executar(tec, maximo):
 def termo_lucro(prec, params, maximo):
     if not prec:
         return round(maximo / 4), None, "Sem precificação"
+    if prec.get("premissa_decisiva") is True:
+        return round(maximo / 4), None, "Margem depende de premissa sem confirmação"
     margem = prec.get("margem_pct")
     minima = params["precificacao"]["margem_minima_pct"]
     if prec.get("exequivel") == "nao":
@@ -191,13 +195,24 @@ def calcular(pasta, params, fallbacks=(), hoje=None):
     avaliadas = [e for e in (hab or {}).get("empresas") or [] if isinstance(e, dict) and e.get("exigencias")]
     if avaliadas and all(e.get("aderencia") == "nao_atende" for e in avaliadas):
         travas.append({"motivo": "Nenhuma empresa do grupo atende à habilitação", "escopo": "global", "fonte": "habilitacao.json"})
-    if ((tec or {}).get("conclusao") or {}).get("viavel") == "nao":
+    tecnica_condicionada = (tec or {}).get("premissa_decisiva") is True
+    preco_condicionado = (prec or {}).get("premissa_decisiva") is True
+    if not tecnica_condicionada and ((tec or {}).get("conclusao") or {}).get("viavel") == "nao":
         travas.append({"motivo": "Análise técnica: não atende", "escopo": "global", "fonte": "tecnica.json"})
-    if (prec or {}).get("exequivel") == "nao":
+    if not preco_condicionado and (prec or {}).get("exequivel") == "nao":
         travas.append({"motivo": "Preço inexequível no valor estimado", "escopo": "global", "fonte": "precificacao.json"})
+    depende_premissa = tecnica_condicionada or preco_condicionado
+    if depende_premissa:
+        avisos.append("Equipe ou preço depende de premissa decisiva ainda sem confirmação")
     if travas:
         score = min(score, 20)
-    nota = 1 if travas else 3 if margem is None and pl > 0 else nota_de(score, config)
+        nota = 1
+    elif margem is None and pl > 0:
+        nota = 3
+    else:
+        nota = nota_de(score, config)
+        if nota == 1 and depende_premissa:
+            nota = 3
 
     termos = [{"rotulo": "Podemos participar?", "pontos": pt, "maximo": maximos["triagem"], "motivo": mt},
               {"rotulo": "Dá para executar?", "pontos": pl, "maximo": maximos["lote"], "motivo": ml},
@@ -207,7 +222,7 @@ def calcular(pasta, params, fallbacks=(), hoje=None):
     if travas:
         tip.append("Trava, score até 20: " + "; ".join(f"{t['motivo']} ({t['fonte']})" for t in travas))
     elif nota == 3:
-        tip.append("Nota 3: margem não calculada")
+        tip.append("Nota 3: premissa decisiva sem confirmação" if depende_premissa else "Nota 3: margem não calculada")
     tip.append(hipotese)
     if fallbacks:
         tip.append("Parâmetros padrão: " + ", ".join(fallbacks))
