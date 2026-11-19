@@ -141,7 +141,11 @@ Duas regras valem para os três blocos:
 
 ## Passo 2: cenários e exequibilidade
 
-Monte o cenário-base. Quando a incerteza for relevante, acrescente um cenário conservador e um crítico. Faça sensibilidade para os vetores que mais mexem no resultado: volume de corretivas, peças, horas técnicas, tributos, reajuste, mobilização e prazo de pagamento.
+Use o dimensionamento do órgão (TR, ETP e planilhas) no cenário-base, com as fontes da análise técnica. Confira se a equipe e as horas da planilha de custo correspondem à base documentada. Se a análise técnica tiver usado **(P)** onde há dado do órgão, corrija o dimensionamento antes de fechar o preço. Use **(P)** do agente para lacuna documental e identifique a fonte ou a razão da hipótese.
+
+Quando uma **(P)** muda o tamanho da equipe ou a recomendação, calcule-a apenas como cenário alternativo. Se faltar insumo decisivo para um preço-base conclusivo, diga qual condição falta e deixe o resultado condicionado. A hipótese isolada não sustenta “inexequível”, recomendação de não disputar nem nota 1 por trava. Nos dados do card, sinalize `premissa_decisiva: true` se a conclusão-base ainda depender de uma **(P)** decisiva. Propague a marca da análise técnica se o custo ainda usar a equipe condicionada por essa mesma premissa. Uma hipótese que afeta só o cenário alternativo não torna o cenário-base inconclusivo. Quando a incerteza for relevante, acrescente um cenário conservador e um crítico. Faça sensibilidade para os vetores que mais mexem no resultado: volume de corretivas, peças, horas técnicas, tributos, reajuste, mobilização e prazo de pagamento.
+
+**Exemplo.** O TR fixa a referência de 28 h/mês para corretivas. Precifique o cenário-base com a equipe calculada para essa carga e as demais horas documentadas. Se uma hipótese de volume maior exigir quatro técnicos e produzir margem negativa, mostre esse risco só no cenário alternativo. Preserve a equipe do cenário-base e calcule a margem com esse custo; a margem negativa do alternativo não dispara a trava.
 
 Indicadores mínimos:
 

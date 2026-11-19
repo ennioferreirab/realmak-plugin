@@ -96,6 +96,8 @@ Cada `analise/habilitacao/<alias>.json` usa o mesmo envelope v1, com apenas a em
  "arquivos": [{"rotulo": "", "caminho": ""}]}
 ```
 
+Em `tecnica.json` e `precificacao.json`, `premissa_decisiva` (booleano opcional) indica que a conclusão-base ainda depende de hipótese que muda equipe ou recomendação. Marque `true` somente se a hipótese ainda afetar a conclusão publicada. Cite a hipótese e a lacuna no resumo e mantenha o seu efeito em cenário alternativo. O score trata essa dimensão como inconclusiva. Saídas antigas continuam válidas.
+
 Acréscimos:
 
 - `cotacoes_online[]`: uma linha por oferta usada; `item` é o de `itens[].item`; `observacao` leva condição comercial, frete, embalagem, "BASE DE CUSTO … compatibilidade não confirmada" e referência de compra pública. Em `tecnica.json`, fornecimento; em `precificacao.json`, peças da manutenção.
