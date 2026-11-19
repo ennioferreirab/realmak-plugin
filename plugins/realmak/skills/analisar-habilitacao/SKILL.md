@@ -117,6 +117,17 @@ Use a análise de execução por objeto indicada em `analisar-edital`. Em manute
 
 Compare dentro de cada lote ou combinação e apenas entre coberturas equivalentes. Priorize a situação comprovada e a capacidade técnica e comercial sustentada. Uma eliminatória prevalece sobre qualquer contagem. Use os totais da tabela existente apenas para resumir a cobertura. A ordem de entrada não é critério e empates sem diferença material permanecem. Se o edital limitar a adjudicação, examine quais combinações permanecem viáveis antes de recomendar os lotes. Se nenhuma empresa puder avançar ou se a escolha depender de evidência, diga isso e identifique a decisão ou prova que falta.
 
+## Saída do card na análise automática
+
+Em cada parcial `analise/habilitacao/<alias>.json` e na consolidação `analise/habilitacao.json`, mantenha o contrato v1. Acrescente estes campos quando aplicáveis:
+
+- `empresas[].exigencias[].grupo`: use a categoria da exigência em `analise/edital.json`: `juridica`, `fiscal`, `trabalhista`, `economico_financeira` ou `tecnica`.
+- `empresas[].exigencias[].motivo`: para `situacao` diferente de `atende`, escreva em até 120 caracteres a lacuna documental ou o impedimento. Exemplo: “Balanço 2025 não localizado; o de 2024 não vale”.
+- `empresas[].exigencias[].acao`: use `{"o_que":"…","quem":"…","ate":"AAAA-MM-DD"}` quando houver providência concreta, como emitir certidão, preparar declaração, pedir nova via ou confirmar equivalência. Use `ate: ""` se o prazo não estiver confirmado. Falha de pesquisa do agente não é providência da analista.
+- `pesquisa_incompleta` na raiz: reúna por empresa as falhas de acesso, teto e tempo que deixaram a pesquisa incompleta. Use `{"empresa":"<alias>","motivo":"<vias afetadas, tentativas e impacto>"}`. Detalhes operacionais ficam só aqui no JSON do card. Na linha, indique a prova que falta, por exemplo “CATs 41/2023 e 52/2024 não lidas”. Preserve `cobertura[].estado: "falha"` quando aplicável, com via e consulta para o G2, sem repetir o detalhe do erro.
+
+Na consolidação, preserve `grupo`, `motivo`, `acao` e a prova de cada parcial válido. Reúna as falhas por alias, sem duplicar o mesmo motivo. Se o daemon indicar que uma parcial inteira falhou, registre o motivo operacional em `pesquisa_incompleta` e recrie as linhas com os grupos do edital, `situacao: "verificar"` e a lacuna documental. Não invente provas, responsáveis ou prazos.
+
 ## Saída
 
 Entregue a análise na conversa e mantenha os originais na pasta da licitação, conforme a seção de arquivamento. Comece pelo resultado, depois as pendências, depois o detalhe por empresa. Mostre em linhas separadas o estado operacional da aquisição e o resultado da análise documental do verificador. Inclua os vínculos pendentes por cláusula mesmo com fila operacional encerrada.

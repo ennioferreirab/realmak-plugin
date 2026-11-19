@@ -2,6 +2,7 @@
 
 import json
 import re
+from datetime import date
 from graphlib import TopologicalSorter
 from pathlib import Path
 
@@ -133,6 +134,7 @@ def test_contrato_do_card(arquivo, objetos, listas):
         assert exemplo["mais_aderente"] in (*EMPRESAS, None)
         assert {e["empresa"] for e in exemplo["empresas"]} == set(EMPRESAS)
         linhas = {(c["empresa"], c["exigencia"], c["fonte"]): c for c in exemplo["cobertura"]}
+        grupos = {linha["fonte"]: linha["grupo"] for linha in ler_json(EXEMPLO / "edital.json")["habilitacao"]}
         for empresa in exemplo["empresas"]:
             assert empresa["aderencia"] in {"alta", "media", "baixa", "nao_atende"}
             for exigencia in empresa["exigencias"]:
@@ -142,3 +144,20 @@ def test_contrato_do_card(arquivo, objetos, listas):
                 assert type(registro["eliminatoria"]) is bool
                 assert registro["estado"] in {"prova_lida", "vias_esgotadas", "falha", "pendente"}
                 assert all({"via", "consulta", "resultado"} <= t.keys() for t in registro["tentativas"])
+
+                if "grupo" in exigencia:
+                    assert exigencia["grupo"] == grupos[exigencia["fonte"]]
+                if "motivo" in exigencia:
+                    assert exigencia["situacao"] != "atende" and 0 < len(exigencia["motivo"]) <= 120
+                if "acao" in exigencia:
+                    acao = exigencia["acao"]
+                    assert acao["o_que"] and acao["quem"]
+                    assert acao["ate"] == "" or date.fromisoformat(acao["ate"]).isoformat() == acao["ate"]
+        if "pesquisa_incompleta" in exemplo:
+            assert isinstance(exemplo["pesquisa_incompleta"], list)
+            aliases = set()
+            for alerta in exemplo["pesquisa_incompleta"]:
+                assert alerta["empresa"] in EMPRESAS and alerta["empresa"] not in aliases
+                aliases.add(alerta["empresa"])
+                assert alerta["motivo"]
+            assert {linha["empresa"] for linha in linhas.values() if linha["estado"] == "falha"} <= aliases

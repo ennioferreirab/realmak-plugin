@@ -2,7 +2,7 @@
   "versao": 1,
   "gerado_em": "2026-11-16T10:20",
   "mais_aderente": "realmak",
-  "resultado": "Realmak: 3 atendidas, 1 com o técnico, nenhuma faltando.",
+  "resultado": "Realmak tem prova parcial para a exigência técnica. A comprovação depende de validação técnica.",
   "empresas": [
     {
       "empresa": "realmak",
@@ -14,7 +14,14 @@
           "fonte": "TR 8.1",
           "situacao": "parcial",
           "prova": "Técnico decide · Atestado fictício, p. 2: “25 unidades entregues”; o TR exige 30 unidades. Conferir se outra prova válida pode compor o total.",
-          "validade": ""
+          "validade": "",
+          "grupo": "tecnica",
+          "motivo": "Atestado comprova 25 das 30 unidades exigidas.",
+          "acao": {
+            "o_que": "Confirmar se os atestados podem ser somados",
+            "quem": "Responsável técnico",
+            "ate": ""
+          }
         }
       ],
       "pendencias": [
@@ -31,7 +38,9 @@
           "fonte": "TR 8.1",
           "situacao": "verificar",
           "prova": "Falta · não achado no cérebro",
-          "validade": ""
+          "validade": "",
+          "grupo": "tecnica",
+          "motivo": "Atestado do objeto não localizado."
         }
       ],
       "pendencias": [
@@ -41,14 +50,16 @@
     {
       "empresa": "una",
       "aderencia": "baixa",
-      "resumo": "Não avaliada: sem acesso ao cérebro da UNA.",
+      "resumo": "Atestado do objeto ainda sem conferência.",
       "exigencias": [
         {
           "exigencia": "Atestado de fornecimento de insumos para impressão 3D",
           "fonte": "TR 8.1",
           "situacao": "verificar",
-          "prova": "Não avaliada: sem acesso ao cérebro da UNA.",
-          "validade": ""
+          "prova": "Validação pendente · sem original lido.",
+          "validade": "",
+          "grupo": "tecnica",
+          "motivo": "Atestado do objeto não conferido."
         }
       ],
       "pendencias": []
@@ -56,14 +67,16 @@
     {
       "empresa": "nortfort",
       "aderencia": "baixa",
-      "resumo": "Não avaliada: sem acesso ao cérebro da Nortfort.",
+      "resumo": "Atestado do objeto ainda sem conferência.",
       "exigencias": [
         {
           "exigencia": "Atestado de fornecimento de insumos para impressão 3D",
           "fonte": "TR 8.1",
           "situacao": "verificar",
-          "prova": "Não avaliada: sem acesso ao cérebro da Nortfort.",
-          "validade": ""
+          "prova": "Validação pendente · sem original lido.",
+          "validade": "",
+          "grupo": "tecnica",
+          "motivo": "Atestado do objeto não conferido."
         }
       ],
       "pendencias": []
@@ -117,7 +130,7 @@
         {
           "via": "cerebro_buscar",
           "consulta": "atestado insumos impressão 3D",
-          "resultado": "Não avaliada: sem acesso ao cérebro da UNA."
+          "resultado": "Via inconclusiva."
         }
       ]
     },
@@ -131,9 +144,19 @@
         {
           "via": "cerebro_buscar",
           "consulta": "atestado insumos impressão 3D",
-          "resultado": "Não avaliada: sem acesso ao cérebro da Nortfort."
+          "resultado": "Via inconclusiva."
         }
       ]
+    }
+  ],
+  "pesquisa_incompleta": [
+    {
+      "empresa": "una",
+      "motivo": "Cérebro da UNA indisponível após três tentativas; atestado do TR 8.1 ficou sem conferência."
+    },
+    {
+      "empresa": "nortfort",
+      "motivo": "Tempo de pesquisa esgotado antes da abertura das provas de TR 8.1."
     }
   ]
 }

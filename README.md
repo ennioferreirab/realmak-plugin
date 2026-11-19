@@ -2,7 +2,7 @@
 
 Servidor MCP remoto (Streamable HTTP, caminho `/mcp`) que dá aos analistas de licitação da Realmak, dentro do Claude e do Codex, quatro grupos de ferramentas, e um plugin com as skills que ensinam a usá-las, instalável nos dois. Só as ferramentas `licitacao_*` escrevem, e só na licitação do Odoo, como a pessoa que entrou.
 
-A versão atual do plugin é **0.11.0**. Veja os [limites](#limites-do-mvp) no fim.
+A versão atual do plugin é **0.11.1**. Veja os [limites](#limites-do-mvp) no fim.
 
 O checkout também fornece os [agentes do CRM](agentes/), fora do pacote do plugin. O Analisador de Edital usa as mesmas [skills publicadas](plugins/realmak/skills/) e mantém [o contrato de saídas do card](agentes/analisador-edital/referencias/card/CONTRATO.md).
 
