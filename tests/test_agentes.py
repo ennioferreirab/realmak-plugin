@@ -59,7 +59,7 @@ def test_skills_unicas_e_frontmatter():
 
 def test_fluxo_e_referencias():
     fluxo = ler_json(ANALISADOR / "fluxo.json")
-    assert fluxo["versao"] >= 4
+    assert fluxo["versao"] >= 5
     ids = set()
     saidas = {}
     etapas = {}
@@ -91,6 +91,9 @@ def test_fluxo_e_referencias():
                 nome = item["skill"]
                 assert item["tier"] in ("T1", "T2") and item["saida"]
                 assert any((base / nome / "SKILL.md").is_file() for base in (ANALISADOR / "skills", SKILLS)), nome
+            elif item["modo"] == "baixar":
+                assert item["tier"] == "T0" and item["empresa"] in EMPRESAS
+                assert "cmd" not in item and "skill" not in item
             else:
                 assert (item["modo"], item["tier"], item["cmd"][0]) == ("script", "T0", "python3")
                 cmd = item["cmd"]
@@ -102,9 +105,20 @@ def test_fluxo_e_referencias():
     e2 = {i["id"]: i for i in etapas["E2"]["itens"]}
     parciais = {f"habilitacao-{empresa}" for empresa in EMPRESAS}
     for empresa in EMPRESAS:
+        pesquisa = e2[f"pesquisa-habilitacao-{empresa}"]
+        assert (pesquisa["skill"], pesquisa["tier"]) == ("analisar-habilitacao", "T1")
+        assert empresa in pesquisa["passos"] and pesquisa["depende_de"] == ["cerebro"]
+        assert pesquisa["tolera_falha"] is True
+        assert pesquisa["saida"] == f"fontes/habilitacao/{empresa}/candidatos.json"
+        baixar = e2[f"baixar-habilitacao-{empresa}"]
+        assert (baixar["modo"], baixar["tier"], baixar["empresa"]) == ("baixar", "T0", empresa)
+        assert baixar["depende_de"] == [pesquisa["id"]]
+        assert baixar["entrada"] == pesquisa["saida"]
+        assert baixar["saida"] == f"fontes/habilitacao/{empresa}/downloads.json"
         item = e2[f"habilitacao-{empresa}"]
-        assert (item["skill"], item["tier"]) == ("analisar-habilitacao", "T1")
-        assert empresa in item["passos"] and not item.get("depende_de")
+        assert (item["skill"], item["tier"]) == ("analisar-habilitacao", "T2")
+        assert empresa in item["passos"] and item["depende_de"] == [baixar["id"]]
+        assert item["tolera_falha"] is True
         assert item["saida"] == f"analise/habilitacao/{empresa}.json"
     final = e2["habilitacao"]
     assert set(final["depende_de"]) == parciais and final["tolera_falha"] is True

@@ -4,11 +4,11 @@ Use a skill [cerebro](../../../plugins/realmak/skills/cerebro/SKILL.md). Identif
 
 ## Consulta curta antes do G1
 
-Leia o manifesto, o resumo disponível e o mapa de leitura. Busque três pontos que podem mudar a decisão: histórico no órgão, objeto semelhante com os quantitativos exigidos, e sanção ou pendência que alcance o certame. Grave `fontes/cerebro_g1.json` com `perguntas` contendo `orgao`, `objeto` e `sancoes`. Cada resposta indica a empresa ou a cobertura e a lacuna. Conserve no texto dos achados os números de CATs, atestados e contratos, com a empresa e a exigência provável.
+Leia o manifesto, o resumo disponível e o mapa de leitura. Busque três pontos que podem mudar a decisão: histórico no órgão, objeto semelhante com os quantitativos exigidos, e sanção ou pendência que alcance o certame. Grave `fontes/cerebro_g1.json` com `perguntas` contendo `orgao`, `objeto` e `sancoes`. Cada resposta indica a empresa ou a cobertura e a lacuna. Antes de gravar, revise também as respostas das ferramentas. Registre em `pistas` cada número de CAT, atestado ou contrato encontrado e a empresa titular confirmada, mesmo quando o número não couber no resumo dos achados. Preserve zeros iniciais e a grafia da fonte.
 
 ## Consulta histórica depois do G1
 
-Aprofunde preços, compras, BDI, atas e recursos. Diferencie compra efetiva, preço proposto e estimativa. Inclua as pistas do G1 em `fontes/cerebro.json` com a origem e o grau de confiança. A pesquisa documental por exigência cabe aos itens de habilitação.
+Aprofunde preços, compras, BDI, atas e recursos. Diferencie compra efetiva, preço proposto e estimativa. Inclua as pistas do G1 em `fontes/cerebro.json` e acrescente todas as novas pistas numeradas encontradas, com a origem. A pesquisa de cada empresa lê a união das duas saídas e faz uma consulta dirigida por identificador. A pesquisa documental por exigência cabe aos itens de habilitação.
 
 ## Saídas
 
@@ -17,6 +17,7 @@ Aprofunde preços, compras, BDI, atas e recursos. Diferencie compra efetiva, pre
   "consultado_em": "AAAA-MM-DD",
   "disponivel": true,
   "erro": null,
+  "pistas": [{"empresa": "realmak", "tipo": "cat|atestado|contrato", "numero": "00123/2026", "referencia": "<fonte da pista>"}],
   "achados": [{
     "tema": "orgao|habilitacao|preco|concorrencia|bdi",
     "achado": "[Empresa] …",
