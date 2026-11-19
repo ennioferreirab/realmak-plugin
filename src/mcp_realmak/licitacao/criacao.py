@@ -12,6 +12,8 @@ from fastmcp.exceptions import ToolError
 from ..compras._shared.http_client import http_get
 from ..compras.dadosabertos import client as dados_abertos
 from ..compras.dadosabertos.constants import API_BASE as COMPRAS_API
+from ..compras.dadosabertos.schemas import Licitacao
+from ..compras.exceptions import HttpClientError
 from ..compras.pncp import client as pncp
 from ..conlicitacao.format import link_licitacao
 from ..conlicitacao.tools import get_site_client
@@ -156,6 +158,18 @@ async def duplicado_outra_fonte(odoo: OdooClient, dados: dict) -> dict | None:
     return next(iter(encontrados.values()), None)
 
 
+async def localizar_compras_historico(dados: dict, data: date) -> Licitacao | None:
+    dia = data.isoformat()
+    pagina = await dados_abertos.buscar_licitacoes(dia, dia, uasg=int(dados["uasg"]), tamanho=100)
+    candidatos = [item for item in pagina.licitacoes if (
+        (dados.get("processo") and item.numero_processo == dados["processo"])
+        or (dados.get("edital") and (item.numero_aviso, data.year) == numero_edital(dados["edital"]))
+    )]
+    if len(candidatos) > 1 or pagina.total > 100:
+        raise ToolError("Busca nos Dados Abertos ambígua ou incompleta. Informe o link oficial.")
+    return candidatos[0] if candidatos else None
+
+
 async def criar(
     odoo: OdooClient, link: str | None, id_conlicitacao: int | None,
     controle_pncp: str | None, dados: dict, data: date | None,
@@ -164,6 +178,7 @@ async def criar(
     tentativas = ["ConLicitação"]
     ref = pncp.resolver_compra(numero_controle_pncp=controle_pncp) if controle_pncp else None
     compras_id = None
+    link_portal = False
     if link:
         url = urlsplit(link)
         if url.scheme not in ("https", "http") or not url.hostname or url.username or url.password:
@@ -187,31 +202,42 @@ async def criar(
                 compras_id = compra
                 dados.setdefault("uasg", compra[:6])
                 dados.setdefault("edital", f"{int(compra[8:13])}/{compra[13:]}")
-    if id_conlicitacao:
-        card = await existente(odoo, conlicitacao_id=id_conlicitacao)
-        if card:
-            return resultado(card, False, tentativas)
+        else:
+            link_portal = not ref
     # Um controle oficial permite enriquecer a consulta ao ConLicitação antes da escolha da fonte.
     detalhe = await consultar_pncp(ref) if ref and not id_conlicitacao else None
     if detalhe:
-        dados = {**dados, **{k: v for k, v in dados_pncp(detalhe).items() if v is not None}}
+        dados = {**dados, **{k: v for k, v in dados_pncp(detalhe).items() if v not in (None, "")}}
     con_id = id_conlicitacao or await localizar_conlicitacao(dados, None if ref else data)
     if con_id:
-        card = await existente(odoo, conlicitacao_id=con_id)
-        if card:
+        referencia = {"conlicitacao_id": con_id}
+        conferencia = await odoo.chamar("importar", {**referencia, "somente_conferir": True})
+        if card := conferencia["licitacao"]:
             return resultado(card, False, tentativas)
-        return {
-            "criado": False, "ja_existia": False, "chave": str(con_id), "fonte": "conlicitacao",
-            "licitacao": None, "fonte_url": link_licitacao(con_id), "tentativas": tentativas,
-            "proximos_passos": ["Use Importar link na tela de licitações do CRM com este ID ou link. "
-                                "O fluxo de importação requer a sessão do CRM."],
-        }
+        if somente_conferir:
+            return {
+                "criado": False, "ja_existia": False, "chave": str(con_id), "fonte": "conlicitacao",
+                "licitacao": None, "fonte_url": link_licitacao(con_id), "tentativas": tentativas,
+                "proximos_passos": ["Use somente_conferir=false para importar pelo ConLicitação."],
+            }
+        gravado = await odoo.chamar("importar", referencia)
+        return resultado(gravado["licitacao"], gravado["criado"], tentativas, preparacao=gravado["preparacao"])
     tentativas.append("PNCP")
     if not ref:
-        ref = await localizar_pncp(dados, data)
-        if ref:
-            detalhe = await consultar_pncp(ref)
-            dados = {**dados, **{k: v for k, v in dados_pncp(detalhe).items() if v is not None}}
+        try:
+            candidato = await localizar_pncp(dados, data)
+            if candidato:
+                detalhe = await consultar_pncp(candidato)
+                if detalhe.get("numeroControlePNCP"):
+                    ref = candidato
+                    dados.update({k: v for k, v in dados_pncp(detalhe).items() if v not in (None, "")})
+        except HttpClientError:
+            if not link_portal:
+                raise
+            tentativas.append("PNCP: consulta indisponível; seguindo com a URL informada se Compras.gov não confirmar.")
+        else:
+            if not ref:
+                tentativas.append("PNCP: sem correspondência confirmada.")
     identificador = None
     if not ref and compras_id:
         tentativas.append("Compras.gov / Dados Abertos")
@@ -227,12 +253,12 @@ async def criar(
             ref = pncp.resolver_compra(numero_controle_pncp=controle)
             detalhe = await consultar_pncp(ref)
             if detalhe.get("numeroControlePNCP"):
-                dados.update({k: v for k, v in dados_pncp(detalhe).items() if v is not None})
+                dados.update({k: v for k, v in dados_pncp(detalhe).items() if v not in (None, "")})
         else:
-            dados.update(
-                objeto=linha.get("objetoCompra"), processo=linha.get("processo"),
-                orgao=linha.get("orgaoEntidadeRazaoSocial"), uf=linha.get("unidadeOrgaoUfSigla"),
-            )
+            dados.update({k: v for k, v in {
+                "objeto": linha.get("objetoCompra"), "processo": linha.get("processo"),
+                "orgao": linha.get("orgaoEntidadeRazaoSocial"), "uf": linha.get("unidadeOrgaoUfSigla"),
+            }.items() if v not in (None, "")})
     if ref:
         if not detalhe or not detalhe.get("numeroControlePNCP"):
             raise ToolError("PNCP não confirmou o identificador da licitação.")
@@ -241,26 +267,26 @@ async def criar(
         if not compras_id:
             tentativas.append("Compras.gov / Dados Abertos")
         if not compras_id and data and dados.get("uasg") and data.year <= 2020:
-            dia = data.isoformat()
-            pagina = await dados_abertos.buscar_licitacoes(dia, dia, uasg=int(dados["uasg"]), tamanho=100)
-            candidatos = [item for item in pagina.licitacoes if (
-                (dados.get("processo") and item.numero_processo == dados["processo"])
-                or (dados.get("edital") and (item.numero_aviso, data.year) == numero_edital(dados["edital"]))
-            )]
-            if len(candidatos) > 1 or pagina.total > 100:
-                raise ToolError("Busca nos Dados Abertos ambígua ou incompleta. Informe o link oficial.")
-            if candidatos:
-                compra = candidatos[0]
-                compras_id = compra.id_compra or compra.identificador
-                dados.update(objeto=compra.objeto, abertura=compra.data_abertura_proposta,
-                             valor_estimado=compra.valor_estimado_total)
+            try:
+                compra = await localizar_compras_historico(dados, data)
+            except HttpClientError:
+                if not link_portal:
+                    raise
+                tentativas.append("Dados Abertos: consulta indisponível; seguindo com a URL informada.")
+            else:
+                if compra:
+                    compras_id = compra.id_compra or compra.identificador
+                    dados.update({k: v for k, v in {
+                        "objeto": compra.objeto, "abertura": compra.data_abertura_proposta,
+                        "valor_estimado": compra.valor_estimado_total,
+                    }.items() if v not in (None, "")})
+                else:
+                    tentativas.append("Dados Abertos: sem correspondência confirmada.")
         if compras_id:
             fonte, identificador = "compras", compras_id
         elif link:
             fonte = "portal"
-            if not (dados.get("processo")
-                    or (dados.get("edital") and (dados.get("uasg") or dados.get("orgao")))):
-                tentativas.append("Sem identificadores para cruzar fontes; conferência pela URL canônica.")
+            tentativas.append("Portal: conferência pela URL canônica; sem confirmação pelo Compras.gov.")
         else:
             return {
                 "criado": False, "ja_existia": False, "licitacao": None, "tentativas": tentativas,
@@ -269,9 +295,13 @@ async def criar(
             }
     parametros = {"fonte": fonte, "identificador": identificador, "url": link, "dados": dados, "empresa": empresa}
     conferencia = await odoo.chamar("criar", {**parametros, "somente_conferir": True})
-    card = conferencia["licitacao"] or await duplicado_outra_fonte(odoo, dados)
-    if card:
-        return resultado(card, False, tentativas)
+    card = conferencia["licitacao"]
+    if card and (somente_conferir or not dados):
+        return resultado(card, False, tentativas, atualizado=False)
+    if not card:
+        duplicado = await duplicado_outra_fonte(odoo, dados)
+        if duplicado:
+            return resultado(duplicado, False, tentativas, atualizado=False)
     if somente_conferir:
         return {
             "licitacao": None, "chave": conferencia["chave"], "fonte": fonte,
@@ -279,4 +309,4 @@ async def criar(
             "proximos_passos": ["Use somente_conferir=false para criar o card."],
         }
     gravado = await odoo.chamar("criar", parametros)
-    return resultado(gravado["licitacao"], gravado["criado"], tentativas)
+    return resultado(gravado["licitacao"], gravado["criado"], tentativas, atualizado=gravado.get("atualizado", False))

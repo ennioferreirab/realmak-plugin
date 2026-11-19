@@ -81,5 +81,5 @@ Quando a tarefa autorizar atualização de status, marque `trabalhando` ao come�
 ## Adicionar uma licitação
 
 - Use `licitacao_criar` com o link, ID ConLicitação, controle PNCP ou os dados do certame (processo ou edital com órgão/UASG). A ferramenta confere se o card já existe e dá prioridade à fonte ConLicitação, depois às fontes oficiais.
-- Se a busca pedir o link oficial, localize o edital na internet ou no portal do órgão e volte com o link e os identificadores disponíveis. Se houver instrução de importação pelo ConLicitação, use **Importar link** no CRM.
+- Se a busca pedir o link oficial, localize o edital na internet ou no portal do órgão. Leia a página e o edital antes de chamar `licitacao_criar` com o link e os dados confirmados (órgão, edital, processo, objeto, local, datas e valor, quando disponíveis). A mesma chamada pode preencher campos vazios de um card externo existente.
 - Abra `licitacao_pasta` pela chave devolvida. Confira fonte, empresa disputante e pasta de trabalho. Baixe na fonte os originais que faltarem, envie edital e anexos com `licitacao_enviar_arquivo` e complete os dados do card.
