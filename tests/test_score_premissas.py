@@ -46,3 +46,24 @@ def test_cenario_alternativo_nao_substitui_base(tmp_path):
     })
     assert result["trava"] is None and result["nota"] != 1
     assert "3,6" in result["termos"][-1]["motivo"]
+
+
+def test_score_exibe_percentuais_usados_e_aplica_minima_da_precificacao(tmp_path):
+    result = calcular(tmp_path, precificacao={
+        "tributos_pct": 19.29, "margem_pct": 4.82, "margem_minima_pct": 4.0,
+    })
+    assert result["termos"][-1]["pontos"] == 40
+    assert result["hipotese_precificacao"] == "tributos 19,29%, margem mínima 4%, margem calculada 4,82%"
+
+
+def test_saida_antiga_deriva_tributos_do_componente_mensal(tmp_path):
+    result = calcular(tmp_path, precificacao={
+        "preco_mensal": 38633.33, "margem_pct": 4.82,
+        "componentes": [{"componente": "tributos", "valor_mensal": 7452.37}],
+    })
+    assert result["hipotese_precificacao"] == "tributos 19,29%, hipótese: margem mínima 10%, margem calculada 4,82%"
+
+
+def test_score_preserva_aliquota_zero_e_coloca_fallback_como_hipotese(tmp_path):
+    result = calcular(tmp_path, precificacao={"tributos_pct": 0, "margem_minima_pct": True})
+    assert result["hipotese_precificacao"] == "tributos 0%, hipótese: margem mínima 10%"

@@ -4,7 +4,7 @@ O fluxo v5 usa quatro pesquisas T1 e quatro cruzamentos T2, uma cadeia por empre
 
 ## Pesquisa T1
 
-`pesquisa-habilitacao-<alias>` grava `fontes/habilitacao/<alias>/candidatos.json` na pasta do agente, com as exigências da análise do edital e as tentativas por cláusula. Use somente identificadores retornados pelo Cérebro da empresa indicada. Envie todos os candidatos materiais, inclusive quando a pertinência depender de abrir a cópia. Uma pista sem identificador recuperável permanece nas tentativas.
+`pesquisa-habilitacao-<alias>` grava `fontes/habilitacao/<alias>/candidatos.json` na pasta do agente, com as exigências da análise do edital e as tentativas por cláusula. Consulte o Cérebro por exigência e a pasta local. Aceite ID do Cérebro da empresa indicada ou SHA-256 de cópia local autorizada dessa empresa. Envie todos os candidatos materiais, inclusive quando a pertinência depender de abrir a cópia. Uma pista sem identificador recuperável permanece nas tentativas.
 
 Exemplo fictício:
 
@@ -27,7 +27,7 @@ Exemplo fictício:
 }
 ```
 
-Prefira o `id` de registro aceito por `cerebro_provas` na empresa do item. Inclua `sha256` quando disponível. Quando só houver o hash completo, informe `sha256` sem preencher `id`: o daemon usa busca por hash e arquiva apenas a correspondência exata. Inclua `titulo` e `motivo` em qualquer caso. Pista sem ID e sem hash completo fica nas tentativas.
+Prefira o `id` de registro aceito por `cerebro_provas` na empresa do item. Inclua `sha256` quando disponível. Quando só houver o hash completo de uma cópia local ou de resultado do Cérebro, informe `sha256` sem preencher `id`. O daemon procura primeiro a cópia local autorizada da empresa e da licitação e verifica os bytes pelo hash. Se não a encontrar, busca no Cérebro e arquiva a correspondência exata. Inclua `titulo` e `motivo` em qualquer caso. Pista sem ID e sem hash completo fica nas tentativas.
 
 A união de `pistas[]` e dos números nos achados de `fontes/cerebro_g1.json` e `fontes/cerebro.json` é a pauta de buscas dirigidas do alias. Preserve os números como texto, inclusive os zeros iniciais. Para cada lista vazia, as tentativas distinguem busca sem achados, exclusão fundamentada e pesquisa incompleta (por exemplo, ferramenta ausente). Em pesquisa incompleta, informe a causa e preserve as pistas. O T2 reflete a lacuna na saída do card.
 

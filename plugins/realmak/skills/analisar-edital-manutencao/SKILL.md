@@ -134,7 +134,7 @@ Comece pela memória de dimensionamento do órgão. Leia o TR, o ETP e suas plan
 Calcule três blocos de carga:
 
 1. **Programada:** quantidade por classe de ativo × frequência anual × tempo padrão.
-2. **Não programada:** corretivas, retornos, emergências e retrabalho. Use a reserva de horas do órgão, se houver. Sem reserva ou histórico aplicável, registre a lacuna e teste uma premissa explícita. Não trate o saldo entre unidade de contratação indefinida e eventos preventivos como número comprovado de corretivas.
+2. **Não programada:** corretivas, retornos, emergências e retrabalho. Use a reserva de horas do órgão, se houver. Na falta de reserva do órgão, consulte primeiro o Cérebro por ordens de serviço e contratos comparáveis. Se o esquema expuser `reg_ordem_servico` e `reg_ordem_servico__itens`, relacione-os por `registro_id`. Nos registros e itens de OS, confira categoria e descrição, unidade de medida, período, horas de execução e escopo. Use histórico com horas e cobertura comparáveis como referência marcada **(Histórico)**, com fonte e método. Se a consulta falhar ou a base não for aplicável, registre o motivo e siga com **(P)** explícita. Não trate o saldo entre unidade de contratação indefinida e eventos preventivos como número comprovado de corretivas.
 3. **Indireta:** deslocamentos, liberação de equipamento, documentação, reuniões, gestão, estoque, sistema de gestão, treinamento e mobilização.
 
 Faça a conta pelo arquivo de dados: lance as atividades em `escopo` e a equipe em `equipe`. O script converte a carga anual em horas mensais e compara com as horas produtivas reais da equipe. Nos descontos, considere férias, feriados, pausas, deslocamentos, indisponibilidades e reserva para pico. Informe cobertura e folga.
@@ -142,6 +142,8 @@ Faça a conta pelo arquivo de dados: lance as atividades em `escopo` e a equipe 
 Uma **(P)** cuja variação muda o número de técnicos ou a recomendação fica em cenário alternativo. Mantenha a carga, a equipe e a conclusão do cenário-base livres desse cenário. Se faltar um dado decisivo para calcular o cenário-base, deixe a conclusão condicionada e mostre a faixa apenas como sensibilidade. Identifique a premissa e o que precisa ser confirmado. No fluxo do card, use `premissa_decisiva: true` em `tecnica.json` se essa lacuna ainda condicionar a conclusão-base.
 
 **Exemplo.** A planilha do TR informa reserva de **28 h/mês** para corretivas e declara falta de histórico. Use 28 h/mês no cenário-base e cite a planilha. Um saldo obtido de serviços em “SV” sem definição, menos eventos preventivos, não substitui a reserva. Só examine um volume maior como cenário alternativo **(P)**, com unidade e efeito na equipe explicitados.
+
+**Exemplo sem reserva do órgão.** As OS classificadas como corretivas trazem quantidades em unidades ou em serviços, sem duração nem série mensal comparável. Isso ajuda a identificar tipos de serviço, mas não estima horas mensais. Registre a limitação e use uma hipótese explícita de carga; mantenha o impacto na equipe como cenário alternativo.
 
 Faça dois testes à parte, porque é neles que a equipe costuma faltar: o **primeiro ciclo** (todo o inventário passa por preventiva e cadastro ao mesmo tempo) e o **pior SLA** do edital.
 

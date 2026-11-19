@@ -45,7 +45,7 @@ def numero(v):
 
 
 def pct(x):
-    return f"{x:.1f}".rstrip("0").rstrip(".").replace(".", ",") + "%"
+    return f"{x:.2f}".rstrip("0").rstrip(".").replace(".", ",") + "%"
 
 
 
@@ -153,13 +153,57 @@ def termo_executar(tec, maximo):
     return round(maximo * fator), {"sim": "Atende", "com_ressalvas": "Atende com condições", "nao": "Não atende"}[conclusao["viavel"]]
 
 
+def percentual_valido(valor):
+    return numero(valor) and 0 <= valor <= 100
+
+
+def tributos_da_precificacao(prec):
+    aliquota = prec.get("tributos_pct")
+    if percentual_valido(aliquota):
+        return aliquota
+    preco = prec.get("preco_mensal")
+    if not numero(preco) or preco <= 0:
+        return None
+    componentes = prec.get("componentes")
+    valores = [
+        c.get("valor_mensal") for c in componentes
+        if isinstance(c, dict) and c.get("componente") == "tributos"
+    ] if isinstance(componentes, list) else []
+    if len(valores) == 1 and numero(valores[0]) and 0 <= valores[0] <= preco:
+        return 100 * valores[0] / preco
+    return None
+
+
+def margem_minima(prec, params):
+    minima = prec.get("margem_minima_pct")
+    return minima if percentual_valido(minima) else params["precificacao"]["margem_minima_pct"]
+
+
+def resumo_precificacao(prec, params):
+    tributos = tributos_da_precificacao(prec)
+    minimo = margem_minima(prec, params)
+    partes = [
+        f"tributos {pct(tributos)}" if tributos is not None
+        else f"hipótese: tributos {pct(params['precificacao']['tributos_pct'])}",
+        f"margem mínima {pct(minimo)}" if percentual_valido(prec.get("margem_minima_pct"))
+        else f"hipótese: margem mínima {pct(minimo)}",
+    ]
+    margem = prec.get("margem_pct")
+    if numero(margem):
+        rotulo = "margem calculada"
+        if prec.get("premissa_decisiva") is True:
+            rotulo = "margem condicionada"
+        partes.append(f"{rotulo} {pct(margem)}")
+    return ", ".join(partes)
+
+
 def termo_lucro(prec, params, maximo):
     if not prec:
         return round(maximo / 4), None, "Sem precificação"
     if prec.get("premissa_decisiva") is True:
         return round(maximo / 4), None, "Margem depende de premissa sem confirmação"
     margem = prec.get("margem_pct")
-    minima = params["precificacao"]["margem_minima_pct"]
+    minima = margem_minima(prec, params)
     if prec.get("exequivel") == "nao":
         return 0, margem if numero(margem) else None, "Inexequível no valor estimado"
     if not numero(margem):
@@ -217,7 +261,7 @@ def calcular(pasta, params, fallbacks=(), hoje=None):
     termos = [{"rotulo": "Podemos participar?", "pontos": pt, "maximo": maximos["triagem"], "motivo": mt},
               {"rotulo": "Dá para executar?", "pontos": pl, "maximo": maximos["lote"], "motivo": ml},
               {"rotulo": "Dá lucro?", "pontos": pm, "maximo": maximos["margem"], "motivo": mm}]
-    hipotese = f"hipótese: tributos {params['precificacao']['tributos_pct']:g}%, margem mínima {params['precificacao']['margem_minima_pct']:g}%"
+    hipotese = resumo_precificacao(prec or {}, params)
     tip = [f"{t['rotulo']} {t['pontos']}/{t['maximo']}: {t['motivo']}" for t in termos]
     if travas:
         tip.append("Trava, score até 20: " + "; ".join(f"{t['motivo']} ({t['fonte']})" for t in travas))
