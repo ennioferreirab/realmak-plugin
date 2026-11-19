@@ -237,6 +237,7 @@
           "modo": "skill",
           "tier": "T2",
           "skill": "analise-tecnica",
+          "cerebro_apoio": true,
           "saida": "analise/tecnica.json"
         },
         {
@@ -245,6 +246,7 @@
           "modo": "skill",
           "tier": "T1",
           "skill": "cotar-pecas-materiais-licitacoes",
+          "cerebro_apoio": true,
           "passos": "cotar peças incluídas no preço com base no edital e no TR; se não houver peças, registrar que não se aplica",
           "saida": "fontes/pecas.json"
         },

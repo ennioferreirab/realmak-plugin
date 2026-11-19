@@ -124,6 +124,7 @@ def test_fluxo_e_referencias():
     assert set(final["depende_de"]) == parciais and final["tolera_falha"] is True
     assert final["saida"] == "analise/habilitacao.json" and final["tier"] == "T2"
     assert "rerodar" in etapas["G2"]["decisoes"]
+    assert {nome for nome, etapa in e2.items() if etapa.get("cerebro_apoio")} == {"pecas", "tecnica"}
     pecas = e2["pecas"]
     assert pecas["tier"] == "T1" and pecas["skill"] == "cotar-pecas-materiais-licitacoes"
     assert not pecas.get("depende_de") and pecas["saida"] == "fontes/pecas.json"
