@@ -77,3 +77,9 @@ Quando a tarefa autorizar atualização de status, marque `trabalhando` ao come�
 - 403: a pessoa não vê essa licitação ou não tem as licitações liberadas. Diga isso; não tente outra licitação por conta própria.
 - 404: confira o id na pasta.
 - Odoo fora do ar: diga que a plataforma não respondeu. Não complete com suposição.
+
+## Adicionar uma licitação
+
+- Use `licitacao_criar` com o link, ID ConLicitação, controle PNCP ou os dados do certame (processo ou edital com órgão/UASG). A ferramenta confere se o card já existe e dá prioridade à fonte ConLicitação, depois às fontes oficiais.
+- Se a busca pedir o link oficial, localize o edital na internet ou no portal do órgão e volte com o link e os identificadores disponíveis. Se houver instrução de importação pelo ConLicitação, use **Importar link** no CRM.
+- Abra `licitacao_pasta` pela chave devolvida. Confira fonte, empresa disputante e pasta de trabalho. Baixe na fonte os originais que faltarem, envie edital e anexos com `licitacao_enviar_arquivo` e complete os dados do card.
