@@ -24,7 +24,7 @@ O agente grava em `licitacoes/<id>/agents/analisador-edital/analise/`. Toda list
 ```
 
 `habilitacao.json` (skill `analisar-habilitacao`):
-Quando houver original de habilitação, `prova` cita arquivo, página, seção ou aba, trecho literal e confronto com os dados aplicáveis à exigência (titular/CNPJ, datas, validade, exercício ou escopo). A mesma prova indica o endereço permanente da cópia na licitação. Sem leitura do original, a exigência documental fica `verificar` se não houver outra prova válida, com “Validação pendente” e a falha específica descrita. Uma cópia disponível permite download mesmo com a conferência pendente. O Odoo acrescenta `controle_validacao[]` à resposta da habilitação somente a partir do dossiê privado do usuário autenticado, sem anexá-lo ao JSON compartilhado. Cada registro vincula empresa, SHA-256 e exigência ao original. Inclui arquivo, localizador, trecho literal, parecer `confere|diverge|pendente`, conclusão ou motivo e modelo efetivo. O parecer do leitor não substitui a avaliação de habilitação.
+Quando houver original de habilitação, `prova` cita arquivo, página, seção ou aba, trecho literal e confronto com os dados aplicáveis à exigência (titular/CNPJ, datas, validade, exercício ou escopo). A mesma prova indica o endereço permanente da cópia na licitação. Sem leitura do original, a exigência documental fica `verificar` se não houver outra prova válida, com “Validação pendente” e a lacuna documental descrita. Uma cópia disponível permite download mesmo com a conferência pendente. O Odoo acrescenta `controle_validacao[]` à resposta da habilitação somente a partir do dossiê privado do usuário autenticado, sem anexá-lo ao JSON compartilhado. Cada registro vincula empresa, SHA-256 e exigência ao original. Inclui arquivo, localizador, trecho literal, parecer `confere|diverge|pendente`, conclusão ou motivo e modelo efetivo. O parecer do leitor não substitui a avaliação de habilitação.
 
 
 No card, `mais_aderente` vira a sugestão de empresa que disputa (`empresa_disputante`, origem `ia`). A escolha de uma pessoa (origem `manual`) não é sobrescrita por nova análise.
@@ -32,14 +32,26 @@ No card, `mais_aderente` vira a sugestão de empresa que disputa (`empresa_dispu
 ```json
 {"versao": 1, "gerado_em": "", "mais_aderente": "aforca|realmak|una|nortfort|null", "resultado": "",
  "empresas": [{"empresa": "aforca|realmak|una|nortfort", "aderencia": "alta|media|baixa|nao_atende", "resumo": "",
-   "exigencias": [{"exigencia": "", "fonte": "", "situacao": "atende|parcial|nao_atende|verificar", "prova": "", "validade": ""}],
+   "exigencias": [{"exigencia": "", "fonte": "", "situacao": "atende|parcial|nao_atende|verificar", "prova": "", "validade": "",
+    "grupo": "juridica|fiscal|trabalhista|economico_financeira|tecnica", "motivo": "",
+    "acao": {"o_que": "", "quem": "", "ate": ""}}],
    "pendencias": [""]}],
- "emitiveis": [""], "perguntas_tecnico": [{"pergunta": "", "fonte": ""}]}
+ "emitiveis": [""], "perguntas_tecnico": [{"pergunta": "", "fonte": ""}],
+ "pesquisa_incompleta": [{"empresa": "realmak", "motivo": "<tentativas e impacto>"}]}
 ```
+
+### Campos opcionais da habilitação
+
+O contrato segue na versão 1. Os quatro campos são opcionais tanto no consolidado quanto nos parciais.
+
+- `grupo` vem de `edital.json`, com o mesmo enum de `habilitacao[].grupo`, e agrupa as exigências no card.
+- `motivo` resume em até 120 caracteres a lacuna documental ou o impedimento quando `situacao` for diferente de `atende`.
+- `acao` indica uma providência concreta. Informe `o_que`, `quem` e `ate` em `AAAA-MM-DD` ou vazio se o prazo estiver em aberto. Com `acao`, o card exibe “Ação necessária”. Sem ela, o card interpreta `atende` como “Comprovado”, `parcial` como “Ação necessária” e `nao_atende` ou `verificar` como “Não comprovado”. `prova` permanece como evidência na coluna Prova.
+- `pesquisa_incompleta` reúne por empresa, no topo do card, falhas de acesso, teto ou tempo que deixaram itens sem pesquisa suficiente. Informe o alias, o que foi tentado e o impacto. Guarde os detalhes operacionais só aqui. Preserve a marcação `cobertura[].estado: "falha"` e os dados de consulta para o G2. Em saídas antigas sem `pesquisa_incompleta`, o card usa os registros de cobertura com estado `falha`.
 
 ### Parciais de habilitação
 
-Cada `analise/habilitacao/<alias>.json` usa o mesmo envelope v1, com apenas a empresa do item, `mais_aderente: null` e uma avaliação por exigência do edital. Acrescente `cobertura[]` na raiz; a consolidação reúne os registros dos quatro parciais. O card continua lendo os campos v1.
+Cada `analise/habilitacao/<alias>.json` usa o mesmo envelope v1, com apenas a empresa do item, `mais_aderente: null` e uma avaliação por exigência do edital. Acrescente `cobertura[]` na raiz; a consolidação reúne os registros dos quatro parciais, preserva os campos por linha e reúne os motivos de pesquisa incompleta por alias sem duplicar.
 
 ```json
 {"empresa":"realmak","exigencia":"<texto do edital>","fonte":"TR 8.3","eliminatoria":true,
@@ -47,7 +59,7 @@ Cada `analise/habilitacao/<alias>.json` usa o mesmo envelope v1, com apenas a em
  "tentativas":[{"via":"cerebro_buscar","consulta":"<termo ou identificador>","resultado":"<motivo, achado ou via esgotada>"}]}
 ```
 
-`prova_lida` indica que a cópia foi aberta e confrontada, independentemente do parecer. `vias_esgotadas` exige registro das vias aplicáveis consultadas e mantém `verificar` se faltar prova. Use `falha` para erro, teto, tempo ou executor interrompido e `pendente` para etapa ainda não executada. Se o daemon informar que o item inteiro falhou, a consolidação usa o edital para recriar as linhas `verificar` daquela empresa com o motivo, sem reaproveitar parcial de rodada anterior. Nem saída ausente nem lacuna documental vira `nao_atende` sem evidência de impedimento. A consolidação só altera a síntese e a indicação da mais aderente, preservando as provas e as lacunas. Use `atende` para prova aplicável conferida; `parcial` para dúvida de equivalência ou atendimento condicionado a ação demonstrável; `nao_atende` para impedimento comprovado; `verificar` se faltar prova, leitura ou cobertura. Para certidão emitível ou declaração a preparar, descreva o canal, a ação e o responsável sem afirmar que já existe documento válido.
+`prova_lida` indica que a cópia foi aberta e confrontada, independentemente do parecer. `vias_esgotadas` exige registro das vias aplicáveis consultadas e mantém `verificar` se faltar prova. Use `falha` para erro, teto, tempo ou executor interrompido e `pendente` para etapa ainda não executada. Se o daemon informar que o item inteiro falhou, a consolidação usa o edital para recriar as linhas `verificar` daquela empresa com o grupo e a lacuna documental, sem reaproveitar parcial de rodada anterior. Registre o motivo operacional em `pesquisa_incompleta`. Nem saída ausente nem lacuna documental vira `nao_atende` sem evidência de impedimento. A consolidação só altera a síntese e a indicação da mais aderente, preservando as provas e as lacunas. Use `atende` para prova aplicável conferida; `parcial` para dúvida de equivalência ou atendimento condicionado a ação demonstrável; `nao_atende` para impedimento comprovado; `verificar` se faltar prova, leitura ou cobertura. Para certidão emitível ou declaração a preparar, descreva o canal, a ação e o responsável sem afirmar que já existe documento válido.
 
 ### Pesquisa de peças
 
