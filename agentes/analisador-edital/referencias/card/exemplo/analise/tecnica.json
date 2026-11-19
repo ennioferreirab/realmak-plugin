@@ -1,0 +1,75 @@
+{
+ "versao": 1,
+ "gerado_em": "2026-11-16T10:30",
+ "tipo": "fornecimento",
+ "conclusao": {
+  "viavel": "com_ressalvas",
+  "resumo": "Itens comuns de mercado; depende de catálogo no prazo e validade de 12 meses.",
+  "ressalvas": [
+   "Catálogo em 2 horas após a convocação (Edital 7.4)"
+  ]
+ },
+ "itens": [
+  {
+   "item": "1",
+   "descricao": "Resina fotossensível padrão, frasco 1 kg, cor cinza",
+   "quantidade": 120,
+   "unidade": "frasco",
+   "exigencias": [
+    "Valor unitário estimado R$ 420,00 (TR anexo I)",
+    "Validade mínima 12 meses (TR 5.3)"
+   ],
+   "atende": "verificar",
+   "fonte": "TR anexo I, item 1"
+  },
+  {
+   "item": "2",
+   "descricao": "Kit de limpeza e manutenção para impressora de resina",
+   "quantidade": 40,
+   "unidade": "kit",
+   "exigencias": [
+    "Valor unitário estimado R$ 450,00 (TR anexo I)"
+   ],
+   "atende": "verificar",
+   "fonte": "TR anexo I, item 2"
+  }
+ ],
+ "escopo": [],
+ "equipe": [],
+ "sla": [],
+ "entrega": {
+  "prazo": "30 dias corridos da ordem de fornecimento",
+  "local": "Almoxarifado central (fictício)",
+  "fonte": "TR 6.1"
+ },
+ "cotacoes_online": [
+  {
+   "item": "1",
+   "preco_unit": 289.9,
+   "unidade": "frasco 1 kg",
+   "fornecedor": "Loja Exemplo · Resina padrão cinza 1 kg",
+   "link": "https://loja.exemplo/produto/resina-cinza-1kg",
+   "data": "2026-11-16",
+   "observacao": "Frete não incluso; à vista no Pix"
+  },
+  {
+   "item": "2",
+   "preco_unit": 185.0,
+   "unidade": "kit",
+   "fornecedor": "Outra Loja · Kit limpeza IPA + espátulas",
+   "link": "https://outra.exemplo/p/kit-limpeza",
+   "data": "2026-11-16",
+   "observacao": "BASE DE CUSTO: kit sem filtro de FEP. Compatibilidade não confirmada."
+  }
+ ],
+ "arquivos": [
+  {
+   "rotulo": "Análise de fornecimento",
+   "caminho": "analise/analise-fornecimento.html"
+  },
+  {
+   "rotulo": "Planilha da análise",
+   "caminho": "analise/analise-fornecimento.xlsx"
+  }
+ ]
+}

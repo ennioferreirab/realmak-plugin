@@ -1,0 +1,40 @@
+{
+ "versao": 1,
+ "gerado_em": "2026-11-16T10:45",
+ "valor_estimado": 68400.0,
+ "custo_mensal": null,
+ "preco_mensal": null,
+ "preco_global": 52900.0,
+ "bdi_pct": null,
+ "margem_pct": 12.4,
+ "exequivel": "sim",
+ "resumo": "Realmak disputa; sem base de custos: hipótese de tributos 15%, margem 10%. Preço global R$ 52,9 mil, 23% abaixo do estimado.",
+ "cenarios": [
+  {
+   "nome": "Base",
+   "preco_global": 52900.0,
+   "margem_pct": 12.4,
+   "exequivel": "sim"
+  },
+  {
+   "nome": "Conservador (frete 10%)",
+   "preco_global": 55800.0,
+   "margem_pct": 10.1,
+   "exequivel": "no_limite"
+  }
+ ],
+ "componentes": [
+  {
+   "componente": "pecas",
+   "valor_mensal": null,
+   "fonte": "cotação online"
+  },
+  {
+   "componente": "tributos",
+   "valor_mensal": null,
+   "fonte": "premissa 15%"
+  }
+ ],
+ "cotacoes_online": [],
+ "arquivos": []
+}

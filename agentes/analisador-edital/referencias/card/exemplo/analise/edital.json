@@ -1,0 +1,93 @@
+{
+ "versao": 1,
+ "gerado_em": "2026-11-16T10:00",
+ "cabecalho": {
+  "modalidade": "Pregão Eletrônico 90012/2026",
+  "orgao": "Órgão Exemplo (fictício)",
+  "uasg": "999999",
+  "objeto": "Aquisição de resina fotossensível e kits de manutenção para impressoras 3D",
+  "tipo_objeto": "fornecimento",
+  "valor_estimado": 68400.0,
+  "valor_sigiloso": false,
+  "criterio": "menor preço por item",
+  "modo_disputa": "aberto",
+  "portal": "Compras.gov.br",
+  "link": "https://www.gov.br/compras/"
+ },
+ "atencao": [
+  {
+   "ponto": "Catálogo do produto exigido junto com a proposta, com prazo de 2 horas após a convocação",
+   "gravidade": "alta",
+   "fonte": "Edital 7.4",
+   "o_que_fazer": "Separar ficha técnica do fabricante antes da sessão"
+  },
+  {
+   "ponto": "Validade mínima de 12 meses na entrega",
+   "gravidade": "media",
+   "fonte": "TR 5.3",
+   "o_que_fazer": "Confirmar data de fabricação com o fornecedor"
+  }
+ ],
+ "prazos": [
+  {
+   "prazo": "Sessão pública",
+   "data": "2026-12-02T09:00",
+   "fonte": "Edital 1.1",
+   "observacao": ""
+  },
+  {
+   "prazo": "Limite para impugnação",
+   "data": "2026-11-27",
+   "fonte": "Edital 10.1",
+   "observacao": "feriados locais não conferidos"
+  }
+ ],
+ "habilitacao": [
+  {
+   "grupo": "fiscal",
+   "exigencia": "Regularidade com FGTS, INSS e CNDT",
+   "fonte": "Edital 9.2",
+   "observacao": ""
+  },
+  {
+   "grupo": "tecnica",
+   "exigencia": "Atestado de fornecimento de insumos para impressão 3D, mínimo 30% da quantidade",
+   "fonte": "TR 8.1",
+   "observacao": ""
+  }
+ ],
+ "declaracoes": [
+  {
+   "declaracao": "Declaração de cumprimento do art. 7º, XXXIII, da Constituição",
+   "tipo": "padrao",
+   "fonte": "Edital 9.6"
+  }
+ ],
+ "proposta": [
+  {
+   "topico": "Marca e modelo",
+   "texto": "Indicar marca, modelo e fabricante de cada item",
+   "fonte": "Edital 6.2"
+  }
+ ],
+ "impugnacao": [],
+ "perguntas_tecnico": [
+  {
+   "pergunta": "Resina de outra marca com mesma faixa de viscosidade é aceita como equivalente?",
+   "fonte": "TR 4.1"
+  }
+ ],
+ "avisos": [],
+ "avisos_consultados": true,
+ "nao_lido": [],
+ "documentos": [
+  {
+   "arquivo": "edital.pdf",
+   "origem": "plataforma"
+  },
+  {
+   "arquivo": "termo_referencia.pdf",
+   "origem": "plataforma"
+  }
+ ]
+}

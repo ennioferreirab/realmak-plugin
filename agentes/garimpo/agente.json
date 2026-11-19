@@ -1,0 +1,8 @@
+{
+  "titulo": "Garimpo",
+  "acao": "garimpo",
+  "depende_de": [],
+  "chat": true,
+  "funil": false,
+  "ferramentas": ["buscar_web"]
+}

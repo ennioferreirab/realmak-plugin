@@ -9,6 +9,12 @@ Cada cérebro guarda o que a respectiva empresa sabe sobre si: pessoas, atestado
 
 As ferramentas `cerebro_*` vêm do conector MCP da Realmak. O nome completo pode ter um prefixo, conforme o aplicativo e o nome dado ao conector (por exemplo, `realmak` ou `galeed-local`). Use as ferramentas que o conector conectado apresenta; não invente o prefixo. Elas usam o acesso de quem está conversando, concedido no Galeed.
 
+## Falhas de busca e pistas
+
+- HTTP 5xx ou timeout: espere alguns segundos, repita a chamada de leitura e aumente a espera antes de uma segunda nova tentativa, se necessário. Se o executor já informar que fez essas tentativas, prossiga pela próxima via. Tente a via complementar (busca textual, consulta estruturada ou acervo autorizado) sem encerrar a pesquisa da empresa. Registre consulta, empresa, tentativas e impedimento restante.
+- HTTP 400 indica que a consulta precisa de correção: leia a mensagem e confira o esquema antes de reenviar. Acesso recusado ou ausente fica registrado por empresa.
+- Pista com número de CAT, atestado ou contrato, inclusive achado de outra etapa, vira busca dirigida pelo número na empresa correta. Teste a forma literal e a forma normalizada se necessário, mantendo zeros significativos. Se o acesso permitir, confira o registro estruturado e use o ID para recuperar a prova. Abra o original para confrontar a cláusula antes de concluir atendimento ou incompatibilidade documental.
+
 ## 0. Qual empresa
 
 - Comece com `cerebro_empresas` sem argumentos (`{}`) uma vez por conversa: mostra empresas liberadas, nível total/parcial, áreas e registros disponíveis.
