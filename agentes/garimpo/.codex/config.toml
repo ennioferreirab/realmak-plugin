@@ -1,0 +1,3 @@
+# project_root_markers=[] deve vir pela flag -c na abertura, não nesta camada.
+sandbox_mode = "workspace-write"
+web_search = "live"

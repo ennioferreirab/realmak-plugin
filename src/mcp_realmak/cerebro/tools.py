@@ -287,7 +287,9 @@ INSTRUCOES = """Cérebros das empresas do grupo (Realmak, AForça, Nortfort, UNA
   Se faltar link_baixar, use '[Baixar arquivo](original.brain_download_link)' se existir. Os links legados
   exigem login do Odoo. Omita ações sem URL.
   sem nenhum link, só o Caminho. Sem 'original', a fonte é só texto indexado: não monte link.
-- Erro do cérebro diz o que mudar; não repita a mesma chamada sem mudar nada.
+- Em HTTP 5xx ou timeout do cérebro, aguarde e tente de novo. Se persistir, tente outra via de busca e registre a limitação.
+- Em HTTP 400, corrija a consulta pelo esquema ou pela mensagem antes de reenviar.
+- Nº de CAT, atestado ou contrato encontrado como pista: faça busca dirigida pelo identificador e confira o original.
 """
 
 

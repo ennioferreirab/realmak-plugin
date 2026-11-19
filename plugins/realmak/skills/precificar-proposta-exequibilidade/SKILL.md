@@ -23,9 +23,11 @@ Se o trabalho for feito na plataforma de licitações, leia a skill `licitacao` 
 | Preciso de | Onde buscar |
 | --- | --- |
 | Custo de mão de obra por cargo, encargos, benefícios e tributos de cada empresa | Base de custos do grupo (seção abaixo) |
-| Preço de peças, insumos e materiais em fornecedores | Skill `cotar-pecas-materiais-licitacoes`, a partir da Tabela 5 (Peças, insumos e materiais) de `analise-manutencao.md` |
+| Preço de peças, insumos e materiais em fornecedores | No fluxo do agente, use `fontes/pecas.json`. Na análise manual, use a pesquisa já disponível ou rode `cotar-pecas-materiais-licitacoes` com a Tabela 5 de `analise-manutencao.md` |
 | Preço praticado em compras públicas e valores homologados em certames parecidos | Skill `compras-publicas` |
 | Custos que a base não tem (veículo dedicado, instrumentos, CMMS) | O analista informa; sem o dado, use premissa identificada |
+
+No fluxo do agente, se `fontes/pecas.json` estiver ausente ou incompleto, registre cada lacuna e a premissa adotada. Prossiga com a precificação sem reabrir a pesquisa de peças neste item.
 
 Preço de referência pública serve para situar a proposta diante do mercado. O custo da empresa vem dos custos reais dela.
 
@@ -155,13 +157,14 @@ A conclusão diz em quais premissas a proposta é exequível e quais controles o
 
 ## Passo 3: planilha
 
-Use `assets/Modelo_Proposta_Comercial_Exequibilidade_Manutencao.xlsx`. Copie o arquivo para a pasta do processo e trabalhe na cópia; o modelo original fica intacto.
+Prepare apenas o JSON com os números, premissas e fontes, seguindo [o formato de entrada](references/planilha.md). Execute o preenchimento do modelo:
 
-- Preserve abas, arquitetura, fórmulas, verificações e cores. Amarelo é entrada, verde é resultado favorável, vermelho e laranja são alertas.
-- Preencha apenas com dados confirmados ou com premissas identificadas como premissas.
-- Substitua os textos genéricos pelos dados do processo sem quebrar fórmulas.
-- Mantenha as fórmulas vivas e as referências entre abas. Não grave resultado calculado como número fixo, porque o avaliador precisa conseguir auditar a conta.
-- Preencha a aba Fontes com arquivo e seção, página ou aba. Para pesquisa externa, registre a URL em texto simples.
+```bash
+python scripts/preencher_planilha.py dados.json proposta.xlsx
+```
+
+No ambiente manual sem openpyxl, use `uv run --with openpyxl python scripts/preencher_planilha.py dados.json proposta.xlsx`. O script usa o modelo original e preserva abas, fórmulas, verificações e cores. Corrija os dados no JSON e rode de novo. Não edite nem descompacte o XLSX para preencher entradas. Quando o edital exigir planilha própria, preserve esse formato na proposta oficial; use o modelo da skill para a memória de exequibilidade.
+
 
 ## Passo 4: verificação
 

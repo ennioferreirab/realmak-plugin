@@ -32,7 +32,13 @@ Se o trabalho for feito na plataforma de licitações, leia a skill `licitacao` 
 
 Leia parcelas relevantes, local, prazo, volume, vistoria, obrigações e impedimentos expressos. Cruze com os perfis das quatro empresas e registre quem avança e por quê. Se uma incógnita puder mudar a decisão, faça uma busca curta. Ausência de termo na busca inicial mantém a questão em aberto. Encerre a coleta aprofundada quando nenhuma empresa puder atender por impedimento demonstrado, citando a cláusula. Registre o escopo das empresas e lotes antes de comparar.
 
-Para quem avançar, passe ao `cerebro` um pedido por requisito com empresa/CNPJ, lote, cláusula e página, prova aceita, alternativas, fase e data exigida. Reaproveite prova entre lotes quando as condições coincidirem. Se a pesquisa voltar inconclusiva, procure pela pista mais específica ou indique o motivo e a ação restante.
+Para quem avançar, execute você mesmo a pesquisa com as ferramentas da skill `cerebro`. Para cada requisito, use empresa/CNPJ, lote, cláusula e página, prova aceita, alternativas, fase e data exigida. Reaproveite a prova entre lotes quando as condições coincidirem.
+
+Se o fluxo atribuir explicitamente uma empresa ao item, avalie somente esse alias, ainda que a empresa do card seja outra. Escreva a saída parcial no caminho do item. O item de consolidação lê as quatro saídas e aplica a seção “Qual empresa é a mais aderente”, preservando a prova e a cobertura de cada requisito. Siga o contrato do card para parciais e consolidação. A análise manual continua entregando a comparação diretamente.
+
+- Leia as pistas de etapas anteriores, inclusive `fontes/cerebro_g1.json` quando existir. Busque pelo número de cada CAT, atestado ou contrato relevante (forma literal e normalizada quando preciso), antes de encerrar a pesquisa. Registre o número, a empresa, o resultado, o original e a cláusula.
+- Em HTTP 5xx ou timeout, aplique as novas tentativas com espera da skill `cerebro`. Use também as vias complementares de busca, originais e anexos. Em HTTP 400, corrija a consulta antes de reenviar.
+- Uma exigência eliminatória só encerra a pesquisa com prova original lida e confrontada ou com as vias aplicáveis esgotadas e registradas. Para cada empresa, registre consulta, identificador, fonte, tentativa e resultado por exigência. Falha, teto, período ou acesso incompleto deixa a pesquisa pendente. Ausência de prova mantém a exigência sem comprovação, inclusive após esgotar as vias.
 
 ## Onde procurar
 
@@ -78,7 +84,7 @@ Classifique cada exigência, para cada empresa:
 ## Conferência por cláusula
 
 - **Jurídica e cadastral.** Confirme CNPJ, situação cadastral e atos societários vigentes, incluindo alterações, objeto social e poderes de representação. O cartão CNPJ identifica a empresa. Confira o objeto e os poderes nos atos.
-- **Fiscal, social e trabalhista.** Confira certidão ou cadastro aceito, CNPJ, sede ou filial, jurisdição, distribuidor competente quando aplicável, escopo, vigência na sessão e na fase exigida, prazo e possibilidade de emissão ou regularização. Para requisitos jurídicos, cadastrais e fiscais, peça busca estruturada por cláusula no Cérebro, com prioridade à emissão mais recente e conferência do original. Separe evidência documental do que ainda depende de consulta ao vivo no SICAF quando admitido.
+- **Fiscal, social e trabalhista.** Confira certidão ou cadastro aceito, CNPJ, sede ou filial, jurisdição, distribuidor competente quando aplicável, escopo, vigência na sessão e na fase exigida, prazo e possibilidade de emissão ou regularização. Para requisitos jurídicos, cadastrais e fiscais, execute busca estruturada por cláusula no Cérebro, com prioridade à emissão mais recente e conferência do original. Separe evidência documental do que ainda depende de consulta ao vivo no SICAF quando admitido.
 - **Econômico-financeira.** Determine, com a cláusula, a fase e a data de referência, quais exercícios e demonstrações são aplicáveis. Transcreva fórmula e operador do limite, cite as contas e páginas do balanço, mostre os valores substituídos e o resultado reproduzível por exercício. Registre arredondamento quando interferir no resultado. Se o índice não atender, confira se o edital aceita capital ou patrimônio líquido como alternativa. Mostre a base, percentual, valor exigido, saldo comprovado e resultado por lote e por combinação quando prevista. Balanço de outro exercício não satisfaz a cláusula. Se o balanço aplicável não foi localizado, registre a cobertura, a lacuna e a ação, sem chamá-lo de inexistente.
 - **Técnico-profissional.** Confira pessoa, registro de conselho, vínculo, acervo individual e fase de comprovação. Se o edital admitir contratação de profissional, identifique a qualificação a buscar e quando comprovar o vínculo. Mantenha a comprovação pendente até existir evidência.
 - **Demais provas.** Confira titular, fase e prazo de licenças, garantias, vistoria ou declaração substitutiva e modelos assináveis.
@@ -170,7 +176,7 @@ Mais aderente: <empresa e lote, ou nenhuma>. <Recomende seguir, seguir com condi
 
 Na coluna Documento, coloque o nome do arquivo anexado ou o título do documento no cérebro. Na coluna Origem, informe anexo ou Cérebro, identificador recuperável e página/trecho. Na coluna Fonte, informe cláusula e página do edital. Para cada requisito mantenha status, fundamento, fonte e ação, limitando dados pessoais e financeiros ao necessário. Registre a decisão somente conforme `licitacao`, quando autorizada.
 
-As seções das quatro empresas aparecem sempre, nessa ordem. Empresa não avaliada mantém a seção, com o motivo no lugar da tabela.
+Na comparação das quatro empresas, mantenha essa ordem. Para empresa não avaliada, informe o motivo. Num item de empresa única, entregue apenas a seção da empresa atribuída.
 
 ## Regras
 

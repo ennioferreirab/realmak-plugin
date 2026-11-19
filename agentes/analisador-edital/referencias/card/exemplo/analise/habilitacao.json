@@ -1,0 +1,139 @@
+{
+  "versao": 1,
+  "gerado_em": "2026-11-16T10:20",
+  "mais_aderente": "realmak",
+  "resultado": "Realmak: 3 atendidas, 1 com o técnico, nenhuma faltando.",
+  "empresas": [
+    {
+      "empresa": "realmak",
+      "aderencia": "media",
+      "resumo": "Atestado de 2025 cobre 25% da quantidade; técnico decide se soma com outro.",
+      "exigencias": [
+        {
+          "exigencia": "Atestado de fornecimento de insumos para impressão 3D",
+          "fonte": "TR 8.1",
+          "situacao": "parcial",
+          "prova": "Técnico decide · Atestado fictício, p. 2: “25 unidades entregues”; o TR exige 30 unidades. Conferir se outra prova válida pode compor o total.",
+          "validade": ""
+        }
+      ],
+      "pendencias": [
+        "Técnico confirma se dois atestados somados atendem 30% (analista leva ao técnico)"
+      ]
+    },
+    {
+      "empresa": "aforca",
+      "aderencia": "baixa",
+      "resumo": "Sem atestado do objeto no cérebro.",
+      "exigencias": [
+        {
+          "exigencia": "Atestado de fornecimento de insumos para impressão 3D",
+          "fonte": "TR 8.1",
+          "situacao": "verificar",
+          "prova": "Falta · não achado no cérebro",
+          "validade": ""
+        }
+      ],
+      "pendencias": [
+        "Procurar atestado fora do cérebro"
+      ]
+    },
+    {
+      "empresa": "una",
+      "aderencia": "baixa",
+      "resumo": "Não avaliada: sem acesso ao cérebro da UNA.",
+      "exigencias": [
+        {
+          "exigencia": "Atestado de fornecimento de insumos para impressão 3D",
+          "fonte": "TR 8.1",
+          "situacao": "verificar",
+          "prova": "Não avaliada: sem acesso ao cérebro da UNA.",
+          "validade": ""
+        }
+      ],
+      "pendencias": []
+    },
+    {
+      "empresa": "nortfort",
+      "aderencia": "baixa",
+      "resumo": "Não avaliada: sem acesso ao cérebro da Nortfort.",
+      "exigencias": [
+        {
+          "exigencia": "Atestado de fornecimento de insumos para impressão 3D",
+          "fonte": "TR 8.1",
+          "situacao": "verificar",
+          "prova": "Não avaliada: sem acesso ao cérebro da Nortfort.",
+          "validade": ""
+        }
+      ],
+      "pendencias": []
+    }
+  ],
+  "emitiveis": [
+    "CNDT · Realmak · tst.jus.br"
+  ],
+  "perguntas_tecnico": [
+    {
+      "pergunta": "Realmak: atestados de 2024 e 2025 somados atendem 30% da quantidade?",
+      "fonte": "TR 8.1"
+    }
+  ],
+  "cobertura": [
+    {
+      "empresa": "realmak",
+      "exigencia": "Atestado de fornecimento de insumos para impressão 3D",
+      "fonte": "TR 8.1",
+      "eliminatoria": true,
+      "estado": "prova_lida",
+      "tentativas": [
+        {
+          "via": "cerebro_buscar",
+          "consulta": "atestado insumos impressão 3D",
+          "resultado": "Atestado de 2025 cobre 25% da quantidade; técnico decide se soma com outro."
+        }
+      ]
+    },
+    {
+      "empresa": "aforca",
+      "exigencia": "Atestado de fornecimento de insumos para impressão 3D",
+      "fonte": "TR 8.1",
+      "eliminatoria": true,
+      "estado": "vias_esgotadas",
+      "tentativas": [
+        {
+          "via": "cerebro_buscar",
+          "consulta": "atestado insumos impressão 3D",
+          "resultado": "Sem atestado do objeto no cérebro."
+        }
+      ]
+    },
+    {
+      "empresa": "una",
+      "exigencia": "Atestado de fornecimento de insumos para impressão 3D",
+      "fonte": "TR 8.1",
+      "eliminatoria": true,
+      "estado": "falha",
+      "tentativas": [
+        {
+          "via": "cerebro_buscar",
+          "consulta": "atestado insumos impressão 3D",
+          "resultado": "Não avaliada: sem acesso ao cérebro da UNA."
+        }
+      ]
+    },
+    {
+      "empresa": "nortfort",
+      "exigencia": "Atestado de fornecimento de insumos para impressão 3D",
+      "fonte": "TR 8.1",
+      "eliminatoria": true,
+      "estado": "falha",
+      "tentativas": [
+        {
+          "via": "cerebro_buscar",
+          "consulta": "atestado insumos impressão 3D",
+          "resultado": "Não avaliada: sem acesso ao cérebro da Nortfort."
+        }
+      ]
+    }
+  ]
+}

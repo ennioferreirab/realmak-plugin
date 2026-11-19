@@ -1,0 +1,20 @@
+{
+  "titulo": "Analisador de Edital",
+  "acao": "analisador-edital",
+  "tipo": "gestor",
+  "tier": "T2",
+  "depende_de": [],
+  "chat": true,
+  "funil": true,
+  "ferramentas": [
+    "buscar_web",
+    "cerebro_empresas",
+    "cerebro_buscar",
+    "cerebro_fatos",
+    "cerebro_esquema",
+    "cerebro_consulta",
+    "cerebro_provas"
+  ],
+  "thinking": "high",
+  "chat_card": true
+}

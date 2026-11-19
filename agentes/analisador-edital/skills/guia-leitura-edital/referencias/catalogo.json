@@ -1,0 +1,517 @@
+{
+ "tipos": {
+  "edital": "Edital",
+  "termo_referencia": "Termo de referência",
+  "estudo_tecnico_preliminar": "Estudo técnico preliminar",
+  "minuta_contrato": "Minuta de contrato",
+  "planilha_precos": "Planilha de preços",
+  "outros": "Outros"
+ },
+ "informacoes": [
+  {
+   "chave": "sessao",
+   "rotulo": "Data e hora da sessão",
+   "secoes": [
+    "s1",
+    "s2"
+   ],
+   "ordem": [
+    "edital",
+    "outros"
+   ],
+   "termos": "sess[aã]o p[uú]blica|abertura da sess|data de abertura",
+   "nota": "Edital pode dizer só \"conforme PNCP\": aí vale o manifesto do CRM ou o PNCP.",
+   "medicao": "Data e hora da sessão"
+  },
+  {
+   "chave": "valor_teto",
+   "rotulo": "Valor estimado / teto",
+   "secoes": [
+    "s1",
+    "s2",
+    "s3"
+   ],
+   "ordem": [
+    "edital",
+    "termo_referencia",
+    "estudo_tecnico_preliminar",
+    "planilha_precos"
+   ],
+   "termos": "valor (total |global )?estimado|valor m[aá]ximo|or[cç]amento estimado|valor de refer[eê]ncia",
+   "nota": "Pode ser sigiloso (art. 24): procurar \"sigiloso\".",
+   "medicao": "Valor estimado / teto"
+  },
+  {
+   "chave": "criterio",
+   "rotulo": "Critério de julgamento e adjudicação",
+   "secoes": [
+    "s1",
+    "s7"
+   ],
+   "ordem": [
+    "edital",
+    "termo_referencia"
+   ],
+   "termos": "crit[eé]rio de julgamento|adjudica[cç][aã]o (global|por item|por grupo|por lote)",
+   "nota": "",
+   "medicao": "Critério de julgamento"
+  },
+  {
+   "chave": "modo_disputa",
+   "rotulo": "Modo de disputa e intervalo mínimo",
+   "secoes": [
+    "s6",
+    "s7"
+   ],
+   "ordem": [
+    "edital"
+   ],
+   "termos": "modo de disputa|aberto e fechado|intervalo m[ií]nimo",
+   "nota": "",
+   "medicao": "Modo de disputa"
+  },
+  {
+   "chave": "me_epp",
+   "rotulo": "ME/EPP: exclusividade, cota, empate",
+   "secoes": [
+    "s6"
+   ],
+   "ordem": [
+    "edital",
+    "termo_referencia"
+   ],
+   "termos": "microempresas? e empresas? de pequeno porte|lei complementar n?[ºo°.]* ?123|exclusiv[ao] (para|[àa]s) (me|micro)|cota reservada",
+   "nota": "TR às vezes recomenda dispensar o benefício e o edital aplica: vale o edital.",
+   "medicao": "ME/EPP e empate"
+  },
+  {
+   "chave": "margem_preferencia",
+   "rotulo": "Margem de preferência",
+   "secoes": [
+    "s6"
+   ],
+   "ordem": [
+    "edital"
+   ],
+   "termos": "margem de prefer[eê]ncia",
+   "nota": ""
+  },
+  {
+   "chave": "esclarecimento",
+   "rotulo": "Esclarecimento e impugnação (prazo e canal)",
+   "secoes": [
+    "s2",
+    "s4"
+   ],
+   "ordem": [
+    "edital"
+   ],
+   "termos": "impugna[cç]|pedidos? de esclarecimento",
+   "nota": "",
+   "medicao": "Esclarecimento / impugnação"
+  },
+  {
+   "chave": "hab_tecnica",
+   "rotulo": "Habilitação técnica (atestados, CAT, registro)",
+   "secoes": [
+    "s2",
+    "s4"
+   ],
+   "ordem": [
+    "termo_referencia",
+    "edital",
+    "estudo_tecnico_preliminar"
+   ],
+   "termos": "atestados? de capacidade|qualifica[cç][aã]o t[eé]cnica|acervo t[eé]cnico|\\bCAT\\b|parcelas? de maior relev",
+   "nota": "Na Lei 14.133 os requisitos técnicos costumam estar no TR; o edital remete a ele. Ler os dois.",
+   "medicao": "Habilitação técnica (atestados)"
+  },
+  {
+   "chave": "hab_economica",
+   "rotulo": "Habilitação econômica (índices, PL, capital)",
+   "secoes": [
+    "s2"
+   ],
+   "ordem": [
+    "edital",
+    "termo_referencia"
+   ],
+   "termos": "liquidez geral|[ií]ndices? cont[aá]beis|patrim[oô]nio l[ií]quido|capital social m[ií]nimo",
+   "nota": "",
+   "medicao": "Habilitação econômica (índices)"
+  },
+  {
+   "chave": "regularidade",
+   "rotulo": "Regularidade fiscal e trabalhista",
+   "secoes": [
+    "s2"
+   ],
+   "ordem": [
+    "edital",
+    "termo_referencia"
+   ],
+   "termos": "regularidade fiscal|certid[aã]o negativa|\\bCNDT\\b|\\bFGTS\\b",
+   "nota": "",
+   "medicao": "Regularidade fiscal"
+  },
+  {
+   "chave": "especificacao",
+   "rotulo": "Especificação técnica do objeto",
+   "secoes": [
+    "s3",
+    "s4",
+    "s5"
+   ],
+   "ordem": [
+    "termo_referencia",
+    "outros",
+    "estudo_tecnico_preliminar",
+    "edital"
+   ],
+   "termos": "especifica[cç][oõ]es t[eé]cnicas|especifica[cç][aã]o t[eé]cnica|caracter[ií]sticas t[eé]cnicas|descri[cç][aã]o (detalhada )?do objeto",
+   "nota": "Caderno de especificações e anexos técnicos costumam ser classificados como TR ou Outros.",
+   "medicao": "Especificação técnica"
+  },
+  {
+   "chave": "marca_modelo",
+   "rotulo": "Marca, modelo, catálogo, ficha técnica",
+   "secoes": [
+    "s4",
+    "s5"
+   ],
+   "ordem": [
+    "termo_referencia",
+    "edital"
+   ],
+   "termos": "\\bcat[aá]logos?\\b|ficha t[eé]cnica|marca e modelo|marca/modelo|indica[cç][aã]o de marca|padroniza[cç][aã]o",
+   "nota": "",
+   "medicao": "Marca, modelo, catálogo"
+  },
+  {
+   "chave": "quantitativos",
+   "rotulo": "Itens e quantitativos",
+   "secoes": [
+    "s3",
+    "s5",
+    "s7"
+   ],
+   "ordem": [
+    "planilha_precos",
+    "termo_referencia",
+    "edital",
+    "estudo_tecnico_preliminar"
+   ],
+   "termos": "quantitativos?|quantidade estimada|\\bqtd\\b|unidade de medida",
+   "nota": "Na planilha (xlsx) o texto vem sem cabeçalho de coluna: conferir no original.",
+   "medicao": "Quantitativos"
+  },
+  {
+   "chave": "prazo_execucao",
+   "rotulo": "Prazo de entrega ou execução",
+   "secoes": [
+    "s2",
+    "s5"
+   ],
+   "ordem": [
+    "termo_referencia",
+    "edital",
+    "minuta_contrato"
+   ],
+   "termos": "prazo de (entrega|execu[cç][aã]o|in[ií]cio)",
+   "nota": "",
+   "medicao": "Prazo de entrega/execução"
+  },
+  {
+   "chave": "local",
+   "rotulo": "Local de entrega ou execução",
+   "secoes": [
+    "s2",
+    "s5"
+   ],
+   "ordem": [
+    "termo_referencia",
+    "edital",
+    "minuta_contrato"
+   ],
+   "termos": "local de (entrega|execu[cç][aã]o|presta[cç][aã]o)|endere[cç]o de entrega",
+   "nota": "",
+   "medicao": "Local de execução"
+  },
+  {
+   "chave": "visita",
+   "rotulo": "Visita técnica / vistoria",
+   "secoes": [
+    "s3",
+    "s4"
+   ],
+   "ordem": [
+    "edital",
+    "termo_referencia"
+   ],
+   "termos": "vistoria|visita t[eé]cnica",
+   "nota": "",
+   "medicao": "Visita técnica / vistoria"
+  },
+  {
+   "chave": "amostra",
+   "rotulo": "Amostra / prova de conceito",
+   "secoes": [
+    "s2",
+    "s4"
+   ],
+   "ordem": [
+    "edital",
+    "termo_referencia"
+   ],
+   "termos": "\\bamostras?\\b|prova de conceito",
+   "nota": "",
+   "medicao": "Amostra / prova de conceito"
+  },
+  {
+   "chave": "garantia_contratual",
+   "rotulo": "Garantia contratual (% e momento)",
+   "secoes": [
+    "s2",
+    "s7"
+   ],
+   "ordem": [
+    "minuta_contrato",
+    "edital",
+    "termo_referencia"
+   ],
+   "termos": "garantia contratual|garantia de execu[cç][aã]o|art\\. ?96",
+   "nota": "",
+   "medicao": "Garantia contratual"
+  },
+  {
+   "chave": "garantia_produto",
+   "rotulo": "Garantia do produto ou serviço",
+   "secoes": [
+    "s4",
+    "s7"
+   ],
+   "ordem": [
+    "termo_referencia",
+    "edital"
+   ],
+   "termos": "prazo de garantia|garantia (do produto|de f[aá]brica|t[eé]cnica|dos servi)",
+   "nota": "",
+   "medicao": "Garantia do produto/serviço"
+  },
+  {
+   "chave": "pagamento",
+   "rotulo": "Condições e prazo de pagamento",
+   "secoes": [
+    "s2",
+    "s7"
+   ],
+   "ordem": [
+    "termo_referencia",
+    "edital",
+    "minuta_contrato"
+   ],
+   "termos": "prazo de pagamento|condi[cç][oõ]es de pagamento|pagamento ser[aá]",
+   "nota": "",
+   "medicao": "Pagamento"
+  },
+  {
+   "chave": "penalidades",
+   "rotulo": "Penalidades e multas",
+   "secoes": [
+    "s2",
+    "s7"
+   ],
+   "ordem": [
+    "minuta_contrato",
+    "edital",
+    "termo_referencia"
+   ],
+   "termos": "\\bmultas?\\b|san[cç][oõ]es administrativas",
+   "nota": "",
+   "medicao": "Penalidades e multas"
+  },
+  {
+   "chave": "reajuste",
+   "rotulo": "Reajuste e repactuação",
+   "secoes": [
+    "s7"
+   ],
+   "ordem": [
+    "minuta_contrato",
+    "termo_referencia",
+    "edital"
+   ],
+   "termos": "reajuste|repactua|[ií]ndice de (corre|reajuste)",
+   "nota": "",
+   "medicao": "Reajuste / repactuação"
+  },
+  {
+   "chave": "subcontratacao",
+   "rotulo": "Subcontratação",
+   "secoes": [
+    "s2",
+    "s5"
+   ],
+   "ordem": [
+    "termo_referencia",
+    "edital",
+    "minuta_contrato"
+   ],
+   "termos": "subcontrata",
+   "nota": "",
+   "medicao": "Subcontratação"
+  },
+  {
+   "chave": "consorcio",
+   "rotulo": "Consórcio",
+   "secoes": [
+    "s2"
+   ],
+   "ordem": [
+    "edital",
+    "termo_referencia"
+   ],
+   "termos": "cons[oó]rcio",
+   "nota": "",
+   "medicao": "Consórcio"
+  },
+  {
+   "chave": "equipe",
+   "rotulo": "Equipe, responsável técnico, NR",
+   "secoes": [
+    "s2",
+    "s4"
+   ],
+   "ordem": [
+    "termo_referencia",
+    "edital"
+   ],
+   "termos": "respons[aá]vel t[eé]cnico|equipe t[eé]cnica|profissional habilitado|\\bNR[- ]?(10|35)\\b",
+   "nota": "",
+   "medicao": "Equipe / qualificação da mão de obra"
+  },
+  {
+   "chave": "obrigacoes",
+   "rotulo": "Obrigações da contratada",
+   "secoes": [
+    "s4",
+    "s7"
+   ],
+   "ordem": [
+    "termo_referencia",
+    "edital",
+    "minuta_contrato"
+   ],
+   "termos": "obriga[cç][oõ]es da contratada",
+   "nota": "",
+   "medicao": "Obrigações da contratada"
+  },
+  {
+   "chave": "vigencia",
+   "rotulo": "Vigência do contrato",
+   "secoes": [
+    "s2",
+    "s7"
+   ],
+   "ordem": [
+    "minuta_contrato",
+    "termo_referencia",
+    "edital"
+   ],
+   "termos": "vig[eê]ncia (do contrato|da contrata)|prazo de vig[eê]ncia",
+   "nota": "",
+   "medicao": "Vigência do contrato"
+  },
+  {
+   "chave": "sla",
+   "rotulo": "Níveis de serviço (SLA, IMR)",
+   "secoes": [
+    "s3",
+    "s7"
+   ],
+   "ordem": [
+    "outros",
+    "termo_referencia"
+   ],
+   "termos": "acordo de n[ií]vel|\\bIMR\\b|n[ií]vel m[ií]nimo de servi|\\bSLA\\b",
+   "nota": "Costuma vir em anexo próprio, classificado como Outros."
+  },
+  {
+   "chave": "bdi",
+   "rotulo": "BDI, encargos e composição de custos",
+   "secoes": [
+    "s3",
+    "s7"
+   ],
+   "ordem": [
+    "planilha_precos",
+    "edital",
+    "termo_referencia"
+   ],
+   "termos": "\\bBDI\\b|encargos sociais|composi[cç][aã]o de custos",
+   "nota": "",
+   "medicao": "BDI / encargos / composição"
+  },
+  {
+   "chave": "preco_unitario",
+   "rotulo": "Preço unitário de referência",
+   "secoes": [
+    "s3",
+    "s7"
+   ],
+   "ordem": [
+    "planilha_precos",
+    "edital",
+    "termo_referencia",
+    "outros"
+   ],
+   "termos": "pre[cç]os? unit[aá]rios?|valor unit[aá]rio",
+   "nota": "",
+   "medicao": "Preço unitário de referência"
+  },
+  {
+   "chave": "inexequibilidade",
+   "rotulo": "Inexequibilidade",
+   "secoes": [
+    "s3",
+    "s7"
+   ],
+   "ordem": [
+    "edital"
+   ],
+   "termos": "inexequ",
+   "nota": "",
+   "medicao": "Inexequibilidade"
+  },
+  {
+   "chave": "pesquisa_precos",
+   "rotulo": "Pesquisa de preços (origem do teto)",
+   "secoes": [
+    "s3",
+    "s6"
+   ],
+   "ordem": [
+    "estudo_tecnico_preliminar",
+    "outros",
+    "edital"
+   ],
+   "termos": "pesquisa de pre[cç]os|estimativa de pre[cç]os|cesta de pre[cç]os|mapa de pre[cç]os",
+   "nota": "Mapa de preços costuma vir como anexo Outros; o ETP diz quantas fontes e quais.",
+   "medicao": "Pesquisa de preços (origem do teto)"
+  },
+  {
+   "chave": "modelo_proposta",
+   "rotulo": "Modelo de proposta e planilha exigida",
+   "secoes": [
+    "s7"
+   ],
+   "ordem": [
+    "edital",
+    "outros",
+    "planilha_precos"
+   ],
+   "termos": "modelo de proposta|proposta (ajustada|readequada)|planilha de (custos|forma[cç][aã]o)",
+   "nota": "Define a saída adaptada da precificação."
+  }
+ ]
+}

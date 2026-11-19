@@ -1,0 +1,91 @@
+# Contrato do card (agente → card)
+
+O card da licitação lê estes quatro arquivos, gravados pelos itens do fluxo em `licitacoes/<id>/agents/analisador-edital/analise/`. As skills do realmak-plugin não conhecem este contrato: o [AGENTS.md](../../AGENTS.md#skills-do-realmak-plugin) diz como o item o preenche a partir das entregas delas.
+
+O agente grava em `licitacoes/<id>/agents/analisador-edital/analise/`. Toda lista pode vir vazia. `fonte` é o rótulo curto (`Edital 8.3`, `TR 9.15`). Datas `AAAA-MM-DD` ou `AAAA-MM-DDTHH:MM` (Brasília). Valores em reais, número.
+
+`edital.json` (skill `analisar-edital`):
+
+```json
+{"versao": 1, "gerado_em": "AAAA-MM-DDTHH:MM",
+ "cabecalho": {"modalidade": "", "orgao": "", "uasg": "", "objeto": "", "tipo_objeto": "manutencao|fornecimento|outro_servico|misto",
+   "valor_estimado": 0, "valor_sigiloso": false, "criterio": "", "modo_disputa": "", "portal": "", "link": ""},
+ "atencao": [{"ponto": "", "gravidade": "alta|media|baixa", "fonte": "", "o_que_fazer": ""}],
+ "prazos": [{"prazo": "", "data": "", "fonte": "", "observacao": ""}],
+ "habilitacao": [{"grupo": "juridica|fiscal|trabalhista|economico_financeira|tecnica", "exigencia": "", "fonte": "", "observacao": ""}],
+ "declaracoes": [{"declaracao": "", "tipo": "padrao|especifica", "fonte": ""}],
+ "proposta": [{"topico": "", "texto": "", "fonte": ""}],
+ "impugnacao": [{"restricao": "", "fundamento": "", "prazo": "", "fonte": "", "prazo_passou": false}],
+ "perguntas_tecnico": [{"pergunta": "", "fonte": ""}],
+ "avisos": [{"data": "", "tipo": "aviso|esclarecimento|impugnacao|retificacao", "resumo": "", "mudou": ""}],
+ "avisos_consultados": true,
+ "nao_lido": [{"arquivo": "", "motivo": ""}],
+ "documentos": [{"arquivo": "", "origem": "plataforma|pncp|portal|anexo"}]}
+```
+
+`habilitacao.json` (skill `analisar-habilitacao`):
+Quando houver original de habilitação, `prova` cita arquivo, página, seção ou aba, trecho literal e confronto com os dados aplicáveis à exigência (titular/CNPJ, datas, validade, exercício ou escopo). A mesma prova indica o endereço permanente da cópia na licitação. Sem leitura do original, a exigência documental fica `verificar` se não houver outra prova válida, com “Validação pendente” e a falha específica descrita. Uma cópia disponível permite download mesmo com a conferência pendente. O Odoo acrescenta `controle_validacao[]` à resposta da habilitação somente a partir do dossiê privado do usuário autenticado, sem anexá-lo ao JSON compartilhado. Cada registro vincula empresa, SHA-256 e exigência ao original. Inclui arquivo, localizador, trecho literal, parecer `confere|diverge|pendente`, conclusão ou motivo e modelo efetivo. O parecer do leitor não substitui a avaliação de habilitação.
+
+
+No card, `mais_aderente` vira a sugestão de empresa que disputa (`empresa_disputante`, origem `ia`). A escolha de uma pessoa (origem `manual`) não é sobrescrita por nova análise.
+
+```json
+{"versao": 1, "gerado_em": "", "mais_aderente": "aforca|realmak|una|nortfort|null", "resultado": "",
+ "empresas": [{"empresa": "aforca|realmak|una|nortfort", "aderencia": "alta|media|baixa|nao_atende", "resumo": "",
+   "exigencias": [{"exigencia": "", "fonte": "", "situacao": "atende|parcial|nao_atende|verificar", "prova": "", "validade": ""}],
+   "pendencias": [""]}],
+ "emitiveis": [""], "perguntas_tecnico": [{"pergunta": "", "fonte": ""}]}
+```
+
+### Parciais de habilitação
+
+Cada `analise/habilitacao/<alias>.json` usa o mesmo envelope v1, com apenas a empresa do item, `mais_aderente: null` e uma avaliação por exigência do edital. Acrescente `cobertura[]` na raiz; a consolidação reúne os registros dos quatro parciais. O card continua lendo os campos v1.
+
+```json
+{"empresa":"realmak","exigencia":"<texto do edital>","fonte":"TR 8.3","eliminatoria":true,
+ "estado":"prova_lida|vias_esgotadas|falha|pendente",
+ "tentativas":[{"via":"cerebro_buscar","consulta":"<termo ou identificador>","resultado":"<motivo, achado ou via esgotada>"}]}
+```
+
+`prova_lida` indica que a cópia foi aberta e confrontada, independentemente do parecer. `vias_esgotadas` exige registro das vias aplicáveis consultadas e mantém `verificar` se faltar prova. Use `falha` para erro, teto, tempo ou executor interrompido e `pendente` para etapa ainda não executada. Se o daemon informar que o item inteiro falhou, a consolidação usa o edital para recriar as linhas `verificar` daquela empresa com o motivo, sem reaproveitar parcial de rodada anterior. Nem saída ausente nem lacuna documental vira `nao_atende` sem evidência de impedimento. A consolidação só altera a síntese e a indicação da mais aderente, preservando as provas e as lacunas. Use `atende` para prova aplicável conferida; `parcial` para dúvida de equivalência ou atendimento condicionado a ação demonstrável; `nao_atende` para impedimento comprovado; `verificar` se faltar prova, leitura ou cobertura. Para certidão emitível ou declaração a preparar, descreva o canal, a ação e o responsável sem afirmar que já existe documento válido.
+
+### Pesquisa de peças
+
+`fontes/pecas.json` contém `versao: 1`, `estado: "concluida"|"parcial"|"nao_se_aplica"`, `cotacoes_online` com a linha de oferta descrita em `tecnica.json` e `pendencias` com `item` e `motivo`. Cada oferta identifica a peça ou kit e preserva compatibilidade, embalagem e frete em `observacao`. Preço sem oferta confirmada fica em `pendencias` sem valor fictício. Se a análise técnica ainda não existir, extraia o escopo do edital/TR e use os identificadores dele; a precificação faz a correspondência. Peças sob demanda fora do lance ficam identificadas à parte em `pendencias` e não entram no custo recorrente.
+
+`tecnica.json` (`analisar-edital-manutencao` ou `analisar-edital-fornecimento`):
+
+```json
+{"versao": 1, "gerado_em": "", "tipo": "manutencao|fornecimento",
+ "conclusao": {"viavel": "sim|com_ressalvas|nao", "resumo": "", "ressalvas": [""]},
+ "itens": [{"item": "", "descricao": "", "quantidade": 0, "unidade": "", "exigencias": [""], "atende": "sim|nao|verificar", "fonte": ""}],
+ "cotacoes_online": [{"item": "", "preco_unit": 0, "unidade": "", "fornecedor": "", "link": "", "data": "", "observacao": ""}],
+ "escopo": [{"frente": "", "descricao": "", "fonte": ""}],
+ "equipe": [{"funcao": "", "quantidade": 0, "jornada": "", "fonte": ""}],
+ "sla": [{"indicador": "", "exigido": "", "viavel": "sim|nao|verificar", "fonte": ""}],
+ "entrega": {"prazo": "", "local": "", "fonte": ""},
+ "dimensionamento": {"carga_horas_mes": 0, "horas_disponiveis_mes": 0, "cobertura_pct": 0, "folga_pct": 0, "primeiro_ciclo": "", "pior_sla": ""},
+ "arquivos": [{"rotulo": "", "caminho": ""}]}
+```
+
+`itens` vale para fornecimento e para peças da manutenção; `escopo`, `equipe` e `sla` só para manutenção. `cotacoes_online` é a pesquisa de preço por item na internet (preço real, link individual da oferta, data), que vinha do relatório antigo e passa a ser parte de `analisar-edital-fornecimento`.
+
+`precificacao.json` (`precificar-proposta-exequibilidade`; preços de peças por `cotar-pecas-materiais-licitacoes`):
+
+```json
+{"versao": 1, "gerado_em": "", "valor_estimado": 0,
+ "custo_mensal": 0, "preco_mensal": 0, "preco_global": 0, "bdi_pct": 0, "margem_pct": 0,
+ "exequivel": "sim|no_limite|nao", "resumo": "",
+ "cenarios": [{"nome": "", "preco_global": 0, "margem_pct": 0, "exequivel": "sim|no_limite|nao"}],
+ "componentes": [{"componente": "mao_de_obra|operacao|pecas|tributos|margem", "valor_mensal": 0, "fonte": ""}],
+ "cotacoes_online": [{"item": "", "preco_unit": 0, "unidade": "", "fornecedor": "", "link": "", "data": "", "observacao": ""}],
+ "arquivos": [{"rotulo": "", "caminho": ""}]}
+```
+
+Acréscimos:
+
+- `cotacoes_online[]`: uma linha por oferta usada; `item` é o de `itens[].item`; `observacao` leva condição comercial, frete, embalagem, "BASE DE CUSTO … compatibilidade não confirmada" e referência de compra pública. Em `tecnica.json`, fornecimento; em `precificacao.json`, peças da manutenção.
+- `dimensionamento` (só manutenção): os números que o script da skill imprimiu (carga, horas disponíveis, cobertura, folga), mais o primeiro ciclo e o pior SLA em texto. Desconhecido é `null`.
+- `arquivos[]` (`tecnica.json` e `precificacao.json`): entregas da skill para o analista abrir pelo card, `caminho` relativo à pasta do agente (`analise/…`). O daemon publica à vista os `.html` e as planilhas `.xlsx`; ignora o resto, caminho com `..` e arquivo fora da pasta. Na manutenção, o relatório principal é o painel `analise/analise-manutencao.html`; o Odoo só roda o script dele se for o do `painel.py` da skill.
+
+Exemplo dos quatro arquivos: [exemplo/analise/](exemplo/analise/).

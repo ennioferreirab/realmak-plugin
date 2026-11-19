@@ -1,0 +1,99 @@
+# Categorias de interesse do agente (foco, adjacente, fora), lidas pelas skills e pelo gestor.
+# interesse: foco | adjacente | fora. Item sem categoria = adjacente.
+# Editar muda a próxima análise; relatórios publicados não mudam.
+categorias:
+  - id: ar-condicionado
+    nome: Ar-condicionado e climatização
+    interesse: foco
+    servicos: [fornecimento, instalacao, preventiva, corretiva, pmoc]
+    sinonimos: [ar-condicionado, ar condicionado, climatização, refrigeração de ar, PMOC]
+    equipamentos:
+      - {nome: Split hi-wall, sinonimos: [split, hi-wall, high wall, split parede]}
+      - {nome: Split piso-teto, sinonimos: [piso-teto, piso teto]}
+      - {nome: Split cassete, sinonimos: [cassete, cassette, k7]}
+      - {nome: Split dutado, sinonimos: [dutado, built-in]}
+      - {nome: Multi split, sinonimos: [multisplit, multi-split]}
+      - {nome: Ar-condicionado de janela, sinonimos: [janela, ACJ]}
+      - {nome: VRF, sinonimos: [VRV, fluxo de refrigerante variável]}
+      - {nome: Chiller, sinonimos: [resfriador de líquido, água gelada]}
+      - {nome: Fan coil, sinonimos: [fancoil, fan-coil]}
+      - {nome: Self contained, sinonimos: [self-contained]}
+      - {nome: Cortina de ar, sinonimos: [cortina de vento]}
+  - id: cozinha-coccao
+    nome: Cozinha industrial · cocção
+    interesse: foco
+    servicos: [fornecimento, instalacao, preventiva, corretiva]
+    sinonimos: [cozinha industrial, cocção, equipamento de cozinha]
+    equipamentos:
+      - {nome: Forno combinado, sinonimos: [combinado, Rational, forno combinado elétrico, forno combinado a gás]}
+      - {nome: Forno de convecção, sinonimos: [forno turbo, forno industrial]}
+      - {nome: Caldeirão, sinonimos: [caldeirão a vapor, caldeirão basculante, marmita]}
+      - {nome: Panela de pressão industrial, sinonimos: [panelão, panela de pressão]}
+      - {nome: Fogão industrial, sinonimos: [fogão, queimador]}
+      - {nome: Chapa, sinonimos: [chapa bifeteira, chapeira, char broiler]}
+      - {nome: Fritadeira, sinonimos: [fritadeira elétrica, fritadeira a gás]}
+      - {nome: Balcão térmico, sinonimos: [banho-maria, balcão aquecido, pista térmica]}
+      - {nome: Estufa, sinonimos: [estufa aquecida, estufa de alimentos]}
+  - id: cozinha-preparo
+    nome: Cozinha industrial · preparo
+    interesse: foco
+    servicos: [fornecimento, instalacao, preventiva, corretiva]
+    sinonimos: [cozinha industrial, preparo, panificação]
+    equipamentos:
+      - {nome: Liquidificador industrial, sinonimos: [liquidificador]}
+      - {nome: Batedeira, sinonimos: [batedeira planetária]}
+      - {nome: Masseira, sinonimos: [amassadeira]}
+      - {nome: Cilindro, sinonimos: [cilindro de massa, laminador]}
+      - {nome: Modeladora, sinonimos: [enroladora, modeladora de pães]}
+      - {nome: Descascador, sinonimos: [descascador de batatas, descascador de legumes]}
+      - {nome: Fatiador, sinonimos: [fatiadora, fatiador de frios]}
+      - {nome: Processador de alimentos, sinonimos: [multiprocessador, cortador de legumes]}
+      - {nome: Moedor de carne, sinonimos: [picador de carne]}
+  - id: lavagem-loucas
+    nome: Lavagem de louças
+    interesse: foco
+    servicos: [fornecimento, instalacao, preventiva, corretiva]
+    sinonimos: [lavagem de louças, louça]
+    equipamentos:
+      - {nome: Lava-louças, sinonimos: [lavadora de louças, máquina de lavar louça, lava-louças de capota, lava-louças de esteira]}
+  - id: refrigeracao
+    nome: Refrigeração comercial
+    interesse: foco            # decisão de Ennio em 2026-10-20
+    servicos: [fornecimento, instalacao, preventiva, corretiva]
+    sinonimos: [frio, refrigeração, refrigeração comercial]
+    equipamentos:
+      - {nome: Câmara frigorífica, sinonimos: [câmara fria]}
+      - {nome: Câmara resfriada, sinonimos: [câmara de resfriados]}
+      - {nome: Câmara congelada, sinonimos: [câmara de congelados]}
+      - {nome: Pass-through, sinonimos: [pass through, passthrough]}
+      - {nome: Freezer, sinonimos: [congelador, freezer horizontal, freezer vertical]}
+      - {nome: Refrigerador comercial, sinonimos: [geladeira, refrigerador vertical, expositor refrigerado]}
+      - {nome: Balcão refrigerado, sinonimos: [balcão frigorífico]}
+      - {nome: Máquina de gelo, sinonimos: [fabricador de gelo]}
+      - {nome: Refresqueira, sinonimos: [suqueira]}
+      - {nome: Bebedouro, sinonimos: [bebedouro industrial, bebedouro de pressão]}
+  - id: exaustao
+    nome: Exaustão e coifas
+    interesse: adjacente
+    servicos: [fornecimento, instalacao, preventiva, corretiva]
+    sinonimos: [exaustão, ventilação]
+    equipamentos:
+      - {nome: Coifa, sinonimos: [coifa de parede, coifa central]}
+      - {nome: Sistema de exaustão, sinonimos: [exaustor, exaustão mecânica, duto de exaustão]}
+  - id: cafe-bebidas
+    nome: Café e bebidas
+    interesse: adjacente
+    servicos: [fornecimento, instalacao, preventiva, corretiva]
+    sinonimos: [café, bebidas]
+    equipamentos:
+      - {nome: Máquina de café, sinonimos: [cafeteira, cafeteira industrial, máquina de café expresso]}
+      - {nome: Moedor de café}
+  - id: fora-do-ramo
+    nome: Fora do ramo
+    interesse: fora            # oculto no relatório, nunca descartado (AGENTS.md §3.1)
+    servicos: []
+    sinonimos: []
+    equipamentos:
+      - {nome: Limpeza predial, sinonimos: [limpeza e conservação, serviço de limpeza]}
+      - {nome: Material de expediente, sinonimos: [papelaria, material de escritório]}
+      - {nome: Gêneros alimentícios}

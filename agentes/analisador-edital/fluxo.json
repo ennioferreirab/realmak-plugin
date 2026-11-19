@@ -1,0 +1,210 @@
+{
+  "versao": 4,
+  "etapas": [
+    {
+      "id": "E0",
+      "titulo": "Preparar",
+      "itens": [
+        {
+          "id": "resumo",
+          "titulo": "Resumo IA do ConLicitação",
+          "modo": "script",
+          "tier": "T0",
+          "cmd": [
+            "python3",
+            "{pasta_agente_def}/skills/pasta-licitacao/scripts/resumo_conlicitacao.py",
+            "{licitacao_id}"
+          ]
+        },
+        {
+          "id": "mapa",
+          "titulo": "Mapa de leitura do edital",
+          "modo": "script",
+          "tier": "T0",
+          "cmd": [
+            "python3",
+            "{pasta_agente_def}/skills/guia-leitura-edital/scripts/localizar.py",
+            "{licitacao_id}"
+          ]
+        },
+        {
+          "id": "cerebro-g1",
+          "titulo": "Cérebro antes do G1",
+          "modo": "skill",
+          "tier": "T1",
+          "skill": "cerebro",
+          "passos": "consulta curta para o G1",
+          "saida": "fontes/cerebro_g1.json",
+          "depende_de": [
+            "resumo",
+            "mapa"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "E1",
+      "titulo": "Edital",
+      "itens": [
+        {
+          "id": "edital",
+          "titulo": "Análise do edital",
+          "modo": "skill",
+          "tier": "T2",
+          "skill": "analisar-edital",
+          "saida": "analise/edital.json"
+        }
+      ]
+    },
+    {
+      "id": "G1",
+      "titulo": "Vale disputar?",
+      "portao": true,
+      "decisoes": [
+        "seguir",
+        "parar",
+        "humano"
+      ]
+    },
+    {
+      "id": "E2",
+      "titulo": "Análises",
+      "itens": [
+        {
+          "id": "cerebro",
+          "titulo": "Subsídio histórico",
+          "modo": "skill",
+          "tier": "T1",
+          "skill": "cerebro",
+          "saida": "fontes/cerebro.json",
+          "passos": "histórico de preços, compras, BDI, atas e recursos para a análise do edital"
+        },
+        {
+          "id": "habilitacao-aforca",
+          "titulo": "Habilitação · AForça",
+          "modo": "skill",
+          "tier": "T1",
+          "skill": "analisar-habilitacao",
+          "passos": "pesquisa, leitura e análise por exigência somente para aforca",
+          "saida": "analise/habilitacao/aforca.json"
+        },
+        {
+          "id": "habilitacao-realmak",
+          "titulo": "Habilitação · Realmak",
+          "modo": "skill",
+          "tier": "T1",
+          "skill": "analisar-habilitacao",
+          "passos": "pesquisa, leitura e análise por exigência somente para realmak",
+          "saida": "analise/habilitacao/realmak.json"
+        },
+        {
+          "id": "habilitacao-una",
+          "titulo": "Habilitação · UNA",
+          "modo": "skill",
+          "tier": "T1",
+          "skill": "analisar-habilitacao",
+          "passos": "pesquisa, leitura e análise por exigência somente para una",
+          "saida": "analise/habilitacao/una.json"
+        },
+        {
+          "id": "habilitacao-nortfort",
+          "titulo": "Habilitação · Nortfort",
+          "modo": "skill",
+          "tier": "T1",
+          "skill": "analisar-habilitacao",
+          "passos": "pesquisa, leitura e análise por exigência somente para nortfort",
+          "saida": "analise/habilitacao/nortfort.json"
+        },
+        {
+          "id": "tecnica",
+          "titulo": "Análise técnica",
+          "modo": "skill",
+          "tier": "T2",
+          "skill": "analise-tecnica",
+          "saida": "analise/tecnica.json"
+        },
+        {
+          "id": "pecas",
+          "titulo": "Pesquisar preço de peças e materiais",
+          "modo": "skill",
+          "tier": "T1",
+          "skill": "cotar-pecas-materiais-licitacoes",
+          "passos": "cotar peças incluídas no preço com base no edital e no TR; se não houver peças, registrar que não se aplica",
+          "saida": "fontes/pecas.json"
+        },
+        {
+          "id": "habilitacao",
+          "titulo": "Consolidar habilitação",
+          "modo": "skill",
+          "tier": "T2",
+          "skill": "analisar-habilitacao",
+          "saida": "analise/habilitacao.json",
+          "depende_de": [
+            "habilitacao-aforca",
+            "habilitacao-realmak",
+            "habilitacao-una",
+            "habilitacao-nortfort"
+          ],
+          "passos": "consolidar as quatro análises por empresa no contrato do card, incluindo lacunas de itens falhos",
+          "tolera_falha": true
+        }
+      ]
+    },
+    {
+      "id": "G2",
+      "titulo": "Vale precificar?",
+      "portao": true,
+      "decisoes": [
+        "seguir",
+        "parar",
+        "humano",
+        "rerodar"
+      ]
+    },
+    {
+      "id": "E3",
+      "titulo": "Preço",
+      "itens": [
+        {
+          "id": "precificacao",
+          "titulo": "Precificação e exequibilidade",
+          "modo": "skill",
+          "tier": "T2",
+          "skill": "precificar-proposta-exequibilidade",
+          "saida": "analise/precificacao.json",
+          "passos": "formar preço usando fontes/pecas.json; para manutenção gerar a planilha pelo script da skill"
+        }
+      ]
+    },
+    {
+      "id": "E4",
+      "titulo": "Score",
+      "itens": [
+        {
+          "id": "score",
+          "titulo": "Score e nota",
+          "modo": "script",
+          "tier": "T0",
+          "cmd": [
+            "python3",
+            "{pasta_agente_def}/skills/score/scripts/score.py",
+            "{licitacao_id}",
+            "--dados",
+            "{pasta_agente}"
+          ],
+          "saida": "relatorio/topo.json"
+        }
+      ]
+    },
+    {
+      "id": "G3",
+      "titulo": "Fechamento",
+      "portao": true,
+      "decisoes": [
+        "seguir",
+        "humano",
+        "rerodar"
+      ]
+    }
+  ]
+}

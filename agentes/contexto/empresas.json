@@ -1,0 +1,12 @@
+{
+  "odoo": {
+    "1": "realmak"
+  },
+  "cerebros": {
+    "realmak": "Realmak",
+    "aforca": "A Força",
+    "nortfort": "Nortfort",
+    "una": "Una",
+    "sublime": "Sublime"
+  }
+}

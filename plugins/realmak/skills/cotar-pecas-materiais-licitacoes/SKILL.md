@@ -5,6 +5,10 @@ description: Use quando a equipe pedir cotação ou pesquisa de preço de peças
 
 # Cotação de peças e materiais para licitações
 
+## Quando a pesquisa roda antes da análise técnica
+
+Parta da lista de peças e kits, do edital e do TR. Identifique itens pelo código do edital ou pela seção e descrição. Separe peças incluídas no lance das pagas sob demanda. Grave a saída pedida pelo fluxo com as ofertas compatíveis, unidade ou embalagem, frete e data, e as peças sem referência confirmada. Em fornecimento, a análise técnica pesquisa os itens ofertados; se este certame não incluir peças de manutenção no lance, marque esta pesquisa como não aplicável. No uso manual, use a lista da análise técnica se ela já existir e entregue pelo formato habitual.
+
 ## Objetivo e escopo
 
 Preencher a planilha fornecida pelo usuário com custos de aquisição de materiais e execução de serviços para elaboração interna de proposta de licitação. Trabalhar em português do Brasil, com valores em reais.

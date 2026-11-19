@@ -1,0 +1,553 @@
+{
+ "n_licitacoes": 40,
+ "tem_tipo": {
+  "edital": 37,
+  "estudo_tecnico_preliminar": 10,
+  "termo_referencia": 23,
+  "outros": 16,
+  "minuta_contrato": 8,
+  "planilha_precos": 6
+ },
+ "info": {
+  "Data e hora da sessão": {
+   "presenca": {
+    "edital": 0.8918918918918919,
+    "termo_referencia": 0.21739130434782608,
+    "estudo_tecnico_preliminar": 0.2,
+    "minuta_contrato": 0.125,
+    "planilha_precos": 0.0,
+    "outros": 0.125
+   },
+   "participacao": {
+    "edital": 0.9719438877755511,
+    "termo_referencia": 0.014028056112224449,
+    "estudo_tecnico_preliminar": 0.004008016032064128,
+    "minuta_contrato": 0.002004008016032064,
+    "planilha_precos": 0.0,
+    "outros": 0.008016032064128256
+   }
+  },
+  "Valor estimado / teto": {
+   "presenca": {
+    "edital": 0.9459459459459459,
+    "termo_referencia": 0.782608695652174,
+    "estudo_tecnico_preliminar": 0.9,
+    "minuta_contrato": 0.375,
+    "planilha_precos": 0.16666666666666666,
+    "outros": 0.625
+   },
+   "participacao": {
+    "edital": 0.6954022988505747,
+    "termo_referencia": 0.1752873563218391,
+    "estudo_tecnico_preliminar": 0.07183908045977011,
+    "minuta_contrato": 0.014367816091954023,
+    "planilha_precos": 0.0028735632183908046,
+    "outros": 0.040229885057471264
+   }
+  },
+  "Critério de julgamento": {
+   "presenca": {
+    "edital": 0.972972972972973,
+    "termo_referencia": 0.7391304347826086,
+    "estudo_tecnico_preliminar": 0.3,
+    "minuta_contrato": 0.0,
+    "planilha_precos": 0.0,
+    "outros": 0.125
+   },
+   "participacao": {
+    "edital": 0.7715736040609137,
+    "termo_referencia": 0.18781725888324874,
+    "estudo_tecnico_preliminar": 0.030456852791878174,
+    "minuta_contrato": 0.0,
+    "planilha_precos": 0.0,
+    "outros": 0.01015228426395939
+   }
+  },
+  "Modo de disputa": {
+   "presenca": {
+    "edital": 0.5405405405405406,
+    "termo_referencia": 0.0,
+    "estudo_tecnico_preliminar": 0.1,
+    "minuta_contrato": 0.0,
+    "planilha_precos": 0.0,
+    "outros": 0.0
+   },
+   "participacao": {
+    "edital": 0.9606299212598425,
+    "termo_referencia": 0.0,
+    "estudo_tecnico_preliminar": 0.03937007874015748,
+    "minuta_contrato": 0.0,
+    "planilha_precos": 0.0,
+    "outros": 0.0
+   }
+  },
+  "ME/EPP e empate": {
+   "presenca": {
+    "edital": 0.7567567567567568,
+    "termo_referencia": 0.6956521739130435,
+    "estudo_tecnico_preliminar": 0.2,
+    "minuta_contrato": 0.125,
+    "planilha_precos": 0.0,
+    "outros": 0.0625
+   },
+   "participacao": {
+    "edital": 0.8622589531680441,
+    "termo_referencia": 0.12121212121212122,
+    "estudo_tecnico_preliminar": 0.005509641873278237,
+    "minuta_contrato": 0.0027548209366391185,
+    "planilha_precos": 0.0,
+    "outros": 0.008264462809917356
+   }
+  },
+  "Esclarecimento / impugnação": {
+   "presenca": {
+    "edital": 0.6216216216216216,
+    "termo_referencia": 0.13043478260869565,
+    "estudo_tecnico_preliminar": 0.0,
+    "minuta_contrato": 0.0,
+    "planilha_precos": 0.0,
+    "outros": 0.0
+   },
+   "participacao": {
+    "edital": 0.9818181818181818,
+    "termo_referencia": 0.01818181818181818,
+    "estudo_tecnico_preliminar": 0.0,
+    "minuta_contrato": 0.0,
+    "planilha_precos": 0.0,
+    "outros": 0.0
+   }
+  },
+  "Habilitação técnica (atestados)": {
+   "presenca": {
+    "edital": 0.6756756756756757,
+    "termo_referencia": 0.8260869565217391,
+    "estudo_tecnico_preliminar": 0.4,
+    "minuta_contrato": 0.25,
+    "planilha_precos": 0.0,
+    "outros": 0.25
+   },
+   "participacao": {
+    "edital": 0.5603864734299517,
+    "termo_referencia": 0.34299516908212563,
+    "estudo_tecnico_preliminar": 0.06280193236714976,
+    "minuta_contrato": 0.00966183574879227,
+    "planilha_precos": 0.0,
+    "outros": 0.024154589371980676
+   }
+  },
+  "Habilitação econômica (índices)": {
+   "presenca": {
+    "edital": 0.3783783783783784,
+    "termo_referencia": 0.4782608695652174,
+    "estudo_tecnico_preliminar": 0.0,
+    "minuta_contrato": 0.0,
+    "planilha_precos": 0.0,
+    "outros": 0.0625
+   },
+   "participacao": {
+    "edital": 0.5698924731182796,
+    "termo_referencia": 0.3870967741935484,
+    "estudo_tecnico_preliminar": 0.0,
+    "minuta_contrato": 0.0,
+    "planilha_precos": 0.0,
+    "outros": 0.043010752688172046
+   }
+  },
+  "Regularidade fiscal": {
+   "presenca": {
+    "edital": 0.8918918918918919,
+    "termo_referencia": 0.782608695652174,
+    "estudo_tecnico_preliminar": 0.2,
+    "minuta_contrato": 0.5,
+    "planilha_precos": 0.0,
+    "outros": 0.0625
+   },
+   "participacao": {
+    "edital": 0.6227848101265823,
+    "termo_referencia": 0.35443037974683544,
+    "estudo_tecnico_preliminar": 0.005063291139240506,
+    "minuta_contrato": 0.015189873417721518,
+    "planilha_precos": 0.0,
+    "outros": 0.002531645569620253
+   }
+  },
+  "Especificação técnica": {
+   "presenca": {
+    "edital": 0.8378378378378378,
+    "termo_referencia": 0.6956521739130435,
+    "estudo_tecnico_preliminar": 0.8,
+    "minuta_contrato": 0.5,
+    "planilha_precos": 0.16666666666666666,
+    "outros": 0.4375
+   },
+   "participacao": {
+    "edital": 0.27526132404181186,
+    "termo_referencia": 0.632404181184669,
+    "estudo_tecnico_preliminar": 0.05574912891986063,
+    "minuta_contrato": 0.01916376306620209,
+    "planilha_precos": 0.0017421602787456446,
+    "outros": 0.0156794425087108
+   }
+  },
+  "Marca, modelo, catálogo": {
+   "presenca": {
+    "edital": 0.5135135135135135,
+    "termo_referencia": 0.6086956521739131,
+    "estudo_tecnico_preliminar": 0.3,
+    "minuta_contrato": 0.125,
+    "planilha_precos": 0.16666666666666666,
+    "outros": 0.1875
+   },
+   "participacao": {
+    "edital": 0.2962962962962963,
+    "termo_referencia": 0.6835016835016835,
+    "estudo_tecnico_preliminar": 0.011784511784511785,
+    "minuta_contrato": 0.0016835016835016834,
+    "planilha_precos": 0.0016835016835016834,
+    "outros": 0.005050505050505051
+   }
+  },
+  "Quantitativos": {
+   "presenca": {
+    "edital": 0.8648648648648649,
+    "termo_referencia": 0.8695652173913043,
+    "estudo_tecnico_preliminar": 1.0,
+    "minuta_contrato": 0.875,
+    "planilha_precos": 0.0,
+    "outros": 0.5
+   },
+   "participacao": {
+    "edital": 0.549618320610687,
+    "termo_referencia": 0.18625954198473282,
+    "estudo_tecnico_preliminar": 0.13129770992366413,
+    "minuta_contrato": 0.03206106870229008,
+    "planilha_precos": 0.0,
+    "outros": 0.10076335877862595
+   }
+  },
+  "Prazo de entrega/execução": {
+   "presenca": {
+    "edital": 0.6216216216216216,
+    "termo_referencia": 0.5652173913043478,
+    "estudo_tecnico_preliminar": 0.2,
+    "minuta_contrato": 0.25,
+    "planilha_precos": 0.0,
+    "outros": 0.1875
+   },
+   "participacao": {
+    "edital": 0.7017543859649122,
+    "termo_referencia": 0.20175438596491227,
+    "estudo_tecnico_preliminar": 0.017543859649122806,
+    "minuta_contrato": 0.05263157894736842,
+    "planilha_precos": 0.0,
+    "outros": 0.02631578947368421
+   }
+  },
+  "Local de execução": {
+   "presenca": {
+    "edital": 0.6216216216216216,
+    "termo_referencia": 0.6956521739130435,
+    "estudo_tecnico_preliminar": 0.1,
+    "minuta_contrato": 0.625,
+    "planilha_precos": 0.16666666666666666,
+    "outros": 0.1875
+   },
+   "participacao": {
+    "edital": 0.5575757575757576,
+    "termo_referencia": 0.36363636363636365,
+    "estudo_tecnico_preliminar": 0.006060606060606061,
+    "minuta_contrato": 0.048484848484848485,
+    "planilha_precos": 0.006060606060606061,
+    "outros": 0.01818181818181818
+   }
+  },
+  "Visita técnica / vistoria": {
+   "presenca": {
+    "edital": 0.5135135135135135,
+    "termo_referencia": 0.5652173913043478,
+    "estudo_tecnico_preliminar": 0.3,
+    "minuta_contrato": 0.5,
+    "planilha_precos": 0.0,
+    "outros": 0.125
+   },
+   "participacao": {
+    "edital": 0.5925925925925926,
+    "termo_referencia": 0.3074074074074074,
+    "estudo_tecnico_preliminar": 0.022222222222222223,
+    "minuta_contrato": 0.018518518518518517,
+    "planilha_precos": 0.0,
+    "outros": 0.05925925925925926
+   }
+  },
+  "Amostra / prova de conceito": {
+   "presenca": {
+    "edital": 0.6756756756756757,
+    "termo_referencia": 0.43478260869565216,
+    "estudo_tecnico_preliminar": 0.2,
+    "minuta_contrato": 0.0,
+    "planilha_precos": 0.0,
+    "outros": 0.1875
+   },
+   "participacao": {
+    "edital": 0.8045112781954887,
+    "termo_referencia": 0.16541353383458646,
+    "estudo_tecnico_preliminar": 0.02443609022556391,
+    "minuta_contrato": 0.0,
+    "planilha_precos": 0.0,
+    "outros": 0.005639097744360902
+   }
+  },
+  "Garantia contratual": {
+   "presenca": {
+    "edital": 0.5135135135135135,
+    "termo_referencia": 0.5217391304347826,
+    "estudo_tecnico_preliminar": 0.2,
+    "minuta_contrato": 0.625,
+    "planilha_precos": 0.0,
+    "outros": 0.25
+   },
+   "participacao": {
+    "edital": 0.5071428571428571,
+    "termo_referencia": 0.32857142857142857,
+    "estudo_tecnico_preliminar": 0.014285714285714285,
+    "minuta_contrato": 0.05714285714285714,
+    "planilha_precos": 0.0,
+    "outros": 0.09285714285714286
+   }
+  },
+  "Garantia do produto/serviço": {
+   "presenca": {
+    "edital": 0.2702702702702703,
+    "termo_referencia": 0.9130434782608695,
+    "estudo_tecnico_preliminar": 0.0,
+    "minuta_contrato": 0.125,
+    "planilha_precos": 0.0,
+    "outros": 0.0625
+   },
+   "participacao": {
+    "edital": 0.4157303370786517,
+    "termo_referencia": 0.5168539325842697,
+    "estudo_tecnico_preliminar": 0.0,
+    "minuta_contrato": 0.056179775280898875,
+    "planilha_precos": 0.0,
+    "outros": 0.011235955056179775
+   }
+  },
+  "Pagamento": {
+   "presenca": {
+    "edital": 0.5405405405405406,
+    "termo_referencia": 0.8695652173913043,
+    "estudo_tecnico_preliminar": 0.1,
+    "minuta_contrato": 0.375,
+    "planilha_precos": 0.0,
+    "outros": 0.1875
+   },
+   "participacao": {
+    "edital": 0.54,
+    "termo_referencia": 0.39,
+    "estudo_tecnico_preliminar": 0.005,
+    "minuta_contrato": 0.02,
+    "planilha_precos": 0.0,
+    "outros": 0.045
+   }
+  },
+  "Penalidades e multas": {
+   "presenca": {
+    "edital": 0.972972972972973,
+    "termo_referencia": 0.9130434782608695,
+    "estudo_tecnico_preliminar": 0.1,
+    "minuta_contrato": 1.0,
+    "planilha_precos": 0.0,
+    "outros": 0.25
+   },
+   "participacao": {
+    "edital": 0.6278772378516624,
+    "termo_referencia": 0.27877237851662406,
+    "estudo_tecnico_preliminar": 0.0012787723785166241,
+    "minuta_contrato": 0.05115089514066496,
+    "planilha_precos": 0.0,
+    "outros": 0.04092071611253197
+   }
+  },
+  "Reajuste / repactuação": {
+   "presenca": {
+    "edital": 0.6486486486486487,
+    "termo_referencia": 0.7391304347826086,
+    "estudo_tecnico_preliminar": 0.0,
+    "minuta_contrato": 0.875,
+    "planilha_precos": 0.0,
+    "outros": 0.375
+   },
+   "participacao": {
+    "edital": 0.48494983277591974,
+    "termo_referencia": 0.32441471571906355,
+    "estudo_tecnico_preliminar": 0.0,
+    "minuta_contrato": 0.07023411371237458,
+    "planilha_precos": 0.0,
+    "outros": 0.12040133779264214
+   }
+  },
+  "Subcontratação": {
+   "presenca": {
+    "edital": 0.7837837837837838,
+    "termo_referencia": 0.9565217391304348,
+    "estudo_tecnico_preliminar": 0.3,
+    "minuta_contrato": 0.75,
+    "planilha_precos": 0.0,
+    "outros": 0.3125
+   },
+   "participacao": {
+    "edital": 0.42894736842105263,
+    "termo_referencia": 0.3894736842105263,
+    "estudo_tecnico_preliminar": 0.03684210526315789,
+    "minuta_contrato": 0.04736842105263158,
+    "planilha_precos": 0.0,
+    "outros": 0.09736842105263158
+   }
+  },
+  "Consórcio": {
+   "presenca": {
+    "edital": 0.8648648648648649,
+    "termo_referencia": 0.4782608695652174,
+    "estudo_tecnico_preliminar": 0.2,
+    "minuta_contrato": 0.0,
+    "planilha_precos": 0.0,
+    "outros": 0.0625
+   },
+   "participacao": {
+    "edital": 0.46439628482972134,
+    "termo_referencia": 0.47368421052631576,
+    "estudo_tecnico_preliminar": 0.03715170278637771,
+    "minuta_contrato": 0.0,
+    "planilha_precos": 0.0,
+    "outros": 0.02476780185758514
+   }
+  },
+  "BDI / encargos / composição": {
+   "presenca": {
+    "edital": 0.6216216216216216,
+    "termo_referencia": 0.34782608695652173,
+    "estudo_tecnico_preliminar": 0.2,
+    "minuta_contrato": 0.5,
+    "planilha_precos": 0.6666666666666666,
+    "outros": 0.25
+   },
+   "participacao": {
+    "edital": 0.45394736842105265,
+    "termo_referencia": 0.19407894736842105,
+    "estudo_tecnico_preliminar": 0.03289473684210526,
+    "minuta_contrato": 0.013157894736842105,
+    "planilha_precos": 0.2565789473684211,
+    "outros": 0.049342105263157895
+   }
+  },
+  "Preço unitário de referência": {
+   "presenca": {
+    "edital": 0.9459459459459459,
+    "termo_referencia": 0.5652173913043478,
+    "estudo_tecnico_preliminar": 0.5,
+    "minuta_contrato": 0.125,
+    "planilha_precos": 0.5,
+    "outros": 0.4375
+   },
+   "participacao": {
+    "edital": 0.6985815602836879,
+    "termo_referencia": 0.1702127659574468,
+    "estudo_tecnico_preliminar": 0.03900709219858156,
+    "minuta_contrato": 0.0035460992907801418,
+    "planilha_precos": 0.028368794326241134,
+    "outros": 0.06028368794326241
+   }
+  },
+  "Inexequibilidade": {
+   "presenca": {
+    "edital": 0.9459459459459459,
+    "termo_referencia": 0.21739130434782608,
+    "estudo_tecnico_preliminar": 0.1,
+    "minuta_contrato": 0.25,
+    "planilha_precos": 0.0,
+    "outros": 0.0625
+   },
+   "participacao": {
+    "edital": 0.9243243243243243,
+    "termo_referencia": 0.032432432432432434,
+    "estudo_tecnico_preliminar": 0.010810810810810811,
+    "minuta_contrato": 0.016216216216216217,
+    "planilha_precos": 0.0,
+    "outros": 0.016216216216216217
+   }
+  },
+  "Pesquisa de preços (origem do teto)": {
+   "presenca": {
+    "edital": 0.3783783783783784,
+    "termo_referencia": 0.34782608695652173,
+    "estudo_tecnico_preliminar": 0.7,
+    "minuta_contrato": 0.0,
+    "planilha_precos": 0.0,
+    "outros": 0.5
+   },
+   "participacao": {
+    "edital": 0.5671641791044776,
+    "termo_referencia": 0.11940298507462686,
+    "estudo_tecnico_preliminar": 0.21641791044776118,
+    "minuta_contrato": 0.0,
+    "planilha_precos": 0.0,
+    "outros": 0.09701492537313433
+   }
+  },
+  "Obrigações da contratada": {
+   "presenca": {
+    "edital": 0.43243243243243246,
+    "termo_referencia": 0.43478260869565216,
+    "estudo_tecnico_preliminar": 0.2,
+    "minuta_contrato": 0.125,
+    "planilha_precos": 0.0,
+    "outros": 0.0
+   },
+   "participacao": {
+    "edital": 0.6078431372549019,
+    "termo_referencia": 0.3137254901960784,
+    "estudo_tecnico_preliminar": 0.0392156862745098,
+    "minuta_contrato": 0.0392156862745098,
+    "planilha_precos": 0.0,
+    "outros": 0.0
+   }
+  },
+  "Vigência do contrato": {
+   "presenca": {
+    "edital": 0.8378378378378378,
+    "termo_referencia": 0.9130434782608695,
+    "estudo_tecnico_preliminar": 0.2,
+    "minuta_contrato": 0.875,
+    "planilha_precos": 0.0,
+    "outros": 0.3125
+   },
+   "participacao": {
+    "edital": 0.5761589403973509,
+    "termo_referencia": 0.304635761589404,
+    "estudo_tecnico_preliminar": 0.009933774834437087,
+    "minuta_contrato": 0.08278145695364239,
+    "planilha_precos": 0.0,
+    "outros": 0.026490066225165563
+   }
+  },
+  "Equipe / qualificação da mão de obra": {
+   "presenca": {
+    "edital": 0.7027027027027027,
+    "termo_referencia": 0.7391304347826086,
+    "estudo_tecnico_preliminar": 0.5,
+    "minuta_contrato": 0.0,
+    "planilha_precos": 0.16666666666666666,
+    "outros": 0.125
+   },
+   "participacao": {
+    "edital": 0.563265306122449,
+    "termo_referencia": 0.2938775510204082,
+    "estudo_tecnico_preliminar": 0.10204081632653061,
+    "minuta_contrato": 0.0,
+    "planilha_precos": 0.0163265306122449,
+    "outros": 0.024489795918367346
+   }
+  }
+ }
+}
