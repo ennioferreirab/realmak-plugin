@@ -42,12 +42,57 @@ Na análise manual ou na fase automática de pesquisa, consulte as ferramentas d
 
 Se o pedido nomear um alias, trabalhe somente com a empresa indicada, mesmo quando a empresa do card for outra.
 
-1. **Pesquisa e localização (T1).** Use a busca por exigência e as buscas dirigidas. Leia as listas de pistas e os achados históricos das duas fontes. Registre cada busca pelo número nas tentativas. Reúna todos os candidatos materiais por exigência, inclusive preliminares que precisam de conferência. Informe o ID de registro aceito pela ferramenta de provas do Cérebro, o título e o motivo de pertinência. Inclua o SHA-256 do original quando disponível. Se só houver o hash completo, grave-o em `sha256`; mantenha `id` reservado ao ID de registro. Grave no caminho de candidatos do item, seguindo o contrato interno do agente. Na raiz de `candidatos.json`, copie em `empresa` o alias literal do item (`aforca`, `realmak`, `una` ou `nortfort`), igual ao da pasta de saída. Use `cnpj_referencia` para o CNPJ da empresa quando conhecido. Confira o alias antes de finalizar o arquivo. Um trecho indexado, uma URL ou um título sozinho não é prova. O daemon faz a aquisição; esta fase só localiza e registra. Para cada exigência aplicável, consulte o Cérebro da empresa e confira a pasta local, mesmo quando uma via já tiver localizado prova. Liste também as cópias locais autorizadas como candidatos: informe SHA-256 completo, título e motivo, sem inventar ID. Verifique o acesso ao Cérebro no começo da pesquisa. Quando uma exigência ficar sem candidato, registre nas tentativas se a busca foi executada sem achados, se todos os candidatos foram excluídos com motivo ou se a pesquisa ficou bloqueada. Sem ferramenta, acesso ou orçamento de busca, marque pesquisa incompleta com a causa por exigência; preserve as pistas e as cópias locais autorizadas. Exemplo: para a CNDT, consulte pelo tipo e pelo CNPJ da empresa, liste a cópia local pelo hash e a do Cérebro pelo ID, e deduplique se o hash coincidir. O cruzamento confere exercício ou validade no original.
+1. **Pesquisa e localização (T1).** Use a busca por exigência e as buscas dirigidas. Leia as listas de pistas e os achados históricos das duas fontes. Registre cada busca pelo número nas tentativas. Reúna todos os candidatos materiais por exigência, inclusive preliminares que precisam de conferência. Informe o ID de registro aceito pela ferramenta de provas do Cérebro, o título e o motivo de pertinência. Inclua o SHA-256 do original quando disponível. Se só houver o hash completo, grave-o em `sha256`; mantenha `id` reservado ao ID de registro. Grave no caminho de candidatos do item usando o JSON da seção **Formato de candidatos.json** abaixo. Na raiz de `candidatos.json`, copie em `empresa` o alias literal do item (`aforca`, `realmak`, `una` ou `nortfort`), igual ao da pasta de saída. Use `cnpj_referencia` para o CNPJ da empresa quando conhecido. Confira o alias antes de finalizar o arquivo. Um trecho indexado, uma URL ou um título sozinho não é prova. O daemon faz a aquisição; esta fase só localiza e registra. Para cada exigência aplicável, consulte o Cérebro da empresa e confira a pasta local, mesmo quando uma via já tiver localizado prova. Liste também as cópias locais autorizadas como candidatos: informe SHA-256 completo, título e motivo, sem inventar ID. Verifique o acesso ao Cérebro no começo da pesquisa. Quando uma exigência ficar sem candidato, registre nas tentativas se a busca foi executada sem achados, se todos os candidatos foram excluídos com motivo ou se a pesquisa ficou bloqueada. Sem ferramenta, acesso ou orçamento de busca, marque pesquisa incompleta com a causa por exigência; preserve as pistas e as cópias locais autorizadas. Exemplo: para a CNDT, consulte pelo tipo e pelo CNPJ da empresa, liste a cópia local pelo hash e a do Cérebro pelo ID, e deduplique se o hash coincidir. O cruzamento confere exercício ou validade no original.
 2. **Aquisição pelo daemon (T0).** A lista completa vai para a fila de download, que arquiva cada candidato na pasta autorizada da licitação, associa-o à exigência e repete falhas passageiras. A entrega ao cruzamento identifica cada cópia arquivada e cada falha final de download. Nenhum erro de um candidato deve impedir o aproveitamento dos demais.
 3. **Cruzamento documental (T2).** Leia a saída da aquisição desta rodada. Abra **todos** os candidatos baixados, inclusive cada entrada em `outras_copias`, e registre por exigência arquivo, página/seção/aba, trecho literal e confronto com titular/CNPJ, validade, escopo e quantitativo aplicável. Se uma cópia serve a várias exigências, reaproveite a leitura e confronte cada uma. Use OCR quando necessário e confira na imagem todo trecho decisivo. Erro de leitura de uma cópia já baixada exige tentativa de leitura alternativa e, se persistir, o impedimento real de leitura. Só deixe um candidato sem abertura por falha de aquisição quando a fila registrar `download falhou: <causa>` após as tentativas aplicáveis. Leitura omitida, falta de tempo da conversa ou um resultado promissor anterior não encerram o cruzamento. Aproveite também os originais locais autorizados da mesma empresa que as tentativas apontaram, com identidade e proveniência conferidas. Preserve `verificar` onde faltar pesquisa ou prova. Finalize com a saída parcial do card.
 4. **Consolidação.** Leia os quatro parciais e aplique a seção “Qual empresa é a mais aderente”. Preserve prova, cobertura e ações por exigência. Quando o daemon entregar um parcial válido com `rodada_anterior`, use a avaliação da empresa como está, conte-a na ordenação de `mais_aderente` e identifique a origem no `resultado` da empresa. Registre o motivo operacional desta rodada em `pesquisa_incompleta`. Recrie as linhas como `verificar` pelo edital somente para empresas cujo item não concluiu e para as quais o daemon não entregou nenhuma avaliação válida.
 
 A análise manual executa busca, aquisição e leitura conforme as seções a seguir e entrega diretamente a comparação.
+
+### Formato de candidatos.json
+
+Use este envelope literal de exemplo, substituindo os valores pelos dados da pesquisa. Mantenha os nomes exatos das chaves, sem acrescentar nem renomear campos. Na raiz, `versao`, `empresa` e `exigencias` são obrigatórios. Inclua `cnpj_referencia` somente quando conhecido, como texto. Em cada exigência, preencha `exigencia` com o texto da cláusula, `fonte` com seu localizador, e `candidatos` e `tentativas` como listas. Use `candidatos: []` quando a pesquisa não localizar candidato e registre a causa em `tentativas`.
+
+```json
+{
+  "versao": 1,
+  "empresa": "una",
+  "cnpj_referencia": "00123456000100",
+  "exigencias": [
+    {
+      "exigencia": "Apresentar certidão negativa de débitos trabalhistas.",
+      "fonte": "TR 8.2.1.1",
+      "candidatos": [
+        {
+          "id": "cert_exemplo",
+          "titulo": "CNDT localizada no Cérebro",
+          "motivo": "Certidão da empresa com validade a conferir."
+        },
+        {
+          "sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+          "titulo": "CNDT encontrada na pasta local",
+          "motivo": "Cópia local autorizada da empresa para conferência."
+        }
+      ],
+      "tentativas": [
+        {
+          "via": "cerebro_buscar",
+          "consulta": "certidão negativa de débitos trabalhistas",
+          "resultado": "Localizado o registro cert_exemplo."
+        },
+        {
+          "via": "pasta_local",
+          "consulta": "CNDT",
+          "resultado": "Localizada cópia autorizada com SHA-256 calculado."
+        }
+      ]
+    }
+  ]
+}
+```
+
+Cada candidato tem `titulo`, `motivo` e pelo menos um identificador válido: `id` de registro do Cérebro ou `sha256` completo do original. Se tiver os dois, inclua ambos. Antes de concluir, confira o alias, o texto de cada exigência e o identificador de cada candidato. Se a validação devolver um erro, corrija o arquivo indicado.
+
 
 ## Onde procurar
 
