@@ -130,7 +130,7 @@ Portal: <Compras.gov.br / outro>. Link: <link da licitação, se houver>
 
 Se a análise ficar longa para a conversa, entregue primeiro "Atenção" e "Prazos" e ofereça o restante por seção.
 
-A seção Habilitação lista o que o edital exige. Ela não diz se a empresa atende: isso é trabalho da skill `analisar-habilitacao`.
+A seção Habilitação lista o que o edital exige. No JSON do card, separe em `habilitacao[]` cada documento exigido, na ordem do edital e com a fonte. Mantenha as formas alternativas de comprovar o mesmo requisito na mesma entrada. Ela não diz se a empresa atende: isso é trabalho da skill `analisar-habilitacao`.
 
 ## Prazos
 
