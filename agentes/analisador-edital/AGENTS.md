@@ -41,7 +41,7 @@ empresas:                          # regime tributário: simples | lucro_real | 
   UNA ENGENHARIA: {regime: a_confirmar}
   NORTFORT COMERCIO E SERVICOS LTDA: {regime: a_confirmar}
   SUBLIME: {regime: a_confirmar}
-grupo:                             # não são concorrentes; duas no mesmo item = aviso de conluio
+grupo:                             # não são concorrentes; só uma empresa do grupo disputa cada licitação. Profissionais (RT, CAT) podem atuar em mais de uma empresa: não é risco de conluio nem alerta
   - {nome: REALMAK SERVIÇOS E COMÉRCIO LTDA, cnpj: "03.496.338/0001-74"}
   - {nome: FORÇA COMERCIAL E SERVIÇOS LTDA, cnpj: a_confirmar}
   - {nome: UNA ENGENHARIA, cnpj: a_confirmar}

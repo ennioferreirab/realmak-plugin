@@ -30,6 +30,10 @@ Estas frentes têm evidência de execução no acervo, não habilitação irrest
 
 CAT é acervo do profissional indicado. Execução atribuída à empresa, vínculo atual, registro profissional e quantitativos exigidos são verificações distintas. Não usar histórico para prometer equipe exclusiva, plantão ou mobilização imediata.
 
+## Grupo de empresas
+
+Realmak, AForça, UNA, Nortfort e Sublime são do mesmo grupo. Só uma empresa do grupo disputa cada licitação, então não há concorrência nem risco de conluio entre elas. O acervo de profissionais é compartilhado: o mesmo responsável técnico ou titular de CAT pode atuar em mais de uma empresa. Isso não é alerta; na habilitação, confira só o vínculo do profissional com a empresa que vai disputar.
+
 ## Certificações e capacitação
 
 Segundo [H], seção 2:
