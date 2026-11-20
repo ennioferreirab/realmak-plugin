@@ -6,12 +6,15 @@ O fluxo v5 usa quatro pesquisas T1 e quatro cruzamentos T2, uma cadeia por empre
 
 `pesquisa-habilitacao-<alias>` grava `fontes/habilitacao/<alias>/candidatos.json` na pasta do agente, com as exigências da análise do edital e as tentativas por cláusula. Consulte o Cérebro por exigência e a pasta local. Aceite ID do Cérebro da empresa indicada ou SHA-256 de cópia local autorizada dessa empresa. Envie todos os candidatos materiais, inclusive quando a pertinência depender de abrir a cópia. Uma pista sem identificador recuperável permanece nas tentativas.
 
+Na raiz, `empresa` contém o alias literal do item, igual ao segmento `<alias>` do caminho de saída (`aforca`, `realmak`, `una` ou `nortfort`). Registre o CNPJ em `cnpj_referencia` como texto, quando conhecido, e preserve seus zeros iniciais.
+
 Exemplo fictício:
 
 ```json
 {
   "versao": 1,
   "empresa": "realmak",
+  "cnpj_referencia": "00123456000100",
   "exigencias": [
     {
       "exigencia": "Atestado de manutenção com quantitativo mínimo",
