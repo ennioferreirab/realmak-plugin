@@ -20,9 +20,8 @@ Exemplo fictício:
       "exigencia": "Atestado de manutenção com quantitativo mínimo",
       "fonte": "TR 8.1",
       "candidatos": [
-        {"id": "at_exemplo", "titulo": "CAT 00123/2026", "motivo": "Serviço equivalente com quantitativo a conferir."},
-        {"caminho_original": "E:\\acervo-exemplo\\realmak\\cat.pdf", "titulo": "CAT do acervo", "motivo": "Quantitativo a conferir."},
-        {"titulo": "CAT citada no índice", "motivo": "Recuperar o original pelo título."}
+        {"ref": "d3", "motivo": "Serviço equivalente com quantitativo a conferir."},
+        {"sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef", "titulo": "Atestado na pasta da licitação", "motivo": "Cópia autorizada para conferência."}
       ],
       "tentativas": [
         {"via": "cerebro_buscar", "consulta": "00123/2026", "resultado": "Candidato para TR 8.1."}
@@ -32,14 +31,14 @@ Exemplo fictício:
 }
 ```
 
-Preencha `titulo` e `motivo` em todos os candidatos. Copie literalmente `slug`, `original.sha256` e `original.file_path` do hit em `id`, `sha256` e `caminho_original`. Se uma consulta tipada devolver ID de registro sem slug, copie o ID retornado. Confira os valores no hit bruto antes de gravar. Para cópia local autorizada, calcule o hash dos bytes. Um documento localizado só pelo título segue na lista para tentativa de recuperação pelo daemon.
+Para candidato do Cérebro, use só `ref` e `motivo`, seguindo `como_citar`. Cite a ref devolvida na pesquisa da empresa. O daemon registra os documentos em `fontes/habilitacao/<alias>/documentos.json` e valida as referências no fim da pesquisa. Hit sem ref fica como pista nas tentativas para nova busca dirigida. Para cópia autorizada da pasta da licitação sem ref, preencha `sha256` calculado dos bytes, `titulo` e `motivo`.
 
 A união de `pistas[]` e dos números nos achados de `fontes/cerebro_g1.json` e `fontes/cerebro.json` é a pauta de buscas dirigidas do alias. Preserve os números como texto, inclusive os zeros iniciais. Para cada lista vazia, as tentativas distinguem busca sem achados, exclusão fundamentada e pesquisa incompleta (por exemplo, ferramenta ausente). Em pesquisa incompleta, informe a causa e preserve as pistas. O T2 reflete a lacuna na saída do card.
 
 
 ## Aquisição pelo daemon e entrada do cruzamento
 
-O item `baixar` tem `empresa`, `entrada` com a lista, `saida` com os downloads e depende da pesquisa do mesmo alias. O daemon procura a cópia local autorizada. Se a consulta de provas pelo ID não devolver original, tenta resolver pelos demais dados disponíveis: hash, caminho e título. Arquiva a cópia identificada na empresa do item e vincula a exigência. Em falhas passageiras, repete com esperas de 3, 10 e 30 segundos. Uma falha individual recebe causa após as tentativas e o item conclui com os resultados disponíveis. Entrada ausente ou ilegível faz falhar o item.
+O item `baixar` tem `empresa`, `entrada` com a lista, `saida` com os downloads e depende da pesquisa do mesmo alias. O daemon resolve a ref pelo registro da empresa e obtém os identificadores do original antes de tentar a aquisição. Procura a cópia local autorizada. Se a consulta de provas pelo ID não devolver original, tenta resolver pelos demais dados disponíveis: hash, caminho e título. Arquiva a cópia identificada na empresa do item e vincula a exigência. Em falhas passageiras, repete com esperas de 3, 10 e 30 segundos. Uma falha individual recebe causa após as tentativas e o item conclui com os resultados disponíveis. Entrada ausente ou ilegível faz falhar o item.
 
 `fontes/habilitacao/<alias>/downloads.json` contém o mesmo agrupamento. Cada candidato recebe `estado: "baixado"|"falha"`. Para `baixado`, informe `arquivo`, `sha256`, `caminho` absoluto para o leitor e `url` permanente da cópia. Para `falha`, informe `motivo_falha` e o número de `tentativas` de aquisição. Se o ID devolver mais cópias verificadas, o daemon também lista `outras_copias[]`, cada qual com `arquivo`, `sha256`, `caminho` e `url`. Quando a pesquisa indicar o hash, use as cópias desse conteúdo. Caminhos, hashes e endereços de prova vêm do daemon.
 
