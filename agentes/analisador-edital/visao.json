@@ -27,7 +27,7 @@
               "entrada": null,
               "saida": "resumo_conlicitacao.json",
               "resumo": [
-                "Obtém o resumo IA do ConLicitação para orientar a leitura."
+                "Usa resumo_conlicitacao.json do CRM e, se ausente, tenta obter ou registrar uma cópia em fontes/resumo_conlicitacao.json."
               ],
               "restricoes": [
                 "O edital prevalece e os fatos usados precisam de fonte documental."
@@ -244,8 +244,9 @@
                 "Recupera os originais de aforca, verifica a correspondência e arquiva as cópias por exigência."
               ],
               "restricoes": [
-                "Tenta reaproveitar a cópia local. Na recuperação via Cérebro, pode usar até quatro vias (ID, hash, caminho e título) em duas passadas.",
-                "Falhas passageiras são repetidas. A falha de um candidato não impede os demais."
+                "Reaproveita cópia local. No Cérebro, tenta por ID, hash e caminho ou, na falta de caminho, por título. Faz até duas passadas pelas vias aplicáveis.",
+                "Falhas passageiras são repetidas. A falha de um candidato não impede os demais.",
+                "A lista aceita até 300 candidatos. O índice de cópias da pasta da licitação considera arquivos de até 32 MiB."
               ],
               "tolera_falha": false,
               "cerebro_apoio": false
@@ -307,8 +308,9 @@
                 "Recupera os originais de realmak, verifica a correspondência e arquiva as cópias por exigência."
               ],
               "restricoes": [
-                "Tenta reaproveitar a cópia local. Na recuperação via Cérebro, pode usar até quatro vias (ID, hash, caminho e título) em duas passadas.",
-                "Falhas passageiras são repetidas. A falha de um candidato não impede os demais."
+                "Reaproveita cópia local. No Cérebro, tenta por ID, hash e caminho ou, na falta de caminho, por título. Faz até duas passadas pelas vias aplicáveis.",
+                "Falhas passageiras são repetidas. A falha de um candidato não impede os demais.",
+                "A lista aceita até 300 candidatos. O índice de cópias da pasta da licitação considera arquivos de até 32 MiB."
               ],
               "tolera_falha": false,
               "cerebro_apoio": false
@@ -370,8 +372,9 @@
                 "Recupera os originais de una, verifica a correspondência e arquiva as cópias por exigência."
               ],
               "restricoes": [
-                "Tenta reaproveitar a cópia local. Na recuperação via Cérebro, pode usar até quatro vias (ID, hash, caminho e título) em duas passadas.",
-                "Falhas passageiras são repetidas. A falha de um candidato não impede os demais."
+                "Reaproveita cópia local. No Cérebro, tenta por ID, hash e caminho ou, na falta de caminho, por título. Faz até duas passadas pelas vias aplicáveis.",
+                "Falhas passageiras são repetidas. A falha de um candidato não impede os demais.",
+                "A lista aceita até 300 candidatos. O índice de cópias da pasta da licitação considera arquivos de até 32 MiB."
               ],
               "tolera_falha": false,
               "cerebro_apoio": false
@@ -433,8 +436,9 @@
                 "Recupera os originais de nortfort, verifica a correspondência e arquiva as cópias por exigência."
               ],
               "restricoes": [
-                "Tenta reaproveitar a cópia local. Na recuperação via Cérebro, pode usar até quatro vias (ID, hash, caminho e título) em duas passadas.",
-                "Falhas passageiras são repetidas. A falha de um candidato não impede os demais."
+                "Reaproveita cópia local. No Cérebro, tenta por ID, hash e caminho ou, na falta de caminho, por título. Faz até duas passadas pelas vias aplicáveis.",
+                "Falhas passageiras são repetidas. A falha de um candidato não impede os demais.",
+                "A lista aceita até 300 candidatos. O índice de cópias da pasta da licitação considera arquivos de até 32 MiB."
               ],
               "tolera_falha": false,
               "cerebro_apoio": false
