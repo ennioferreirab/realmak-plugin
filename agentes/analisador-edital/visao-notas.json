@@ -197,7 +197,7 @@
         "Pesquisa as exigências de aforca no Cérebro e na pasta local e procura cada pista pela identificação disponível."
       ],
       "restricoes": [
-        "Usa a pauta comum do edital, uma busca por documento, e copia do hit o slug, o SHA-256 e o caminho original disponíveis. Mantém também candidatos apenas pelo título.",
+        "Usa a pauta comum do edital, uma busca por documento, e cita achados do Cérebro pela ref emitida pelo daemon. Para cópia local sem ref, registra o hash calculado, título e motivo.",
         "Sem teto de chamadas por exigência. Registra lacunas e tentativas por cláusula."
       ]
     },
@@ -225,7 +225,7 @@
         "Pesquisa as exigências de realmak no Cérebro e na pasta local e procura cada pista pela identificação disponível."
       ],
       "restricoes": [
-        "Usa a pauta comum do edital, uma busca por documento, e copia do hit o slug, o SHA-256 e o caminho original disponíveis. Mantém também candidatos apenas pelo título.",
+        "Usa a pauta comum do edital, uma busca por documento, e cita achados do Cérebro pela ref emitida pelo daemon. Para cópia local sem ref, registra o hash calculado, título e motivo.",
         "Sem teto de chamadas por exigência. Registra lacunas e tentativas por cláusula."
       ]
     },
@@ -253,7 +253,7 @@
         "Pesquisa as exigências de una no Cérebro e na pasta local e procura cada pista pela identificação disponível."
       ],
       "restricoes": [
-        "Usa a pauta comum do edital, uma busca por documento, e copia do hit o slug, o SHA-256 e o caminho original disponíveis. Mantém também candidatos apenas pelo título.",
+        "Usa a pauta comum do edital, uma busca por documento, e cita achados do Cérebro pela ref emitida pelo daemon. Para cópia local sem ref, registra o hash calculado, título e motivo.",
         "Sem teto de chamadas por exigência. Registra lacunas e tentativas por cláusula."
       ]
     },
@@ -281,7 +281,7 @@
         "Pesquisa as exigências de nortfort no Cérebro e na pasta local e procura cada pista pela identificação disponível."
       ],
       "restricoes": [
-        "Usa a pauta comum do edital, uma busca por documento, e copia do hit o slug, o SHA-256 e o caminho original disponíveis. Mantém também candidatos apenas pelo título.",
+        "Usa a pauta comum do edital, uma busca por documento, e cita achados do Cérebro pela ref emitida pelo daemon. Para cópia local sem ref, registra o hash calculado, título e motivo.",
         "Sem teto de chamadas por exigência. Registra lacunas e tentativas por cláusula."
       ]
     },
