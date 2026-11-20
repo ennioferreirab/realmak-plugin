@@ -1,0 +1,613 @@
+{
+  "versao": 1,
+  "agente": "analisador-edital",
+  "titulo": "Analisador de Edital",
+  "gerado_de": {
+    "plugin_versao": "0.12.4",
+    "fluxo_sha256": "3769d6774365230104a3ab727304ae9682a81a81a3ac6d6150ce92010c99846a"
+  },
+  "resumo": "Analisa o edital, compara a cobertura das empresas e estima execução, preço e margem para revisão humana.",
+  "etapas": [
+    {
+      "id": "E0",
+      "titulo": "Preparar",
+      "descricao": "Prepara os insumos da leitura e da triagem.",
+      "grupos": [
+        {
+          "tipo": "paralelo",
+          "rotulo": "Preparar insumos",
+          "itens": [
+            {
+              "id": "resumo",
+              "titulo": "Resumo IA do ConLicitação",
+              "skill": "pasta-licitacao",
+              "tier": "T0",
+              "modelo": null,
+              "depende_de": [],
+              "entrada": null,
+              "saida": "resumo_conlicitacao.json",
+              "resumo": [
+                "Usa resumo_conlicitacao.json do CRM e, se ausente, tenta obter ou registrar uma cópia em fontes/resumo_conlicitacao.json."
+              ],
+              "restricoes": [
+                "O edital prevalece e os fatos usados precisam de fonte documental."
+              ],
+              "tolera_falha": false,
+              "cerebro_apoio": false
+            },
+            {
+              "id": "mapa",
+              "titulo": "Mapa de leitura do edital",
+              "skill": "guia-leitura-edital",
+              "tier": "T0",
+              "modelo": null,
+              "depende_de": [],
+              "entrada": null,
+              "saida": "fontes/mapa_leitura.json",
+              "resumo": [
+                "Localiza os documentos e indica a ordem de leitura e os achados."
+              ],
+              "restricoes": [
+                "Busca vazia não comprova ausência. Confira as páginas sem extração."
+              ],
+              "tolera_falha": false,
+              "cerebro_apoio": false
+            }
+          ]
+        },
+        {
+          "tipo": "sequencia",
+          "rotulo": "Histórico inicial",
+          "itens": [
+            {
+              "id": "cerebro-g1",
+              "titulo": "Cérebro antes do G1",
+              "skill": "cerebro",
+              "tier": "T1",
+              "modelo": "claude-haiku-5-5",
+              "depende_de": [
+                "resumo",
+                "mapa"
+              ],
+              "entrada": null,
+              "saida": "fontes/cerebro_g1.json",
+              "resumo": [
+                "Busca histórico do órgão, objetos similares e sanções antes do G1.",
+                "Registra pistas numeradas com a empresa titular."
+              ],
+              "restricoes": [
+                "Se a fonte estiver indisponível, registra a limitação. Pista não equivale a prova lida."
+              ],
+              "tolera_falha": false,
+              "cerebro_apoio": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "E1",
+      "titulo": "Edital",
+      "descricao": "Consolida os fatos do edital antes da decisão de prosseguir.",
+      "grupos": [
+        {
+          "tipo": "sequencia",
+          "rotulo": "Leitura do edital",
+          "itens": [
+            {
+              "id": "edital",
+              "titulo": "Análise do edital",
+              "skill": "analisar-edital",
+              "tier": "T2",
+              "modelo": "claude-sonnet-5-5",
+              "depende_de": [],
+              "entrada": null,
+              "saida": "analise/edital.json",
+              "resumo": [
+                "Lê o edital, TR, ETP, anexos e minutas e registra prazos, exigências, avisos e pontos de atenção."
+              ],
+              "restricoes": [
+                "Cita a fonte de cada exigência e confere a versão vigente."
+              ],
+              "tolera_falha": false,
+              "cerebro_apoio": false
+            }
+          ]
+        }
+      ],
+      "portao": {
+        "id": "G1",
+        "titulo": "Vale disputar?",
+        "criterios": [
+          "Confere edital, prazos, exigências e história do Cérebro. Cita a empresa do achado ou registra indisponibilidade.",
+          "Os parâmetros atuais do agente são 3 dias corridos de preparo e R$ 100 mil na parcela disputada."
+        ],
+        "decisoes": [
+          {
+            "valor": "seguir",
+            "quando": "Demais casos, inclusive documento de rotina pendente ou atestado comum ainda não localizado."
+          },
+          {
+            "valor": "parar",
+            "quando": "Trava factual sem solução a tempo, valor abaixo do parâmetro ou objeto fora do foco e da região sem oportunidade financeira."
+          },
+          {
+            "valor": "humano",
+            "quando": "Exigência incomum e eliminatória, busca esgotada e resposta capaz de mudar a decisão ou o lote."
+          }
+        ]
+      }
+    },
+    {
+      "id": "E2",
+      "titulo": "Análises",
+      "descricao": "Pesquisa histórico, habilitação, requisitos técnicos e peças. A consolidação espera os quatro cruzamentos.",
+      "grupos": [
+        {
+          "tipo": "paralelo",
+          "rotulo": "Frentes iniciais",
+          "itens": [
+            {
+              "id": "cerebro",
+              "titulo": "Subsídio histórico",
+              "skill": "cerebro",
+              "tier": "T1",
+              "modelo": "claude-haiku-5-5",
+              "depende_de": [],
+              "entrada": null,
+              "saida": "fontes/cerebro.json",
+              "resumo": [
+                "Pesquisa preços, compras, BDI, atas e recursos e reúne as pistas do G1 e as novas."
+              ],
+              "restricoes": [
+                "Distingue compra efetiva, preço proposto e estimativa. Preserva todos os candidatos pertinentes."
+              ],
+              "tolera_falha": false,
+              "cerebro_apoio": false
+            },
+            {
+              "id": "tecnica",
+              "titulo": "Análise técnica",
+              "skill": "analise-tecnica",
+              "tier": "T2",
+              "modelo": "claude-sonnet-5-5",
+              "depende_de": [],
+              "entrada": null,
+              "saida": "analise/tecnica.json",
+              "resumo": [
+                "Roteia para manutenção ou fornecimento. Registra escopo, requisitos, itens e viabilidade."
+              ],
+              "restricoes": [
+                "O cenário-base usa o dimensionamento do órgão quando disponível. Na ausência dele, consulta histórico comparável. Premissa que altera equipe ou recomendação fica em cenário alternativo."
+              ],
+              "tolera_falha": false,
+              "cerebro_apoio": true
+            },
+            {
+              "id": "pecas",
+              "titulo": "Pesquisar preço de peças e materiais",
+              "skill": "cotar-pecas-materiais-licitacoes",
+              "tier": "T1",
+              "modelo": "claude-haiku-5-5",
+              "depende_de": [],
+              "entrada": null,
+              "saida": "fontes/pecas.json",
+              "resumo": [
+                "Pesquisa histórico e ofertas atuais e registra estimativas, pendências e cobertura."
+              ],
+              "restricoes": [
+                "Separa peças do lance das pagas sob demanda.",
+                "Cobertura é informativa e não condiciona a precificação."
+              ],
+              "tolera_falha": false,
+              "cerebro_apoio": true
+            }
+          ]
+        },
+        {
+          "tipo": "leque",
+          "rotulo": "Habilitação por empresa",
+          "itens": [
+            {
+              "id": "pesquisa-habilitacao-aforca",
+              "titulo": "Pesquisar habilitação · AForça",
+              "skill": "analisar-habilitacao",
+              "tier": "T1",
+              "modelo": "claude-haiku-5-5",
+              "depende_de": [
+                "cerebro"
+              ],
+              "entrada": null,
+              "saida": "fontes/habilitacao/aforca/candidatos.json",
+              "resumo": [
+                "Pesquisa as exigências de aforca no Cérebro e na pasta local e procura cada pista pela identificação disponível."
+              ],
+              "restricoes": [
+                "Mantém todos os candidatos pertinentes por ID, SHA-256, caminho ou título.",
+                "Sem teto de chamadas por exigência. Registra lacunas e tentativas por cláusula."
+              ],
+              "tolera_falha": true,
+              "cerebro_apoio": false
+            },
+            {
+              "id": "baixar-habilitacao-aforca",
+              "titulo": "Baixar candidatos · AForça",
+              "skill": null,
+              "tier": "T0",
+              "modelo": null,
+              "depende_de": [
+                "pesquisa-habilitacao-aforca"
+              ],
+              "entrada": "fontes/habilitacao/aforca/candidatos.json",
+              "saida": "fontes/habilitacao/aforca/downloads.json",
+              "resumo": [
+                "Recupera os originais de aforca, verifica a correspondência e arquiva as cópias por exigência."
+              ],
+              "restricoes": [
+                "Reaproveita cópia local. No Cérebro, tenta por ID, hash e caminho ou, na falta de caminho, por título. Faz até duas passadas pelas vias aplicáveis.",
+                "Falhas passageiras são repetidas. A falha de um candidato não impede os demais.",
+                "A lista aceita até 300 candidatos. O índice de cópias da pasta da licitação considera arquivos de até 32 MiB."
+              ],
+              "tolera_falha": false,
+              "cerebro_apoio": false
+            },
+            {
+              "id": "habilitacao-aforca",
+              "titulo": "Cruzamento documental · AForça",
+              "skill": "analisar-habilitacao",
+              "tier": "T2",
+              "modelo": "claude-sonnet-5-5",
+              "depende_de": [
+                "baixar-habilitacao-aforca"
+              ],
+              "entrada": null,
+              "saida": "analise/habilitacao/aforca.json",
+              "resumo": [
+                "Abre todos os originais baixados de aforca, inclusive cópias adicionais, e confronta titular, validade, escopo e quantitativo."
+              ],
+              "restricoes": [
+                "Registra localizador e trecho literal. Confere na imagem todo trecho decisivo obtido por OCR.",
+                "Sem prova suficiente, mantém verificar e registra a causa."
+              ],
+              "tolera_falha": true,
+              "cerebro_apoio": false
+            },
+            {
+              "id": "pesquisa-habilitacao-realmak",
+              "titulo": "Pesquisar habilitação · Realmak",
+              "skill": "analisar-habilitacao",
+              "tier": "T1",
+              "modelo": "claude-haiku-5-5",
+              "depende_de": [
+                "cerebro"
+              ],
+              "entrada": null,
+              "saida": "fontes/habilitacao/realmak/candidatos.json",
+              "resumo": [
+                "Pesquisa as exigências de realmak no Cérebro e na pasta local e procura cada pista pela identificação disponível."
+              ],
+              "restricoes": [
+                "Mantém todos os candidatos pertinentes por ID, SHA-256, caminho ou título.",
+                "Sem teto de chamadas por exigência. Registra lacunas e tentativas por cláusula."
+              ],
+              "tolera_falha": true,
+              "cerebro_apoio": false
+            },
+            {
+              "id": "baixar-habilitacao-realmak",
+              "titulo": "Baixar candidatos · Realmak",
+              "skill": null,
+              "tier": "T0",
+              "modelo": null,
+              "depende_de": [
+                "pesquisa-habilitacao-realmak"
+              ],
+              "entrada": "fontes/habilitacao/realmak/candidatos.json",
+              "saida": "fontes/habilitacao/realmak/downloads.json",
+              "resumo": [
+                "Recupera os originais de realmak, verifica a correspondência e arquiva as cópias por exigência."
+              ],
+              "restricoes": [
+                "Reaproveita cópia local. No Cérebro, tenta por ID, hash e caminho ou, na falta de caminho, por título. Faz até duas passadas pelas vias aplicáveis.",
+                "Falhas passageiras são repetidas. A falha de um candidato não impede os demais.",
+                "A lista aceita até 300 candidatos. O índice de cópias da pasta da licitação considera arquivos de até 32 MiB."
+              ],
+              "tolera_falha": false,
+              "cerebro_apoio": false
+            },
+            {
+              "id": "habilitacao-realmak",
+              "titulo": "Cruzamento documental · Realmak",
+              "skill": "analisar-habilitacao",
+              "tier": "T2",
+              "modelo": "claude-sonnet-5-5",
+              "depende_de": [
+                "baixar-habilitacao-realmak"
+              ],
+              "entrada": null,
+              "saida": "analise/habilitacao/realmak.json",
+              "resumo": [
+                "Abre todos os originais baixados de realmak, inclusive cópias adicionais, e confronta titular, validade, escopo e quantitativo."
+              ],
+              "restricoes": [
+                "Registra localizador e trecho literal. Confere na imagem todo trecho decisivo obtido por OCR.",
+                "Sem prova suficiente, mantém verificar e registra a causa."
+              ],
+              "tolera_falha": true,
+              "cerebro_apoio": false
+            },
+            {
+              "id": "pesquisa-habilitacao-una",
+              "titulo": "Pesquisar habilitação · UNA",
+              "skill": "analisar-habilitacao",
+              "tier": "T1",
+              "modelo": "claude-haiku-5-5",
+              "depende_de": [
+                "cerebro"
+              ],
+              "entrada": null,
+              "saida": "fontes/habilitacao/una/candidatos.json",
+              "resumo": [
+                "Pesquisa as exigências de una no Cérebro e na pasta local e procura cada pista pela identificação disponível."
+              ],
+              "restricoes": [
+                "Mantém todos os candidatos pertinentes por ID, SHA-256, caminho ou título.",
+                "Sem teto de chamadas por exigência. Registra lacunas e tentativas por cláusula."
+              ],
+              "tolera_falha": true,
+              "cerebro_apoio": false
+            },
+            {
+              "id": "baixar-habilitacao-una",
+              "titulo": "Baixar candidatos · UNA",
+              "skill": null,
+              "tier": "T0",
+              "modelo": null,
+              "depende_de": [
+                "pesquisa-habilitacao-una"
+              ],
+              "entrada": "fontes/habilitacao/una/candidatos.json",
+              "saida": "fontes/habilitacao/una/downloads.json",
+              "resumo": [
+                "Recupera os originais de una, verifica a correspondência e arquiva as cópias por exigência."
+              ],
+              "restricoes": [
+                "Reaproveita cópia local. No Cérebro, tenta por ID, hash e caminho ou, na falta de caminho, por título. Faz até duas passadas pelas vias aplicáveis.",
+                "Falhas passageiras são repetidas. A falha de um candidato não impede os demais.",
+                "A lista aceita até 300 candidatos. O índice de cópias da pasta da licitação considera arquivos de até 32 MiB."
+              ],
+              "tolera_falha": false,
+              "cerebro_apoio": false
+            },
+            {
+              "id": "habilitacao-una",
+              "titulo": "Cruzamento documental · UNA",
+              "skill": "analisar-habilitacao",
+              "tier": "T2",
+              "modelo": "claude-sonnet-5-5",
+              "depende_de": [
+                "baixar-habilitacao-una"
+              ],
+              "entrada": null,
+              "saida": "analise/habilitacao/una.json",
+              "resumo": [
+                "Abre todos os originais baixados de una, inclusive cópias adicionais, e confronta titular, validade, escopo e quantitativo."
+              ],
+              "restricoes": [
+                "Registra localizador e trecho literal. Confere na imagem todo trecho decisivo obtido por OCR.",
+                "Sem prova suficiente, mantém verificar e registra a causa."
+              ],
+              "tolera_falha": true,
+              "cerebro_apoio": false
+            },
+            {
+              "id": "pesquisa-habilitacao-nortfort",
+              "titulo": "Pesquisar habilitação · Nortfort",
+              "skill": "analisar-habilitacao",
+              "tier": "T1",
+              "modelo": "claude-haiku-5-5",
+              "depende_de": [
+                "cerebro"
+              ],
+              "entrada": null,
+              "saida": "fontes/habilitacao/nortfort/candidatos.json",
+              "resumo": [
+                "Pesquisa as exigências de nortfort no Cérebro e na pasta local e procura cada pista pela identificação disponível."
+              ],
+              "restricoes": [
+                "Mantém todos os candidatos pertinentes por ID, SHA-256, caminho ou título.",
+                "Sem teto de chamadas por exigência. Registra lacunas e tentativas por cláusula."
+              ],
+              "tolera_falha": true,
+              "cerebro_apoio": false
+            },
+            {
+              "id": "baixar-habilitacao-nortfort",
+              "titulo": "Baixar candidatos · Nortfort",
+              "skill": null,
+              "tier": "T0",
+              "modelo": null,
+              "depende_de": [
+                "pesquisa-habilitacao-nortfort"
+              ],
+              "entrada": "fontes/habilitacao/nortfort/candidatos.json",
+              "saida": "fontes/habilitacao/nortfort/downloads.json",
+              "resumo": [
+                "Recupera os originais de nortfort, verifica a correspondência e arquiva as cópias por exigência."
+              ],
+              "restricoes": [
+                "Reaproveita cópia local. No Cérebro, tenta por ID, hash e caminho ou, na falta de caminho, por título. Faz até duas passadas pelas vias aplicáveis.",
+                "Falhas passageiras são repetidas. A falha de um candidato não impede os demais.",
+                "A lista aceita até 300 candidatos. O índice de cópias da pasta da licitação considera arquivos de até 32 MiB."
+              ],
+              "tolera_falha": false,
+              "cerebro_apoio": false
+            },
+            {
+              "id": "habilitacao-nortfort",
+              "titulo": "Cruzamento documental · Nortfort",
+              "skill": "analisar-habilitacao",
+              "tier": "T2",
+              "modelo": "claude-sonnet-5-5",
+              "depende_de": [
+                "baixar-habilitacao-nortfort"
+              ],
+              "entrada": null,
+              "saida": "analise/habilitacao/nortfort.json",
+              "resumo": [
+                "Abre todos os originais baixados de nortfort, inclusive cópias adicionais, e confronta titular, validade, escopo e quantitativo."
+              ],
+              "restricoes": [
+                "Registra localizador e trecho literal. Confere na imagem todo trecho decisivo obtido por OCR.",
+                "Sem prova suficiente, mantém verificar e registra a causa."
+              ],
+              "tolera_falha": true,
+              "cerebro_apoio": false
+            }
+          ]
+        },
+        {
+          "tipo": "sequencia",
+          "rotulo": "Consolidar habilitação",
+          "itens": [
+            {
+              "id": "habilitacao",
+              "titulo": "Consolidar habilitação",
+              "skill": "analisar-habilitacao",
+              "tier": "T2",
+              "modelo": "claude-sonnet-5-5",
+              "depende_de": [
+                "habilitacao-aforca",
+                "habilitacao-realmak",
+                "habilitacao-una",
+                "habilitacao-nortfort"
+              ],
+              "entrada": null,
+              "saida": "analise/habilitacao.json",
+              "resumo": [
+                "Consolida as quatro avaliações e aponta a empresa mais aderente quando houver diferença material de cobertura."
+              ],
+              "restricoes": [
+                "Usa parcial válido com rodada_anterior na ordenação e identifica sua origem no resultado. Só recria como verificar quando não há avaliação válida.",
+                "Preserva provas, ações, cobertura e lacunas."
+              ],
+              "tolera_falha": true,
+              "cerebro_apoio": false
+            }
+          ]
+        }
+      ],
+      "portao": {
+        "id": "G2",
+        "titulo": "Vale precificar?",
+        "criterios": [
+          "Confere cobertura de cada exigência eliminatória nos quatro parciais, consolidação e conclusão técnica.",
+          "Falha de acesso ou falta de prova mantém a lacuna; não demonstra impedimento."
+        ],
+        "decisoes": [
+          {
+            "valor": "seguir",
+            "quando": "Demais casos ou lacuna persistente após nova rodada. Precifica sob condição quando faltar prova."
+          },
+          {
+            "valor": "parar",
+            "quando": "Impedimento comprovado para todas as empresas a tempo, inviabilidade técnica documentada ou fornecimento muito acima do estimado sem alternativa."
+          },
+          {
+            "valor": "humano",
+            "quando": "Exigência incomum e eliminatória, busca esgotada e resposta capaz de mudar a decisão ou o lote. Também cabe exceção estratégica."
+          },
+          {
+            "valor": "rerodar",
+            "quando": "Primeira rodada com exigência eliminatória sem prova lida e pesquisa falha ou incompleta. Repete a fase afetada e suas dependências posteriores."
+          }
+        ]
+      }
+    },
+    {
+      "id": "E3",
+      "titulo": "Preço",
+      "descricao": "Calcula preço e exequibilidade após a decisão do G2.",
+      "grupos": [
+        {
+          "tipo": "sequencia",
+          "rotulo": "Custos e preço",
+          "itens": [
+            {
+              "id": "precificacao",
+              "titulo": "Precificação e exequibilidade",
+              "skill": "precificar-proposta-exequibilidade",
+              "tier": "T2",
+              "modelo": "claude-sonnet-5-5",
+              "depende_de": [],
+              "entrada": null,
+              "saida": "analise/precificacao.json",
+              "resumo": [
+                "Calcula custos, preço, tributos, margem e cenários. Em manutenção, preenche a planilha pelo script da skill."
+              ],
+              "restricoes": [
+                "Mantém subtotais fundamentados e reserva para lacunas sem duplicar custos.",
+                "Premissa decisiva isolada não sustenta inexequibilidade."
+              ],
+              "tolera_falha": false,
+              "cerebro_apoio": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "E4",
+      "titulo": "Score",
+      "descricao": "Calcula o score antes do fechamento.",
+      "grupos": [
+        {
+          "tipo": "sequencia",
+          "rotulo": "Score e trava",
+          "itens": [
+            {
+              "id": "score",
+              "titulo": "Score e nota",
+              "skill": "score",
+              "tier": "T0",
+              "modelo": null,
+              "depende_de": [],
+              "entrada": null,
+              "saida": "relatorio/topo.json",
+              "resumo": [
+                "Calcula a régua de participação, execução e lucro e publica nota, trava e avisos."
+              ],
+              "restricoes": [
+                "Usa tributos e margem da precificação quando disponíveis. Premissa decisiva isolada não aciona nota 1."
+              ],
+              "tolera_falha": false,
+              "cerebro_apoio": false
+            }
+          ]
+        }
+      ],
+      "portao": {
+        "id": "G3",
+        "titulo": "Fechamento",
+        "criterios": [
+          "Confronta recomendação e trava com a origem das horas, equipe, custos e margem.",
+          "A orientação acompanha a nota do score. Premissa decisiva isolada não impõe nota 1."
+        ],
+        "decisoes": [
+          {
+            "valor": "seguir",
+            "quando": "Relatório coerente e fundamento conferido, ou conclusão condicionada com lacuna explícita."
+          },
+          {
+            "valor": "humano",
+            "quando": "Exigência incomum e eliminatória, busca esgotada e resposta capaz de mudar a decisão ou o lote. Também cabe exceção estratégica."
+          },
+          {
+            "valor": "rerodar",
+            "quando": "Uma vez quando premissa decisiva sustenta a recomendação ou a trava, ou quando as saídas se contradizem. Indica os itens afetados."
+          }
+        ]
+      }
+    }
+  ]
+}

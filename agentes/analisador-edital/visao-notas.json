@@ -1,0 +1,344 @@
+{
+  "resumo": "Analisa o edital, compara a cobertura das empresas e estima execução, preço e margem para revisão humana.",
+  "modelos": {
+    "T0": null,
+    "T1": "claude-haiku-5-5",
+    "T2": "claude-sonnet-5-5"
+  },
+  "etapas": {
+    "E0": {
+      "descricao": "Prepara os insumos da leitura e da triagem.",
+      "grupos": [
+        {
+          "tipo": "paralelo",
+          "rotulo": "Preparar insumos",
+          "itens": [
+            "resumo",
+            "mapa"
+          ]
+        },
+        {
+          "tipo": "sequencia",
+          "rotulo": "Histórico inicial",
+          "itens": [
+            "cerebro-g1"
+          ]
+        }
+      ]
+    },
+    "E1": {
+      "descricao": "Consolida os fatos do edital antes da decisão de prosseguir.",
+      "grupos": [
+        {
+          "tipo": "sequencia",
+          "rotulo": "Leitura do edital",
+          "itens": [
+            "edital"
+          ]
+        }
+      ]
+    },
+    "E2": {
+      "descricao": "Pesquisa histórico, habilitação, requisitos técnicos e peças. A consolidação espera os quatro cruzamentos.",
+      "grupos": [
+        {
+          "tipo": "paralelo",
+          "rotulo": "Frentes iniciais",
+          "itens": [
+            "cerebro",
+            "tecnica",
+            "pecas"
+          ]
+        },
+        {
+          "tipo": "leque",
+          "rotulo": "Habilitação por empresa",
+          "itens": [
+            "pesquisa-habilitacao-aforca",
+            "baixar-habilitacao-aforca",
+            "habilitacao-aforca",
+            "pesquisa-habilitacao-realmak",
+            "baixar-habilitacao-realmak",
+            "habilitacao-realmak",
+            "pesquisa-habilitacao-una",
+            "baixar-habilitacao-una",
+            "habilitacao-una",
+            "pesquisa-habilitacao-nortfort",
+            "baixar-habilitacao-nortfort",
+            "habilitacao-nortfort"
+          ]
+        },
+        {
+          "tipo": "sequencia",
+          "rotulo": "Consolidar habilitação",
+          "itens": [
+            "habilitacao"
+          ]
+        }
+      ]
+    },
+    "E3": {
+      "descricao": "Calcula preço e exequibilidade após a decisão do G2.",
+      "grupos": [
+        {
+          "tipo": "sequencia",
+          "rotulo": "Custos e preço",
+          "itens": [
+            "precificacao"
+          ]
+        }
+      ]
+    },
+    "E4": {
+      "descricao": "Calcula o score antes do fechamento.",
+      "grupos": [
+        {
+          "tipo": "sequencia",
+          "rotulo": "Score e trava",
+          "itens": [
+            "score"
+          ]
+        }
+      ]
+    }
+  },
+  "itens": {
+    "resumo": {
+      "resumo": [
+        "Usa resumo_conlicitacao.json do CRM e, se ausente, tenta obter ou registrar uma cópia em fontes/resumo_conlicitacao.json."
+      ],
+      "restricoes": [
+        "O edital prevalece e os fatos usados precisam de fonte documental."
+      ],
+      "skill": "pasta-licitacao",
+      "saida": "resumo_conlicitacao.json"
+    },
+    "mapa": {
+      "resumo": [
+        "Localiza os documentos e indica a ordem de leitura e os achados."
+      ],
+      "restricoes": [
+        "Busca vazia não comprova ausência. Confira as páginas sem extração."
+      ],
+      "skill": "guia-leitura-edital",
+      "saida": "fontes/mapa_leitura.json"
+    },
+    "cerebro-g1": {
+      "resumo": [
+        "Busca histórico do órgão, objetos similares e sanções antes do G1.",
+        "Registra pistas numeradas com a empresa titular."
+      ],
+      "restricoes": [
+        "Se a fonte estiver indisponível, registra a limitação. Pista não equivale a prova lida."
+      ]
+    },
+    "edital": {
+      "resumo": [
+        "Lê o edital, TR, ETP, anexos e minutas e registra prazos, exigências, avisos e pontos de atenção."
+      ],
+      "restricoes": [
+        "Cita a fonte de cada exigência e confere a versão vigente."
+      ]
+    },
+    "cerebro": {
+      "resumo": [
+        "Pesquisa preços, compras, BDI, atas e recursos e reúne as pistas do G1 e as novas."
+      ],
+      "restricoes": [
+        "Distingue compra efetiva, preço proposto e estimativa. Preserva todos os candidatos pertinentes."
+      ]
+    },
+    "tecnica": {
+      "resumo": [
+        "Roteia para manutenção ou fornecimento. Registra escopo, requisitos, itens e viabilidade."
+      ],
+      "restricoes": [
+        "O cenário-base usa o dimensionamento do órgão quando disponível. Na ausência dele, consulta histórico comparável. Premissa que altera equipe ou recomendação fica em cenário alternativo."
+      ]
+    },
+    "pecas": {
+      "resumo": [
+        "Pesquisa histórico e ofertas atuais e registra estimativas, pendências e cobertura."
+      ],
+      "restricoes": [
+        "Separa peças do lance das pagas sob demanda.",
+        "Cobertura é informativa e não condiciona a precificação."
+      ]
+    },
+    "habilitacao": {
+      "resumo": [
+        "Consolida as quatro avaliações e aponta a empresa mais aderente quando houver diferença material de cobertura."
+      ],
+      "restricoes": [
+        "Usa parcial válido com rodada_anterior na ordenação e identifica sua origem no resultado. Só recria como verificar quando não há avaliação válida.",
+        "Preserva provas, ações, cobertura e lacunas."
+      ]
+    },
+    "precificacao": {
+      "resumo": [
+        "Calcula custos, preço, tributos, margem e cenários. Em manutenção, preenche a planilha pelo script da skill."
+      ],
+      "restricoes": [
+        "Mantém subtotais fundamentados e reserva para lacunas sem duplicar custos.",
+        "Premissa decisiva isolada não sustenta inexequibilidade."
+      ]
+    },
+    "score": {
+      "resumo": [
+        "Calcula a régua de participação, execução e lucro e publica nota, trava e avisos."
+      ],
+      "restricoes": [
+        "Usa tributos e margem da precificação quando disponíveis. Premissa decisiva isolada não aciona nota 1."
+      ],
+      "skill": "score"
+    },
+    "pesquisa-habilitacao-aforca": {
+      "resumo": [
+        "Pesquisa as exigências de aforca no Cérebro e na pasta local e procura cada pista pela identificação disponível."
+      ],
+      "restricoes": [
+        "Mantém todos os candidatos pertinentes por ID, SHA-256, caminho ou título.",
+        "Sem teto de chamadas por exigência. Registra lacunas e tentativas por cláusula."
+      ]
+    },
+    "baixar-habilitacao-aforca": {
+      "resumo": [
+        "Recupera os originais de aforca, verifica a correspondência e arquiva as cópias por exigência."
+      ],
+      "restricoes": [
+        "Reaproveita cópia local. No Cérebro, tenta por ID, hash e caminho ou, na falta de caminho, por título. Faz até duas passadas pelas vias aplicáveis.",
+        "Falhas passageiras são repetidas. A falha de um candidato não impede os demais.",
+        "A lista aceita até 300 candidatos. O índice de cópias da pasta da licitação considera arquivos de até 32 MiB."
+      ]
+    },
+    "habilitacao-aforca": {
+      "resumo": [
+        "Abre todos os originais baixados de aforca, inclusive cópias adicionais, e confronta titular, validade, escopo e quantitativo."
+      ],
+      "restricoes": [
+        "Registra localizador e trecho literal. Confere na imagem todo trecho decisivo obtido por OCR.",
+        "Sem prova suficiente, mantém verificar e registra a causa."
+      ]
+    },
+    "pesquisa-habilitacao-realmak": {
+      "resumo": [
+        "Pesquisa as exigências de realmak no Cérebro e na pasta local e procura cada pista pela identificação disponível."
+      ],
+      "restricoes": [
+        "Mantém todos os candidatos pertinentes por ID, SHA-256, caminho ou título.",
+        "Sem teto de chamadas por exigência. Registra lacunas e tentativas por cláusula."
+      ]
+    },
+    "baixar-habilitacao-realmak": {
+      "resumo": [
+        "Recupera os originais de realmak, verifica a correspondência e arquiva as cópias por exigência."
+      ],
+      "restricoes": [
+        "Reaproveita cópia local. No Cérebro, tenta por ID, hash e caminho ou, na falta de caminho, por título. Faz até duas passadas pelas vias aplicáveis.",
+        "Falhas passageiras são repetidas. A falha de um candidato não impede os demais.",
+        "A lista aceita até 300 candidatos. O índice de cópias da pasta da licitação considera arquivos de até 32 MiB."
+      ]
+    },
+    "habilitacao-realmak": {
+      "resumo": [
+        "Abre todos os originais baixados de realmak, inclusive cópias adicionais, e confronta titular, validade, escopo e quantitativo."
+      ],
+      "restricoes": [
+        "Registra localizador e trecho literal. Confere na imagem todo trecho decisivo obtido por OCR.",
+        "Sem prova suficiente, mantém verificar e registra a causa."
+      ]
+    },
+    "pesquisa-habilitacao-una": {
+      "resumo": [
+        "Pesquisa as exigências de una no Cérebro e na pasta local e procura cada pista pela identificação disponível."
+      ],
+      "restricoes": [
+        "Mantém todos os candidatos pertinentes por ID, SHA-256, caminho ou título.",
+        "Sem teto de chamadas por exigência. Registra lacunas e tentativas por cláusula."
+      ]
+    },
+    "baixar-habilitacao-una": {
+      "resumo": [
+        "Recupera os originais de una, verifica a correspondência e arquiva as cópias por exigência."
+      ],
+      "restricoes": [
+        "Reaproveita cópia local. No Cérebro, tenta por ID, hash e caminho ou, na falta de caminho, por título. Faz até duas passadas pelas vias aplicáveis.",
+        "Falhas passageiras são repetidas. A falha de um candidato não impede os demais.",
+        "A lista aceita até 300 candidatos. O índice de cópias da pasta da licitação considera arquivos de até 32 MiB."
+      ]
+    },
+    "habilitacao-una": {
+      "resumo": [
+        "Abre todos os originais baixados de una, inclusive cópias adicionais, e confronta titular, validade, escopo e quantitativo."
+      ],
+      "restricoes": [
+        "Registra localizador e trecho literal. Confere na imagem todo trecho decisivo obtido por OCR.",
+        "Sem prova suficiente, mantém verificar e registra a causa."
+      ]
+    },
+    "pesquisa-habilitacao-nortfort": {
+      "resumo": [
+        "Pesquisa as exigências de nortfort no Cérebro e na pasta local e procura cada pista pela identificação disponível."
+      ],
+      "restricoes": [
+        "Mantém todos os candidatos pertinentes por ID, SHA-256, caminho ou título.",
+        "Sem teto de chamadas por exigência. Registra lacunas e tentativas por cláusula."
+      ]
+    },
+    "baixar-habilitacao-nortfort": {
+      "resumo": [
+        "Recupera os originais de nortfort, verifica a correspondência e arquiva as cópias por exigência."
+      ],
+      "restricoes": [
+        "Reaproveita cópia local. No Cérebro, tenta por ID, hash e caminho ou, na falta de caminho, por título. Faz até duas passadas pelas vias aplicáveis.",
+        "Falhas passageiras são repetidas. A falha de um candidato não impede os demais.",
+        "A lista aceita até 300 candidatos. O índice de cópias da pasta da licitação considera arquivos de até 32 MiB."
+      ]
+    },
+    "habilitacao-nortfort": {
+      "resumo": [
+        "Abre todos os originais baixados de nortfort, inclusive cópias adicionais, e confronta titular, validade, escopo e quantitativo."
+      ],
+      "restricoes": [
+        "Registra localizador e trecho literal. Confere na imagem todo trecho decisivo obtido por OCR.",
+        "Sem prova suficiente, mantém verificar e registra a causa."
+      ]
+    }
+  },
+  "portoes": {
+    "G1": {
+      "criterios": [
+        "Confere edital, prazos, exigências e história do Cérebro. Cita a empresa do achado ou registra indisponibilidade.",
+        "Os parâmetros atuais do agente são 3 dias corridos de preparo e R$ 100 mil na parcela disputada."
+      ],
+      "decisoes": {
+        "seguir": "Demais casos, inclusive documento de rotina pendente ou atestado comum ainda não localizado.",
+        "parar": "Trava factual sem solução a tempo, valor abaixo do parâmetro ou objeto fora do foco e da região sem oportunidade financeira.",
+        "humano": "Exigência incomum e eliminatória, busca esgotada e resposta capaz de mudar a decisão ou o lote."
+      }
+    },
+    "G2": {
+      "criterios": [
+        "Confere cobertura de cada exigência eliminatória nos quatro parciais, consolidação e conclusão técnica.",
+        "Falha de acesso ou falta de prova mantém a lacuna; não demonstra impedimento."
+      ],
+      "decisoes": {
+        "seguir": "Demais casos ou lacuna persistente após nova rodada. Precifica sob condição quando faltar prova.",
+        "parar": "Impedimento comprovado para todas as empresas a tempo, inviabilidade técnica documentada ou fornecimento muito acima do estimado sem alternativa.",
+        "humano": "Exigência incomum e eliminatória, busca esgotada e resposta capaz de mudar a decisão ou o lote. Também cabe exceção estratégica.",
+        "rerodar": "Primeira rodada com exigência eliminatória sem prova lida e pesquisa falha ou incompleta. Repete a fase afetada e suas dependências posteriores."
+      }
+    },
+    "G3": {
+      "criterios": [
+        "Confronta recomendação e trava com a origem das horas, equipe, custos e margem.",
+        "A orientação acompanha a nota do score. Premissa decisiva isolada não impõe nota 1."
+      ],
+      "decisoes": {
+        "seguir": "Relatório coerente e fundamento conferido, ou conclusão condicionada com lacuna explícita.",
+        "humano": "Exigência incomum e eliminatória, busca esgotada e resposta capaz de mudar a decisão ou o lote. Também cabe exceção estratégica.",
+        "rerodar": "Uma vez quando premissa decisiva sustenta a recomendação ou a trava, ou quando as saídas se contradizem. Indica os itens afetados."
+      }
+    }
+  }
+}
