@@ -52,8 +52,8 @@ Preservar as descrições e demais dados originais. Se alguma dessas colunas est
 
 ## Pesquisa e escolha de referências
 
-1. Consulte primeiro o histórico do Cérebro, quando disponível, pelas tabelas `precos` e `custos` descritas no esquema. Use consultas agrupadas por família, código, descrição ou equipamento com poucos resultados. Compare unidade, data, quantidade e tipo de valor. Distinga custo de aquisição, proposta e preço homologado. Falha ou teto do Cérebro fica registrado e a pesquisa segue pela web ou por outra base disponível.
-2. Pesquise ofertas da peça ou de alternativas comerciais e compare preços para a mesma unidade, embalagem e condição. Registre links individuais das ofertas. Reaproveite a busca para componentes equivalentes.
+1. Consulte primeiro o histórico do Cérebro, quando disponível, pelas tabelas `precos` e `custos` descritas no esquema. Use consultas agrupadas por família, código, descrição ou equipamento e pagine ou refine a consulta se houver resultados truncados. Compare unidade, data, quantidade e tipo de valor. Distinga custo de aquisição, proposta e preço homologado. Falha ou teto do Cérebro fica registrado e a pesquisa segue pela web ou por outra base disponível.
+2. Mesmo com preço histórico, pesquise ofertas atuais para os itens materiais ou alternativas comerciais e compare preços para a mesma unidade, embalagem e condição. Registre links individuais das ofertas. Reaproveite a busca para componentes equivalentes.
 3. Para item sem oferta confirmada, use a melhor estimativa justificável: histórico comparável, peça análoga ou faixa observada. Identifique “estimativa”, valor adotado, faixa se conhecida, fonte, data, unidade e diferenças. Se nenhuma base permitir um número responsável, escreva o impedimento específico. “Não pesquisado” sozinho não explica a lacuna.
 4. Informe a cobertura: total de itens, quantos têm oferta, quantos têm estimativa e quantos ficaram sem referência. Entregue o resultado possível. Não há cobertura mínima nem veto à precificação.
 
