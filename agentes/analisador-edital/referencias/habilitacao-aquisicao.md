@@ -4,7 +4,7 @@ O fluxo v5 usa quatro pesquisas T1 e quatro cruzamentos T2, uma cadeia por empre
 
 ## Pesquisa T1
 
-`pesquisa-habilitacao-<alias>` grava `fontes/habilitacao/<alias>/candidatos.json` na pasta do agente, com a pauta de `analise/edital.json` (`habilitacao[]`) e as tentativas por documento. Preserve a ordem e a fonte do edital e desdobre linhas agrupadas em uma entrada por documento. A pauta é comum às quatro empresas. Consulte o Cérebro por exigência e a pasta local. Envie todos os candidatos materiais da empresa, inclusive quando a pertinência depender de abrir a cópia. Registre as pistas e buscas nas tentativas.
+`pesquisa-habilitacao-<alias>` grava `fontes/habilitacao/<alias>/candidatos.json` na pasta do agente, com a pauta de `analise/edital.json` (`habilitacao[]`) e as tentativas por documento. Preserve a ordem e a fonte do edital e desdobre linhas agrupadas em uma entrada por documento. A pauta é comum às quatro empresas. Consulte o Cérebro por exigência e a pasta local. Grave o envelope válido com a pauta antes da primeira busca. Após cada busca, acrescente candidatos e tentativas sem perder o que já foi gravado. Todo achado plausível com ref entra em candidatos, inclusive cópias distintas ou com conflito. Registre a dúvida no motivo. O cruzamento abre os originais e decide titularidade, quantitativo e conflitos.
 
 Na raiz, `empresa` contém o alias literal do item, igual ao segmento `<alias>` do caminho de saída (`aforca`, `realmak`, `una` ou `nortfort`). Registre o CNPJ em `cnpj_referencia` como texto, quando conhecido, e preserve seus zeros iniciais.
 
