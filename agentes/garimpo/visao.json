@@ -1,0 +1,30 @@
+{
+  "versao": 1,
+  "agente": "garimpo",
+  "titulo": "Garimpo",
+  "gerado_de": {
+    "plugin_versao": "0.12.4",
+    "fluxo_sha256": null
+  },
+  "resumo": "Apoia a descoberta e a comparação preliminar de oportunidades sob demanda. O pedido escolhe a operação, sem fluxo automático nem portões.",
+  "etapas": [
+    {
+      "id": "triagem",
+      "titulo": "Triagem de lote",
+      "descricao": "Aplica garimpo-triagem ao lote autorizado, sem pesquisar preços. A ferramenta entregar_triagem grava triagem.json e encerra a execução para revisão humana.",
+      "grupos": []
+    },
+    {
+      "id": "consolidacao",
+      "titulo": "Consolidação de triagem",
+      "descricao": "Consolida os lotes fixados no pedido via entregar_triagem. Uma nova seleção exige nova execução e preserva decisões já aceitas.",
+      "grupos": []
+    },
+    {
+      "id": "ficha",
+      "titulo": "Ficha de card",
+      "descricao": "Aplica garimpo-ficha aos documentos autorizados. Usa a tipificação Jev e busca pública para referências de preço. Grava garimpo.json, garimpo.md e precos.csv e conclui pela ferramenta de entrega. Aceite e decisão são humanos.",
+      "grupos": []
+    }
+  ]
+}
