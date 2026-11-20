@@ -3,7 +3,7 @@
   "agente": "analisador-edital",
   "titulo": "Analisador de Edital",
   "gerado_de": {
-    "plugin_versao": "0.12.6",
+    "plugin_versao": "0.12.7",
     "fluxo_sha256": "3769d6774365230104a3ab727304ae9682a81a81a3ac6d6150ce92010c99846a"
   },
   "resumo": "Analisa o edital, compara a cobertura das empresas e estima execução, preço e margem para revisão humana.",
@@ -224,7 +224,7 @@
               ],
               "restricoes": [
                 "Usa a pauta comum do edital, uma busca por documento, e cita achados do Cérebro pela ref emitida pelo daemon. Para cópia local sem ref, registra o hash calculado, título e motivo.",
-                "Sem teto de chamadas por exigência. Registra lacunas e tentativas por cláusula."
+                "Grava a pauta antes da busca e acrescenta achados plausíveis e tentativas a cada consulta. O cruzamento julga conflitos, titularidade e quantitativos."
               ],
               "tolera_falha": true,
               "cerebro_apoio": false
@@ -288,7 +288,7 @@
               ],
               "restricoes": [
                 "Usa a pauta comum do edital, uma busca por documento, e cita achados do Cérebro pela ref emitida pelo daemon. Para cópia local sem ref, registra o hash calculado, título e motivo.",
-                "Sem teto de chamadas por exigência. Registra lacunas e tentativas por cláusula."
+                "Grava a pauta antes da busca e acrescenta achados plausíveis e tentativas a cada consulta. O cruzamento julga conflitos, titularidade e quantitativos."
               ],
               "tolera_falha": true,
               "cerebro_apoio": false
@@ -352,7 +352,7 @@
               ],
               "restricoes": [
                 "Usa a pauta comum do edital, uma busca por documento, e cita achados do Cérebro pela ref emitida pelo daemon. Para cópia local sem ref, registra o hash calculado, título e motivo.",
-                "Sem teto de chamadas por exigência. Registra lacunas e tentativas por cláusula."
+                "Grava a pauta antes da busca e acrescenta achados plausíveis e tentativas a cada consulta. O cruzamento julga conflitos, titularidade e quantitativos."
               ],
               "tolera_falha": true,
               "cerebro_apoio": false
@@ -416,7 +416,7 @@
               ],
               "restricoes": [
                 "Usa a pauta comum do edital, uma busca por documento, e cita achados do Cérebro pela ref emitida pelo daemon. Para cópia local sem ref, registra o hash calculado, título e motivo.",
-                "Sem teto de chamadas por exigência. Registra lacunas e tentativas por cláusula."
+                "Grava a pauta antes da busca e acrescenta achados plausíveis e tentativas a cada consulta. O cruzamento julga conflitos, titularidade e quantitativos."
               ],
               "tolera_falha": true,
               "cerebro_apoio": false

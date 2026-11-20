@@ -198,7 +198,7 @@
       ],
       "restricoes": [
         "Usa a pauta comum do edital, uma busca por documento, e cita achados do Cérebro pela ref emitida pelo daemon. Para cópia local sem ref, registra o hash calculado, título e motivo.",
-        "Sem teto de chamadas por exigência. Registra lacunas e tentativas por cláusula."
+        "Grava a pauta antes da busca e acrescenta achados plausíveis e tentativas a cada consulta. O cruzamento julga conflitos, titularidade e quantitativos."
       ]
     },
     "baixar-habilitacao-aforca": {
@@ -226,7 +226,7 @@
       ],
       "restricoes": [
         "Usa a pauta comum do edital, uma busca por documento, e cita achados do Cérebro pela ref emitida pelo daemon. Para cópia local sem ref, registra o hash calculado, título e motivo.",
-        "Sem teto de chamadas por exigência. Registra lacunas e tentativas por cláusula."
+        "Grava a pauta antes da busca e acrescenta achados plausíveis e tentativas a cada consulta. O cruzamento julga conflitos, titularidade e quantitativos."
       ]
     },
     "baixar-habilitacao-realmak": {
@@ -254,7 +254,7 @@
       ],
       "restricoes": [
         "Usa a pauta comum do edital, uma busca por documento, e cita achados do Cérebro pela ref emitida pelo daemon. Para cópia local sem ref, registra o hash calculado, título e motivo.",
-        "Sem teto de chamadas por exigência. Registra lacunas e tentativas por cláusula."
+        "Grava a pauta antes da busca e acrescenta achados plausíveis e tentativas a cada consulta. O cruzamento julga conflitos, titularidade e quantitativos."
       ]
     },
     "baixar-habilitacao-una": {
@@ -282,7 +282,7 @@
       ],
       "restricoes": [
         "Usa a pauta comum do edital, uma busca por documento, e cita achados do Cérebro pela ref emitida pelo daemon. Para cópia local sem ref, registra o hash calculado, título e motivo.",
-        "Sem teto de chamadas por exigência. Registra lacunas e tentativas por cláusula."
+        "Grava a pauta antes da busca e acrescenta achados plausíveis e tentativas a cada consulta. O cruzamento julga conflitos, titularidade e quantitativos."
       ]
     },
     "baixar-habilitacao-nortfort": {
