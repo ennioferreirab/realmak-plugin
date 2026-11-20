@@ -4,7 +4,7 @@ O fluxo v5 usa quatro pesquisas T1 e quatro cruzamentos T2, uma cadeia por empre
 
 ## Pesquisa T1
 
-`pesquisa-habilitacao-<alias>` grava `fontes/habilitacao/<alias>/candidatos.json` na pasta do agente, com as exigências da análise do edital e as tentativas por cláusula. Consulte o Cérebro por exigência e a pasta local. Envie todos os candidatos materiais da empresa, inclusive quando a pertinência depender de abrir a cópia. Registre as pistas e buscas nas tentativas.
+`pesquisa-habilitacao-<alias>` grava `fontes/habilitacao/<alias>/candidatos.json` na pasta do agente, com a pauta de `analise/edital.json` (`habilitacao[]`) e as tentativas por documento. Preserve a ordem e a fonte do edital e desdobre linhas agrupadas em uma entrada por documento. A pauta é comum às quatro empresas. Consulte o Cérebro por exigência e a pasta local. Envie todos os candidatos materiais da empresa, inclusive quando a pertinência depender de abrir a cópia. Registre as pistas e buscas nas tentativas.
 
 Na raiz, `empresa` contém o alias literal do item, igual ao segmento `<alias>` do caminho de saída (`aforca`, `realmak`, `una` ou `nortfort`). Registre o CNPJ em `cnpj_referencia` como texto, quando conhecido, e preserve seus zeros iniciais.
 
@@ -21,7 +21,7 @@ Exemplo fictício:
       "fonte": "TR 8.1",
       "candidatos": [
         {"id": "at_exemplo", "titulo": "CAT 00123/2026", "motivo": "Serviço equivalente com quantitativo a conferir."},
-        {"file_path": "E:\\acervo-exemplo\\realmak\\cat.pdf", "titulo": "CAT do acervo", "motivo": "Quantitativo a conferir."},
+        {"caminho_original": "E:\\acervo-exemplo\\realmak\\cat.pdf", "titulo": "CAT do acervo", "motivo": "Quantitativo a conferir."},
         {"titulo": "CAT citada no índice", "motivo": "Recuperar o original pelo título."}
       ],
       "tentativas": [
@@ -32,7 +32,7 @@ Exemplo fictício:
 }
 ```
 
-Preencha `titulo` e `motivo` em todos os candidatos. Preserve, quando disponíveis, `id` de registro e os campos `original.sha256` e `original.file_path` do hit em `sha256` e `file_path`. Para cópia local autorizada, calcule o hash dos bytes. Um documento localizado só pelo título segue na lista para tentativa de recuperação pelo daemon.
+Preencha `titulo` e `motivo` em todos os candidatos. Copie literalmente `slug`, `original.sha256` e `original.file_path` do hit em `id`, `sha256` e `caminho_original`. Se uma consulta tipada devolver ID de registro sem slug, copie o ID retornado. Confira os valores no hit bruto antes de gravar. Para cópia local autorizada, calcule o hash dos bytes. Um documento localizado só pelo título segue na lista para tentativa de recuperação pelo daemon.
 
 A união de `pistas[]` e dos números nos achados de `fontes/cerebro_g1.json` e `fontes/cerebro.json` é a pauta de buscas dirigidas do alias. Preserve os números como texto, inclusive os zeros iniciais. Para cada lista vazia, as tentativas distinguem busca sem achados, exclusão fundamentada e pesquisa incompleta (por exemplo, ferramenta ausente). Em pesquisa incompleta, informe a causa e preserve as pistas. O T2 reflete a lacuna na saída do card.
 
