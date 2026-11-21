@@ -3,8 +3,8 @@
   "agente": "analisador-edital",
   "titulo": "Analisador de Edital",
   "gerado_de": {
-    "plugin_versao": "0.12.7",
-    "fluxo_sha256": "3769d6774365230104a3ab727304ae9682a81a81a3ac6d6150ce92010c99846a"
+    "plugin_versao": "0.12.8",
+    "fluxo_sha256": "aa79b2ce61d0c3b31e5b190b8a0e16277bd53d5a27b4b8c22b0899cb21acf7db"
   },
   "resumo": "Analisa o edital, compara a cobertura das empresas e estima execução, preço e margem para revisão humana.",
   "etapas": [
@@ -241,12 +241,11 @@
               "entrada": "fontes/habilitacao/aforca/candidatos.json",
               "saida": "fontes/habilitacao/aforca/downloads.json",
               "resumo": [
-                "Recupera os originais de aforca, verifica a correspondência e arquiva as cópias por exigência."
+                "Localiza os originais na montagem somente leitura, extrai texto sem OCR e grava leitura.txt quando disponível. O binário permanece no acervo."
               ],
               "restricoes": [
-                "Reaproveita cópia local. No Cérebro, tenta por ID, hash e caminho ou, na falta de caminho, por título. Faz até duas passadas pelas vias aplicáveis.",
-                "Falhas passageiras são repetidas. A falha de um candidato não impede os demais.",
-                "A lista aceita até 300 candidatos. O índice de cópias da pasta da licitação considera arquivos de até 32 MiB."
+                "A saída mantém o link de prova e distingue o caminho do original e o texto opcional.",
+                "Indisponibilidade do servidor de arquivos deixa a leitura pendente."
               ],
               "tolera_falha": false,
               "cerebro_apoio": false
@@ -263,10 +262,10 @@
               "entrada": null,
               "saida": "analise/habilitacao/aforca.json",
               "resumo": [
-                "Abre todos os originais baixados de aforca, inclusive cópias adicionais, e confronta titular, validade, escopo e quantitativo."
+                "Lê o texto extraído de cada candidato e confere titularidade, validade, escopo e quantitativo no original quando decisivos."
               ],
               "restricoes": [
-                "Registra localizador e trecho literal. Confere na imagem todo trecho decisivo obtido por OCR.",
+                "Abre o original se faltar texto e lê visualmente as páginas relevantes de documento digitalizado. Usa o link de prova fornecido pelo daemon.",
                 "Sem prova suficiente, mantém verificar e registra a causa."
               ],
               "tolera_falha": true,
@@ -305,12 +304,11 @@
               "entrada": "fontes/habilitacao/realmak/candidatos.json",
               "saida": "fontes/habilitacao/realmak/downloads.json",
               "resumo": [
-                "Recupera os originais de realmak, verifica a correspondência e arquiva as cópias por exigência."
+                "Localiza os originais na montagem somente leitura, extrai texto sem OCR e grava leitura.txt quando disponível. O binário permanece no acervo."
               ],
               "restricoes": [
-                "Reaproveita cópia local. No Cérebro, tenta por ID, hash e caminho ou, na falta de caminho, por título. Faz até duas passadas pelas vias aplicáveis.",
-                "Falhas passageiras são repetidas. A falha de um candidato não impede os demais.",
-                "A lista aceita até 300 candidatos. O índice de cópias da pasta da licitação considera arquivos de até 32 MiB."
+                "A saída mantém o link de prova e distingue o caminho do original e o texto opcional.",
+                "Indisponibilidade do servidor de arquivos deixa a leitura pendente."
               ],
               "tolera_falha": false,
               "cerebro_apoio": false
@@ -327,10 +325,10 @@
               "entrada": null,
               "saida": "analise/habilitacao/realmak.json",
               "resumo": [
-                "Abre todos os originais baixados de realmak, inclusive cópias adicionais, e confronta titular, validade, escopo e quantitativo."
+                "Lê o texto extraído de cada candidato e confere titularidade, validade, escopo e quantitativo no original quando decisivos."
               ],
               "restricoes": [
-                "Registra localizador e trecho literal. Confere na imagem todo trecho decisivo obtido por OCR.",
+                "Abre o original se faltar texto e lê visualmente as páginas relevantes de documento digitalizado. Usa o link de prova fornecido pelo daemon.",
                 "Sem prova suficiente, mantém verificar e registra a causa."
               ],
               "tolera_falha": true,
@@ -369,12 +367,11 @@
               "entrada": "fontes/habilitacao/una/candidatos.json",
               "saida": "fontes/habilitacao/una/downloads.json",
               "resumo": [
-                "Recupera os originais de una, verifica a correspondência e arquiva as cópias por exigência."
+                "Localiza os originais na montagem somente leitura, extrai texto sem OCR e grava leitura.txt quando disponível. O binário permanece no acervo."
               ],
               "restricoes": [
-                "Reaproveita cópia local. No Cérebro, tenta por ID, hash e caminho ou, na falta de caminho, por título. Faz até duas passadas pelas vias aplicáveis.",
-                "Falhas passageiras são repetidas. A falha de um candidato não impede os demais.",
-                "A lista aceita até 300 candidatos. O índice de cópias da pasta da licitação considera arquivos de até 32 MiB."
+                "A saída mantém o link de prova e distingue o caminho do original e o texto opcional.",
+                "Indisponibilidade do servidor de arquivos deixa a leitura pendente."
               ],
               "tolera_falha": false,
               "cerebro_apoio": false
@@ -391,10 +388,10 @@
               "entrada": null,
               "saida": "analise/habilitacao/una.json",
               "resumo": [
-                "Abre todos os originais baixados de una, inclusive cópias adicionais, e confronta titular, validade, escopo e quantitativo."
+                "Lê o texto extraído de cada candidato e confere titularidade, validade, escopo e quantitativo no original quando decisivos."
               ],
               "restricoes": [
-                "Registra localizador e trecho literal. Confere na imagem todo trecho decisivo obtido por OCR.",
+                "Abre o original se faltar texto e lê visualmente as páginas relevantes de documento digitalizado. Usa o link de prova fornecido pelo daemon.",
                 "Sem prova suficiente, mantém verificar e registra a causa."
               ],
               "tolera_falha": true,
@@ -433,12 +430,11 @@
               "entrada": "fontes/habilitacao/nortfort/candidatos.json",
               "saida": "fontes/habilitacao/nortfort/downloads.json",
               "resumo": [
-                "Recupera os originais de nortfort, verifica a correspondência e arquiva as cópias por exigência."
+                "Localiza os originais na montagem somente leitura, extrai texto sem OCR e grava leitura.txt quando disponível. O binário permanece no acervo."
               ],
               "restricoes": [
-                "Reaproveita cópia local. No Cérebro, tenta por ID, hash e caminho ou, na falta de caminho, por título. Faz até duas passadas pelas vias aplicáveis.",
-                "Falhas passageiras são repetidas. A falha de um candidato não impede os demais.",
-                "A lista aceita até 300 candidatos. O índice de cópias da pasta da licitação considera arquivos de até 32 MiB."
+                "A saída mantém o link de prova e distingue o caminho do original e o texto opcional.",
+                "Indisponibilidade do servidor de arquivos deixa a leitura pendente."
               ],
               "tolera_falha": false,
               "cerebro_apoio": false
@@ -455,10 +451,10 @@
               "entrada": null,
               "saida": "analise/habilitacao/nortfort.json",
               "resumo": [
-                "Abre todos os originais baixados de nortfort, inclusive cópias adicionais, e confronta titular, validade, escopo e quantitativo."
+                "Lê o texto extraído de cada candidato e confere titularidade, validade, escopo e quantitativo no original quando decisivos."
               ],
               "restricoes": [
-                "Registra localizador e trecho literal. Confere na imagem todo trecho decisivo obtido por OCR.",
+                "Abre o original se faltar texto e lê visualmente as páginas relevantes de documento digitalizado. Usa o link de prova fornecido pelo daemon.",
                 "Sem prova suficiente, mantém verificar e registra a causa."
               ],
               "tolera_falha": true,
