@@ -67,6 +67,7 @@ def main(argv):
     try:
         dados = json.loads(Path(argv[1]).read_text(encoding="utf-8"))
         entrada.validar(dados)
+        entrada.normalizar(dados)
     except (OSError, ValueError) as exc:
         print(f"Dados de análise inválidos: {exc}", file=sys.stderr)
         return 2
