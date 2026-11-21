@@ -1,5 +1,7 @@
 """Valida a estrutura dos dados antes de calcular ou escrever as saídas."""
 
+import re
+
 
 def _lista(valor, caminho):
     if not isinstance(valor, list):
@@ -58,3 +60,42 @@ def validar(dados):
         _lista(linhas, f"{caminho}.linhas")
         for j, linha in enumerate(linhas):
             _tamanho(linha, f"{caminho}.linhas[{j}]", 5)
+
+
+# Selo da conclusão (decisão de Ennio, 21/11/2026: a tela monta, o modelo só escreve dados). O selo e a cor só aceitam
+# três rótulos; um texto longo no lugar (card 6613: "Viável com ressalvas. A execução cabe...") quebrava o cabeçalho do
+# painel. O rótulo sai do texto e o texto inteiro vai para a justificativa, sem perder nada.
+CONCLUSOES = ("Atende", "Atende com condições", "Não atende")
+
+
+def _sem_acento(texto):
+    import unicodedata
+    return "".join(c for c in unicodedata.normalize("NFKD", texto) if not unicodedata.combining(c)).lower()
+
+
+def rotulo_conclusao(texto):
+    bruto = (texto or "").strip()
+    for rotulo in CONCLUSOES:
+        if bruto.lower() == rotulo.lower():
+            return rotulo
+    t = _sem_acento(bruto)
+    if re.search(r"\bnao atende\b|\binviavel\b|\binexequivel\b|\bnao_atende\b|\bnao viavel\b", t):
+        return "Não atende"
+    if re.search(r"ressalva|condic|com_ressalvas|parcial", t):
+        return "Atende com condições"
+    if re.match(r"(viavel|atende|exequivel|sim)\b", t):
+        return "Atende"
+    return "Atende com condições"
+
+
+def normalizar(dados):
+    """Deixa `conclusao` num dos três rótulos; o texto original, se for mais que o rótulo, abre a justificativa."""
+    original = (dados.get("conclusao") or "").strip()
+    rotulo = rotulo_conclusao(original)
+    dados["conclusao"] = rotulo
+    if original and original != rotulo:
+        justificativa = (dados.get("justificativa") or "").strip()
+        if original not in justificativa:
+            dados["justificativa"] = original + ("\n\n" + justificativa if justificativa else "")
+    return dados
+

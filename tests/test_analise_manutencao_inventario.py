@@ -164,3 +164,17 @@ def test_equivalencia_material_e_atestado_emitido_antes_do_marco():
     assert "Equivalência técnica material ainda não resolvida fica **Técnico decide**" in habilidade
     assert "antes do marco exigido e o contrato já encerrou" in habilidade
     assert "avaliar solicitar nova via" in habilidade or "avalie solicitar nova via" in habilidade
+
+
+def test_conclusao_longa_vira_rotulo_e_cabecalho_aguenta_texto_longo(exemplo, tmp_path):
+    # Card 6613 (21/11/2026): o modelo pôs a conclusão inteira no selo e o cabeçalho do painel colapsou.
+    longa = "Viável com ressalvas. A execução cabe no campus único com cerca de 12 técnicos, " * 6
+    exemplo["conclusao"] = longa
+    exemplo["pilulas"] = ["PE 108/2026 · UESC", "SEI 073.5748.2024.0033819-56", "R$ 1.047.149,16 / 12 meses"]
+    painel, relatorio, md = gerar(exemplo, tmp_path)
+    dados = json.loads(re.search(r"const DADOS=(.*?);\n", painel, re.S).group(1))
+    assert dados["D"]["conclusao"] == "Atende com condições"
+    assert dados["D"]["justificativa"].startswith(longa.strip())
+    assert ".topo{flex-wrap:nowrap}" not in painel
+    assert ".pilulas{flex:1 1 100%" in painel and "text-overflow:ellipsis" in painel and "max-height:45vh" in painel
+    assert "Atende com condições" in relatorio

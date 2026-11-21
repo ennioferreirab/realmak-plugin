@@ -154,13 +154,16 @@ html[data-tema=escuro]{--fundo:#0b1220;--card:#111827;--linha:#273449;--tx:#e5e7
  --okbg:#0f2e1c;--ok:#86efac;--mdbg:#3a2210;--md:#fdba74;--albg:#3b1414;--al:#fca5a5}
 *{box-sizing:border-box}
 body{margin:0;background:var(--fundo);color:var(--tx);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
-header{background:var(--pet);color:#fff;padding:14px 20px 0;position:sticky;top:0;z-index:5;box-shadow:0 2px 6px rgba(0,0,0,.18)}
+header{background:var(--pet);color:#fff;padding:14px 20px 0;position:sticky;top:0;z-index:5;box-shadow:0 2px 6px rgba(0,0,0,.18);max-height:45vh;overflow-y:auto}
 .topo{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px}
-@media (min-width:1000px){.topo{flex-wrap:nowrap}.topo h1{white-space:nowrap}}.pilulas{flex:1;min-width:0}
+/* Cabeçalho que aguenta texto longo: título e selo cortam com reticências; as pílulas têm linha própria. */
+.topo h1{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pilulas{flex:1 1 100%;order:3;min-width:0}
 .topo h1{font-size:18px;margin:0;font-weight:700;letter-spacing:.2px}
 .pilulas{display:flex;flex-wrap:wrap;gap:6px}
-.pilula{max-width:100%;overflow-wrap:anywhere;background:rgba(255,255,255,.14);border-radius:999px;padding:2px 10px;font-size:12px}
-.selo{margin-left:auto;border-radius:6px;padding:4px 10px;font-weight:700;font-size:13px}
+.pilula{max-width:100%;overflow-wrap:break-word;background:rgba(255,255,255,.14);border-radius:999px;padding:2px 10px;font-size:12px}
+.selo{margin-left:auto;border-radius:6px;padding:4px 10px;font-weight:700;font-size:13px;flex:0 1 auto;max-width:min(40vw,360px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.concl .selo{max-width:100%;white-space:normal}
 .selo.cond{background:#ffedd5;color:#9a3412}.selo.ok{background:#dcfce7;color:#166534}.selo.nao{background:#fee2e2;color:#991b1b}
 nav{display:flex;gap:2px;overflow-x:auto;margin-top:12px;scrollbar-width:thin}
 nav button{all:unset;cursor:pointer;color:#cbd5e1;padding:8px 14px;border-radius:8px 8px 0 0;font-size:13px;white-space:nowrap;display:flex;gap:6px;align-items:center}
