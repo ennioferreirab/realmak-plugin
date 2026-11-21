@@ -110,7 +110,7 @@
           "modo": "skill",
           "tier": "T2",
           "skill": "analisar-habilitacao",
-          "passos": "fase de cruzamento documental somente para aforca: abra e confronte todos os originais arquivados pelo daemon",
+          "passos": "fase de cruzamento documental somente para aforca: leia o texto extraído de cada candidato e confira no original indicado em caminho os trechos decisivos ou sem texto",
           "saida": "analise/habilitacao/aforca.json",
           "depende_de": [
             "baixar-habilitacao-aforca"
@@ -148,7 +148,7 @@
           "modo": "skill",
           "tier": "T2",
           "skill": "analisar-habilitacao",
-          "passos": "fase de cruzamento documental somente para realmak: abra e confronte todos os originais arquivados pelo daemon",
+          "passos": "fase de cruzamento documental somente para realmak: leia o texto extraído de cada candidato e confira no original indicado em caminho os trechos decisivos ou sem texto",
           "saida": "analise/habilitacao/realmak.json",
           "depende_de": [
             "baixar-habilitacao-realmak"
@@ -186,7 +186,7 @@
           "modo": "skill",
           "tier": "T2",
           "skill": "analisar-habilitacao",
-          "passos": "fase de cruzamento documental somente para una: abra e confronte todos os originais arquivados pelo daemon",
+          "passos": "fase de cruzamento documental somente para una: leia o texto extraído de cada candidato e confira no original indicado em caminho os trechos decisivos ou sem texto",
           "saida": "analise/habilitacao/una.json",
           "depende_de": [
             "baixar-habilitacao-una"
@@ -224,7 +224,7 @@
           "modo": "skill",
           "tier": "T2",
           "skill": "analisar-habilitacao",
-          "passos": "fase de cruzamento documental somente para nortfort: abra e confronte todos os originais arquivados pelo daemon",
+          "passos": "fase de cruzamento documental somente para nortfort: leia o texto extraído de cada candidato e confira no original indicado em caminho os trechos decisivos ou sem texto",
           "saida": "analise/habilitacao/nortfort.json",
           "depende_de": [
             "baixar-habilitacao-nortfort"

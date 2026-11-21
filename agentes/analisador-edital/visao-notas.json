@@ -203,20 +203,19 @@
     },
     "baixar-habilitacao-aforca": {
       "resumo": [
-        "Recupera os originais de aforca, verifica a correspondência e arquiva as cópias por exigência."
+        "Localiza os originais na montagem somente leitura, extrai texto sem OCR e grava leitura.txt quando disponível. O binário permanece no acervo."
       ],
       "restricoes": [
-        "Reaproveita cópia local. No Cérebro, tenta por ID, hash e caminho ou, na falta de caminho, por título. Faz até duas passadas pelas vias aplicáveis.",
-        "Falhas passageiras são repetidas. A falha de um candidato não impede os demais.",
-        "A lista aceita até 300 candidatos. O índice de cópias da pasta da licitação considera arquivos de até 32 MiB."
+        "A saída mantém o link de prova e distingue o caminho do original e o texto opcional.",
+        "Indisponibilidade do servidor de arquivos deixa a leitura pendente."
       ]
     },
     "habilitacao-aforca": {
       "resumo": [
-        "Abre todos os originais baixados de aforca, inclusive cópias adicionais, e confronta titular, validade, escopo e quantitativo."
+        "Lê o texto extraído de cada candidato e confere titularidade, validade, escopo e quantitativo no original quando decisivos."
       ],
       "restricoes": [
-        "Registra localizador e trecho literal. Confere na imagem todo trecho decisivo obtido por OCR.",
+        "Abre o original se faltar texto e lê visualmente as páginas relevantes de documento digitalizado. Usa o link de prova fornecido pelo daemon.",
         "Sem prova suficiente, mantém verificar e registra a causa."
       ]
     },
@@ -231,20 +230,19 @@
     },
     "baixar-habilitacao-realmak": {
       "resumo": [
-        "Recupera os originais de realmak, verifica a correspondência e arquiva as cópias por exigência."
+        "Localiza os originais na montagem somente leitura, extrai texto sem OCR e grava leitura.txt quando disponível. O binário permanece no acervo."
       ],
       "restricoes": [
-        "Reaproveita cópia local. No Cérebro, tenta por ID, hash e caminho ou, na falta de caminho, por título. Faz até duas passadas pelas vias aplicáveis.",
-        "Falhas passageiras são repetidas. A falha de um candidato não impede os demais.",
-        "A lista aceita até 300 candidatos. O índice de cópias da pasta da licitação considera arquivos de até 32 MiB."
+        "A saída mantém o link de prova e distingue o caminho do original e o texto opcional.",
+        "Indisponibilidade do servidor de arquivos deixa a leitura pendente."
       ]
     },
     "habilitacao-realmak": {
       "resumo": [
-        "Abre todos os originais baixados de realmak, inclusive cópias adicionais, e confronta titular, validade, escopo e quantitativo."
+        "Lê o texto extraído de cada candidato e confere titularidade, validade, escopo e quantitativo no original quando decisivos."
       ],
       "restricoes": [
-        "Registra localizador e trecho literal. Confere na imagem todo trecho decisivo obtido por OCR.",
+        "Abre o original se faltar texto e lê visualmente as páginas relevantes de documento digitalizado. Usa o link de prova fornecido pelo daemon.",
         "Sem prova suficiente, mantém verificar e registra a causa."
       ]
     },
@@ -259,20 +257,19 @@
     },
     "baixar-habilitacao-una": {
       "resumo": [
-        "Recupera os originais de una, verifica a correspondência e arquiva as cópias por exigência."
+        "Localiza os originais na montagem somente leitura, extrai texto sem OCR e grava leitura.txt quando disponível. O binário permanece no acervo."
       ],
       "restricoes": [
-        "Reaproveita cópia local. No Cérebro, tenta por ID, hash e caminho ou, na falta de caminho, por título. Faz até duas passadas pelas vias aplicáveis.",
-        "Falhas passageiras são repetidas. A falha de um candidato não impede os demais.",
-        "A lista aceita até 300 candidatos. O índice de cópias da pasta da licitação considera arquivos de até 32 MiB."
+        "A saída mantém o link de prova e distingue o caminho do original e o texto opcional.",
+        "Indisponibilidade do servidor de arquivos deixa a leitura pendente."
       ]
     },
     "habilitacao-una": {
       "resumo": [
-        "Abre todos os originais baixados de una, inclusive cópias adicionais, e confronta titular, validade, escopo e quantitativo."
+        "Lê o texto extraído de cada candidato e confere titularidade, validade, escopo e quantitativo no original quando decisivos."
       ],
       "restricoes": [
-        "Registra localizador e trecho literal. Confere na imagem todo trecho decisivo obtido por OCR.",
+        "Abre o original se faltar texto e lê visualmente as páginas relevantes de documento digitalizado. Usa o link de prova fornecido pelo daemon.",
         "Sem prova suficiente, mantém verificar e registra a causa."
       ]
     },
@@ -287,20 +284,19 @@
     },
     "baixar-habilitacao-nortfort": {
       "resumo": [
-        "Recupera os originais de nortfort, verifica a correspondência e arquiva as cópias por exigência."
+        "Localiza os originais na montagem somente leitura, extrai texto sem OCR e grava leitura.txt quando disponível. O binário permanece no acervo."
       ],
       "restricoes": [
-        "Reaproveita cópia local. No Cérebro, tenta por ID, hash e caminho ou, na falta de caminho, por título. Faz até duas passadas pelas vias aplicáveis.",
-        "Falhas passageiras são repetidas. A falha de um candidato não impede os demais.",
-        "A lista aceita até 300 candidatos. O índice de cópias da pasta da licitação considera arquivos de até 32 MiB."
+        "A saída mantém o link de prova e distingue o caminho do original e o texto opcional.",
+        "Indisponibilidade do servidor de arquivos deixa a leitura pendente."
       ]
     },
     "habilitacao-nortfort": {
       "resumo": [
-        "Abre todos os originais baixados de nortfort, inclusive cópias adicionais, e confronta titular, validade, escopo e quantitativo."
+        "Lê o texto extraído de cada candidato e confere titularidade, validade, escopo e quantitativo no original quando decisivos."
       ],
       "restricoes": [
-        "Registra localizador e trecho literal. Confere na imagem todo trecho decisivo obtido por OCR.",
+        "Abre o original se faltar texto e lê visualmente as páginas relevantes de documento digitalizado. Usa o link de prova fornecido pelo daemon.",
         "Sem prova suficiente, mantém verificar e registra a causa."
       ]
     }
