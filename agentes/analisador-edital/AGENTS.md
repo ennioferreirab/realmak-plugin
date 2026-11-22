@@ -154,3 +154,5 @@ Nos itens `pesquisa-habilitacao-<alias>` (T1), registre candidatos por exigênci
 - **Peças.** O item `pecas` parte do edital/TR e grava as ofertas e lacunas em `fontes/pecas.json`, no [contrato do card](referencias/card/CONTRATO.md#pesquisa-de-peças). A precificação usa a fonte já gravada; se faltar preço, sinaliza a lacuna e segue com premissa explícita.
 - **Dimensionamento e custo.** Use a memória do órgão na base, com as fontes. Uma hipótese que muda a equipe ou a recomendação só entra como cenário alternativo. Em `tecnica.json` e `precificacao.json`, use `premissa_decisiva: true` se a base continuar condicionada pela falta de informação decisiva.
 - **Precificação.** Em manutenção, grave os dados e gere o Excel pelo script da skill. Em fornecimento, use as `cotacoes_online` de `tecnica.json` como custo de compra e confira frete, tributos e margem. Liste os arquivos abertos pelo card em `precificacao.json`.
+
+Quando o executor disponibilizar `licitacao_buscar_fontes`, use o `lead_id` do card para localizar cláusulas por peça, item, página física ou texto. Cite o trecho e o link estável retornados; confira todas as ocorrências antes de atribuir a fonte.

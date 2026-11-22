@@ -178,3 +178,5 @@ Classifique por lote conforme parcelas, finalidade, regime de execução e crit�
 ## Campos opcionais do card
 
 Para cada `atencao[]`, escreva `titulo` de até 80 caracteres. Na pauta `habilitacao[]`, atribua `id` pela ordem dos documentos (`hab-001`, `hab-002`, etc.) e `rotulo` de até 40 caracteres. Preserve o identificador de requisito inalterado quando revisar a mesma pauta.
+
+Quando o executor disponibilizar `licitacao_buscar_fontes`, use o `lead_id` do card para localizar cláusulas por peça, item, página física ou texto. Cite o trecho e o link estável retornados; confira todas as ocorrências antes de atribuir a fonte.
