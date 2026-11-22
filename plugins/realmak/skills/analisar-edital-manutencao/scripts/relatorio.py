@@ -253,7 +253,9 @@ def _fmt_campos(texto, calc):
         return str(texto)
 
 
-def build(D, calc, destino_html, destino_md):
+def build(D, calc, destino_html, destino_md, *, rota=""):
+    from fontes import vincular_html
+
     n, carga = calc["num"], calc["carga"]
 
     def F(t):
@@ -461,6 +463,7 @@ def build(D, calc, destino_html, destino_md):
     )
 
     with open(destino_html, "w", encoding="utf-8") as arq:
-        arq.write(d.html(D.get("titulo_pagina", cp["titulo"]), D.get("rodape", cp["titulo"])))
+        html = d.html(D.get("titulo_pagina", cp["titulo"]), D.get("rodape", cp["titulo"]))
+        arq.write(vincular_html(html, rota))
     with open(destino_md, "w", encoding="utf-8") as arq:
         arq.write(d.md())
