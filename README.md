@@ -196,3 +196,5 @@ O `check_local.py` confere `/healthz`, o `401` sem chave, o `tools/list` pelo cl
 ## Licença
 
 MIT. As ferramentas de compras incorporam código do mcp-brasil, também MIT, com os avisos em [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+A ferramenta `licitacao_buscar_fontes` pesquisa as passagens dos documentos de um card usando as permissões da pessoa no CRM. Consulte o [contrato e os exemplos por item, página e texto](plugins/realmak/skills/licitacao/SKILL.md#localizar-e-citar-uma-passagem-do-card).

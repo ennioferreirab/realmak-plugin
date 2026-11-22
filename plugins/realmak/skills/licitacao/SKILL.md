@@ -83,3 +83,16 @@ Quando a tarefa autorizar atualização de status, marque `trabalhando` ao come�
 - Use `licitacao_criar` com o link, ID ConLicitação, controle PNCP ou os dados do certame (processo ou edital com órgão/UASG). A ferramenta confere se o card já existe e dá prioridade à fonte ConLicitação, depois às fontes oficiais.
 - Se a busca pedir o link oficial, localize o edital na internet ou no portal do órgão. Leia a página e o edital antes de chamar `licitacao_criar` com o link e os dados confirmados (órgão, edital, processo, objeto, local, datas e valor, quando disponíveis). A mesma chamada pode preencher campos vazios de um card externo existente.
 - Abra `licitacao_pasta` pela chave devolvida. Confira fonte, empresa disputante e pasta de trabalho. Baixe na fonte os originais que faltarem, envie edital e anexos com `licitacao_enviar_arquivo` e complete os dados do card.
+
+
+### Localizar e citar uma passagem do card
+
+Use `licitacao_buscar_fontes` com o `lead_id` do card (o número em `crm.lead` ou em `checklist.json`). Exemplos do card 6563:
+
+- Item do termo de referência: `{"lead_id":6563,"peca":"TR","item":"9.4"}`.
+- Palavra dentro da peça: `{"lead_id":6563,"peca":"TR","texto":"FGTS","limite":10}`.
+- Página física: `{"lead_id":6563,"peca":"TR","pagina":17}`. Para restringir ao arquivo, informe também `documento` com a chave de origem ou o nome exato.
+
+Os filtros se combinam. As peças são TR, Edital, ETP e Contrato. Para cada linha de `resultados`, leia `texto` e cite a `url` devolvida pelo CRM, junto com `documento`, `documento_id`, `peca`, `item` e `pagina` quando disponíveis. Siga `proximo_offset` até `null`. TR 8.1 no 6563 aparece nas páginas 14 e 29; confronte ambos os trechos. Preserve ocorrências em páginas distintas. Uma localização desconhecida vem como `null`; página escaneada pode ter link e nenhum trecho extraído. Abra a página para conferir. Quando uma alínea ou item não estiver indexado, procure palavras da passagem ou leia o documento com `licitacao_ler_texto`.
+
+A consulta usa o login pessoal e as permissões de leitura do card e do documento no Odoo. O link estável também exige acesso ao CRM.

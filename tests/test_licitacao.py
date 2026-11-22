@@ -225,3 +225,22 @@ async def test_base_de_custos_vem_da_plataforma_e_sobe_por_link_como_a_pessoa(am
         link_doc = corpo(await chamar(c, "licitacao_link_arquivo", {"licitacao_id": 7, "documento_id": 31}, token))
         token_doc = urlsplit(link_doc["link_baixar"]).path.rsplit("/", 1)[-1]
         assert (await c.post(f"/mcp/arquivos/base-custos/{token_doc}", files=arquivos)).status_code == 404
+
+
+async def test_buscar_fontes_preserva_ocorrencias_e_identidade(ambiente):
+    async with servidor() as c:
+        achados = {"resultados": [{"pagina": pag, "texto": "Texto literal", "item": "8.1",
+                                   "url": f"https://crm.test/fonte/{pag}"} for pag in (14, 29)],
+                   "proximo_offset": 2}
+        rota = c.mock.post(f"{API}/buscar_fontes").mock(side_effect=[
+            httpx.Response(200, json={"resultado": achados}),
+            httpx.Response(403, json={"erro": "Sem acesso ao documento."}),
+        ])
+        filtros = dict(lead_id=6563, documento="Anexo.pdf", peca="TR", item="8.1",
+                       texto="Texto", pagina=0, offset=0, limite=2)
+        r = await chamar(c, "licitacao_buscar_fontes", filtros, token_de(BIA))
+        assert corpo(r) == achados
+        assert json.loads(rota.calls.last.request.content) == filtros
+        assert rota.calls.last.request.headers["x-realmak-act-as"] == BIA
+        negado = await chamar(c, "licitacao_buscar_fontes", {"lead_id":9}, token_de(BIA))
+        assert negado["isError"] and "403" in negado["content"][0]["text"]
