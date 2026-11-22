@@ -174,3 +174,7 @@ Depois da análise, ofereça o passo seguinte conforme o tipo de objeto:
 Para obras, confira projeto básico/executivo, memoriais, planilha de quantitativos e preços, composições, BDI, cronograma físico-financeiro, local e interferências. Cruze parcelas relevantes, equipe, acervo, mobilização, medição e pagamento. Em outros serviços, examine equipe, regime de execução, níveis de serviço, prazo e medição. Informe o impacto de lacunas e quem precisa validar as premissas.
 
 Classifique por lote conforme parcelas, finalidade, regime de execução e critério de adjudicação. Quando a manutenção inclui peças e insumos para executar o serviço, use `analisar-edital-manutencao`. Se um lote indivisível combinar parcelas relevantes de tipos diferentes, aplique as verificações de cada parcela e consolide viabilidade técnica e comercial do conjunto. Em obra ou lote misto, sustente a recomendação com fontes para quantidades, acervo, equipe, cronograma, mobilização, interfaces, preço e pagamento. Quando faltar insumo decisivo, informe a pendência específica, cláusula e impacto em execução, preço ou decisão.
+
+## Campos opcionais do card
+
+Para cada `atencao[]`, escreva `titulo` de até 80 caracteres. Na pauta `habilitacao[]`, atribua `id` pela ordem dos documentos (`hab-001`, `hab-002`, etc.) e `rotulo` de até 40 caracteres. Preserve o identificador de requisito inalterado quando revisar a mesma pauta.

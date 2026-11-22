@@ -196,3 +196,8 @@ Antes de entregar:
 - a aba Checks não aponta erro e mensal, anual e global fecham entre si;
 - a síntese traz preço, intervalo seguro, premissas críticas e pendências;
 - o arquivo está salvo na pasta do processo e o caminho foi informado.
+
+## Campos opcionais do card
+
+- Informe `piso_sugerido` como valor mensal quando o cálculo o sustentar. Em `sensibilidade`, use `{rotulo, margem_pct}` com margem em pontos percentuais de cada hipótese calculada. Em `condicoes`, use `{id, texto}` para condições concretas da recomendação, com ID estável.
+- Resuma peças em `pecas_grupos` com `{rotulo, itens, valor_anual, situacao}`. Use `itens` como contagem, `valor_anual` em reais quando calculável e `situacao` como texto curto que indique a base ou a pendência. Não conte os mesmos itens em dois grupos nem use zero para representar valor desconhecido.
