@@ -10,7 +10,8 @@ import re
 html_esc = _html.escape
 
 
-def build(D, calc, destino):
+def build(D, calc, destino, *, rota=""):
+    from fontes import fontes_do_painel
     from relatorio import _fmt_campos
 
     tabelas = {
@@ -137,6 +138,7 @@ def build(D, calc, destino):
         "/*DADOS*/",
         "const DADOS=" + json.dumps(dados, ensure_ascii=False).replace("</", "<\\/") + ";",
     ).replace("{{TITULO}}", html_esc(titulo))
+    html = html.replace('<main id="painel">', fontes_do_painel(dados, rota) + '<main id="painel">', 1)
     with open(destino, "w", encoding="utf-8") as arq:
         arq.write(html)
 

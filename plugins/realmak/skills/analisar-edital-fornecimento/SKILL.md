@@ -75,6 +75,7 @@ Preencha primeiro o **Excel** e depois o **HTML**. As contas são feitas só na 
 - Recalcule a planilha e leia os valores calculados antes de copiá-los para o HTML.
 - A aba Checks precisa estar toda em OK. Um ALERTA que não dá para resolver vira pendência, com a explicação.
 - No HTML, substitua todos os `[COLCHETES]` e mantenha o arquivo único e autocontido. Na faixa da conclusão, use a classe `atende`, `condicoes` ou `nao`. Em edital com muitos itens, o HTML mostra os de maior valor e os que a empresa não atende; a lista completa fica na planilha.
+- Na pasta do agente, finalize o HTML preenchido com `python <pasta_skills>/analisar-edital-manutencao/scripts/fontes.py analise/analise-fornecimento.html`. Escreva as citações com o documento e os itens (por exemplo, “TR 9.4, 9.6 a 9.8”), inclusive nas observações. Preserve os links existentes.
 
 ## Passo 1: itens
 

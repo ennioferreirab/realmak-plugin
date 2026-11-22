@@ -178,3 +178,39 @@ def test_conclusao_longa_vira_rotulo_e_cabecalho_aguenta_texto_longo(exemplo, tm
     assert ".topo{flex-wrap:nowrap}" not in painel
     assert ".pilulas{flex:1 1 100%" in painel and "text-overflow:ellipsis" in painel and "max-height:45vh" in painel
     assert "Atende com condições" in relatorio
+
+
+def test_fontes_do_card_em_relatorios_exportados(tmp_path, monkeypatch):
+    import hashlib
+
+    monkeypatch.setenv("REALMAK_CRM_BASE_URL", "https://crm.example")
+    (tmp_path / "checklist.json").write_text('{"lead_id":45,"licitacao_id":12345}')
+    saida = tmp_path / "analise"
+    saida.mkdir()
+    dados = dados_outro_objeto()
+    dados["justificativa"] = "Observação: TR 9.31.2, 9.35.1 e 9.35.2; itens 1.2 a 1.4 do ETP."
+    dados["leitura_rapida"] = [["Observação", dados["justificativa"]]]
+    painel, relatorio, markdown = gerar(dados, saida)
+    for doc, itens in (("TR", ["9.31.2", "9.35.1", "9.35.2"]), ("ETP", ["1.2", "1.4"])):
+        for item in itens:
+            href = f'https://crm.example/realmak_licitacao/fonte/45?documento={doc}&amp;item={item}"'
+            assert href in painel and href in relatorio
+    assert dados["justificativa"] in markdown
+    script = re.search(r"<script>(.*?)</script>", painel, re.S)[1]
+    fixo = re.sub(r"^const DADOS=.*;$", "const DADOS=null;", script, flags=re.M)
+    assert hashlib.sha256(fixo.encode()).hexdigest() == "66794c86253d05845ddd9ac7650afb179fe2d56eb38c122586e61b372df19438"
+
+
+def test_fontes_fornecimento_idempotentes(tmp_path, monkeypatch):
+    monkeypatch.setenv("REALMAK_LEAD_ID", "45")
+    monkeypatch.setenv("REALMAK_CRM_BASE_URL", "https://crm.example")
+    arq = tmp_path / "fornecimento.html"
+    protegido = '<a href="/x">TR 1.2</a><script>let x="ETP 1.3";</script><!--Edital 5-->'
+    arq.write_text(protegido + "<p>TR 2.1–2.5, Edital 37/2026</p>")
+    cmd = [sys.executable, str(MANUTENCAO / "scripts/fontes.py"), str(arq)]
+    subprocess.run(cmd, check=True)
+    novo = arq.read_text()
+    assert protegido in novo and novo.count('/realmak_licitacao/fonte/45') == 3
+    assert "item=2.1" in novo and "item=2.5" in novo and "item=37" not in novo
+    subprocess.run(cmd, check=True)
+    assert arq.read_text() == novo

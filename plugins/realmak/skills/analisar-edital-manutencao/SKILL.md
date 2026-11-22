@@ -50,6 +50,7 @@ Se o analista não indicar a pasta do processo, use a pasta onde estão os docum
 
 1. Monte `dados-analise.json` na pasta do processo, no formato de `assets/exemplo-dados.json` (exemplo real do PE 21/2026 da SSP-GO). Siga os mesmos campos e a mesma ordem das colunas de cada lista; troque só o conteúdo.
 2. Rode `python scripts/gerar_analise.py <pasta>/dados-analise.json <pasta>`. Precisa de Python 3.10+, sem pacotes extras.
+   No CRM, gere na pasta `analise/` ao lado de `../checklist.json`, que identifica o card por `lead_id`. A origem pública para exportação vem de `REALMAK_CRM_BASE_URL` ou `crm_base_url` do checklist. Fora do caso, os dois valores podem vir de `REALMAK_LEAD_ID` e `REALMAK_CRM_BASE_URL`. Cite documento e itens também nas observações; a página é resolvida pelo CRM ao abrir o link.
 3. Leia o resumo que o script imprime: carga, capacidade, cobertura, folga e Checks. Corrija os dados e gere de novo até os Checks ficarem em OK; um ALERTA que não dá para resolver vira ponto de atenção.
 4. Se o script avisar que não gerou o PDF (sem Chrome ou Chromium no computador), abra `analise-manutencao-relatorio.html` e imprima como PDF.
 

@@ -19,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 import calculo  # noqa: E402
 import entrada  # noqa: E402
+import fontes  # noqa: E402
 import painel  # noqa: E402
 import relatorio  # noqa: E402
 
@@ -73,11 +74,12 @@ def main(argv):
         return 2
     saida = Path(argv[2])
     saida.mkdir(parents=True, exist_ok=True)
+    rota = fontes.contexto(saida)
     calc = calculo.calcular(dados)
     relatorio.build(
-        dados, calc, saida / "analise-manutencao-relatorio.html", saida / "analise-manutencao.md"
+        dados, calc, saida / "analise-manutencao-relatorio.html", saida / "analise-manutencao.md", rota=rota
     )
-    painel.build(dados, calc, saida / "analise-manutencao.html")
+    painel.build(dados, calc, saida / "analise-manutencao.html", rota=rota)
     pdf = gerar_pdf(saida / "analise-manutencao-relatorio.html", saida / "analise-manutencao.pdf")
     n = calc["num"]
     alertas = [c for c in calc["checks"] if c[2] == "ALERTA"]
