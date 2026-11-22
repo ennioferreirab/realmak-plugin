@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import base64
 import binascii
+import json
 from datetime import date
 from typing import Annotated, Any, Literal
 
@@ -194,9 +195,23 @@ async def licitacao_buscar_fontes(
 ) -> str:
     """Localiza fontes dentro de um card com os filtros combinados. Cada ocorrência preserva o trecho literal,
     a localização conhecida e o link estável do CRM. Confira as ocorrências ambíguas e siga proximo_offset até null."""
-    return await _chamar("buscar_fontes", {"lead_id": lead_id, "documento": documento, "peca": peca,
-                                           "item": item, "pagina": pagina, "texto": texto,
-                                           "offset": offset, "limite": limite})
+    params = {"lead_id": lead_id, "documento": documento, "peca": peca, "item": item,
+              "pagina": pagina, "texto": texto, "offset": offset, "limite": limite}
+    try:
+        pagina_crm = await cliente().chamar("buscar_fontes", params)
+    except OdooApiError as exc:
+        raise ToolError(explicar_erro(exc)) from None
+    # Entregue somente linhas inteiras. O consumidor retoma na primeira ocorrência ainda não enviada.
+    teto = _settings().max_result_chars
+    linhas = pagina_crm["resultados"]
+    while True:
+        resposta = json.dumps(pagina_crm, ensure_ascii=False)
+        if len(resposta) <= teto:
+            return resposta
+        if len(linhas) <= 1:
+            raise ToolError("A passagem excede o tamanho de uma resposta MCP. Abra o documento pelo card.")
+        linhas = linhas[:(len(linhas) + 1) // 2]
+        pagina_crm = {**pagina_crm, "resultados": linhas, "proximo_offset": offset + len(linhas)}
 
 
 async def licitacao_ler_texto(

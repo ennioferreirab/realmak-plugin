@@ -244,3 +244,12 @@ async def test_buscar_fontes_preserva_ocorrencias_e_identidade(ambiente):
         assert rota.calls.last.request.headers["x-realmak-act-as"] == BIA
         negado = await chamar(c, "licitacao_buscar_fontes", {"lead_id":9}, token_de(BIA))
         assert negado["isError"] and "403" in negado["content"][0]["text"]
+
+
+async def test_fontes_longas_retornam_cursor_e_json_integro(ambiente):
+    async with servidor() as c:
+        linhas = [{"pagina": n, "texto": "x" * 40000} for n in range(3)]
+        c.mock.post(f"{API}/buscar_fontes").mock(return_value=httpx.Response(
+            200, json={"resultado": {"resultados": linhas, "proximo_offset": None}}))
+        r = corpo(await chamar(c, "licitacao_buscar_fontes", {"lead_id": 2, "offset": 4}, token_de(BIA)))
+        assert r == {"resultados": linhas[:2], "proximo_offset": 6}
