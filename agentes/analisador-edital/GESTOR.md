@@ -60,6 +60,8 @@ Persistindo a lacuna após a nova rodada, decida `seguir` e precifique sob condi
 
 ## G3 · Fechamento (depois da precificação e do score)
 
+Ao fechar, preserve os campos do score e atualize `relatorio/topo.json.sintese` para refletir a decisão final, a empresa de `mais_aderente` quando relevante e a condição principal. Escreva uma frase de até 200 caracteres em linguagem direta, sem nomes de arquivo.
+
 Antes de `seguir`, confronte a recomendação e cada trava com a origem das horas, da equipe, dos custos e da margem em `tecnica.json`, `precificacao.json` e na memória do TR/ETP. Verifique `premissa_decisiva` nas duas saídas e procure premissas **(P)** nos fundamentos, inclusive em saídas antigas. Confirme que margem de cenário alternativo ficou fora da trava.
 
 Se a recomendação ou a trava depender de **(P)** decisiva, use `rerodar` uma vez. Se a origem do erro for a carga ou a equipe, indique `tecnica`, `precificacao` e `score`; se for apenas custo ou preço, indique `precificacao` e `score`. Em `porque`, identifique o dado documental, a fonte e a premissa a mover para cenário alternativo. Se o documento for omisso ou a incerteza persistir após a nova rodada, publique a conclusão condicionada e a pendência. Uma premissa isolada não justifica a trava nem a nota 1.

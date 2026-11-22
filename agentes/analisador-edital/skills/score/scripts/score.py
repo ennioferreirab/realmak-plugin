@@ -270,7 +270,13 @@ def calcular(pasta, params, fallbacks=(), hoje=None):
     tip.append(hipotese)
     if fallbacks:
         tip.append("Parâmetros padrão: " + ", ".join(fallbacks))
-    return {"score": score, "nota": nota, "rotulo": ROTULOS[nota], "termos": termos,
+    if travas:
+        sintese = "A análise indica um impedimento para disputar. Confira o motivo antes de decidir."
+    elif nota <= 3 or depende_premissa:
+        sintese = "Confirme as pendências de habilitação, execução ou preço antes de decidir."
+    else:
+        sintese = "Vale avaliar a disputa, considerando as condições de habilitação e preço."
+    return {"score": score, "nota": nota, "rotulo": ROTULOS[nota], "termos": termos, "sintese": sintese,
             "trava": travas or None, "avisos": avisos, "hipotese_precificacao": hipotese,
             "tip_score": "\n".join(tip)}
 
