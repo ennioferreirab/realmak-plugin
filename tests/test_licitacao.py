@@ -227,7 +227,8 @@ async def test_base_de_custos_vem_da_plataforma_e_sobe_por_link_como_a_pessoa(am
         assert (await c.post(f"/mcp/arquivos/base-custos/{token_doc}", files=arquivos)).status_code == 404
 
 
-async def test_buscar_fontes_preserva_ocorrencias_e_identidade(ambiente):
+@pytest.mark.parametrize("peca", ["TR", "Planilha"])
+async def test_buscar_fontes_preserva_ocorrencias_e_identidade(ambiente, peca):
     async with servidor() as c:
         achados = {"resultados": [{"pagina": pag, "texto": "Texto literal", "item": "8.1",
                                    "url": f"https://crm.test/fonte/{pag}"} for pag in (14, 29)],
@@ -236,7 +237,7 @@ async def test_buscar_fontes_preserva_ocorrencias_e_identidade(ambiente):
             httpx.Response(200, json={"resultado": achados}),
             httpx.Response(403, json={"erro": "Sem acesso ao documento."}),
         ])
-        filtros = dict(lead_id=6563, documento="Anexo.pdf", peca="TR", item="8.1",
+        filtros = dict(lead_id=6563, documento="Anexo.pdf", peca=peca, item="8.1",
                        texto="Texto", pagina=0, offset=0, limite=2)
         r = await chamar(c, "licitacao_buscar_fontes", filtros, token_de(BIA))
         assert corpo(r) == achados
