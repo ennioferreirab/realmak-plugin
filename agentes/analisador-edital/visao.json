@@ -3,7 +3,7 @@
   "agente": "analisador-edital",
   "titulo": "Analisador de Edital",
   "gerado_de": {
-    "plugin_versao": "0.13.0",
+    "plugin_versao": "0.13.1",
     "fluxo_sha256": "aa79b2ce61d0c3b31e5b190b8a0e16277bd53d5a27b4b8c22b0899cb21acf7db"
   },
   "resumo": "Analisa o edital, compara a cobertura das empresas e estima execução, preço e margem para revisão humana.",

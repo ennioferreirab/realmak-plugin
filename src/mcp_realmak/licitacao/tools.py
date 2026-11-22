@@ -186,7 +186,7 @@ async def licitacao_pasta(
 async def licitacao_buscar_fontes(
     lead_id: Annotated[int, Field(gt=0, description="ID do card crm.lead no CRM, distinto do ID ConLicitação.")],
     documento: Annotated[str, Field(description="source_key ou nome exato do documento no card.")] = "",
-    peca: Annotated[Literal["", "TR", "Edital", "ETP", "Contrato"], Field(description="Peça, inclusive dentro de um PDF composto.")] = "",
+    peca: Annotated[Literal["", "TR", "Edital", "ETP", "Contrato", "Planilha"], Field(description="Peça, inclusive dentro de um PDF composto.")] = "",
     item: Annotated[str, Field(description="Número ou identificação do item como texto, por exemplo 9.4.")] = "",
     pagina: Annotated[int, Field(ge=0, description="Página física a partir de 1; zero omite o filtro.")] = 0,
     texto: Annotated[str, Field(description="Texto a procurar nas passagens do card.")] = "",
