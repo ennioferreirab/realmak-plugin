@@ -12,13 +12,15 @@ VARS = [
     "GALEED_SERVICE_KEY", "GALEED_SERVICE_KEYS", "GALEED_LOGIN_URL", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET",
     "GOOGLE_WORKSPACE_DOMAIN", "SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASSWORD", "SMTP_FROM",
     "ODOO_MCP_URL", "ODOO_MCP_SECRET", "ODOO_MCP_SECRET_FILE", "ODOO_MCP_TIMEOUT_MS", "MCP_REALMAK_ARQUIVO_MAX_MB",
+    "MCP_REALMAK_LINKS_DB",
 ]
 
 
 @pytest.fixture(autouse=True)
-def ambiente_limpo(monkeypatch: pytest.MonkeyPatch):
+def ambiente_limpo(monkeypatch: pytest.MonkeyPatch, tmp_path):
     for name in VARS:
         monkeypatch.delenv(name, raising=False)
+    monkeypatch.setenv("MCP_REALMAK_LINKS_DB", str(tmp_path / "links.sqlite"))
     # Zera os clientes únicos entre testes.
     from mcp_realmak.cerebro.empresas import _instances
     from mcp_realmak.conlicitacao import tools as clt

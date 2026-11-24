@@ -116,35 +116,34 @@ Para cada família do inventário do TR, pesquise nome, sinônimos, variantes de
 
 Para cada cláusula aplicável, pesquise pelo CNPJ participante nos registros estruturados de certidões, cadastros e atos societários conforme o esquema vigente da empresa. Se o dataset não cobrir o requisito, complemente com texto e anexos. Ordene pela emissão mais recente, sem confundir data de indexação com emissão. Preserve as versões pertinentes e abra o original da prova que pode atender. Confira CNPJ, sede ou filial, jurisdição e distribuidor competente quando aplicável, âmbito da certidão, exercício ou versão do ato, e vigência na sessão e em qualquer outra fase exigida. Uma certidão recente de outro escopo ou jurisdição não resolve a cláusula. Identifique o que depende de confirmação ao vivo no SICAF, quando admitido, com responsável e prazo. Cópia ou trecho indexado não confirma a situação atual do cadastro.
 
-Para cada requisito, informe empresa/CNPJ, cláusula, documento e identificador estável (registro, caminho autorizado ou SHA-256), página ou trecho, resultado da abertura e lacuna. Link temporário serve para abrir a prova. Em habilitação, siga a seção de arquivamento de `analisar-habilitacao`: baixe todos os originais exigidos que forem encontrados, arquive por licitação e empresa, abra a cópia salva e vincule arquivo e página à cláusula. Use o link de baixar, pois o link de visualizar pode devolver uma prévia em outro formato. Registre separadamente falhas de download, leitura e validação. Se abrir for impossível, registre o motivo. Não transforme trecho indexado, nome, pasta ou ausência de resultado em conclusão documental.
+Para cada requisito, informe empresa/CNPJ, cláusula, documento e identificador estável (registro, caminho autorizado ou SHA-256), página ou trecho, resultado da abertura e lacuna. Link temporário serve para abrir a prova. Em habilitação, siga a seção de arquivamento de `analisar-habilitacao`: baixe todos os originais exigidos que forem encontrados, arquive por licitação e empresa, abra a cópia salva e vincule arquivo e página à cláusula. Para baixar o original pelo terminal, acrescente `?b=1` ao `link` curto (a abertura sem `?b=1` mostra a visualização, que pode converter Word e Excel em prévia PDF). Registre separadamente falhas de download, leitura e validação. Se abrir for impossível, registre o motivo. Não transforme trecho indexado, nome, pasta ou ausência de resultado em conclusão documental.
 
 ## 3. Entregar os arquivos
 
 Cada resultado pode trazer um `original` com:
 
 - `file_path`: caminho do arquivo no servidor de arquivos da empresa consultada. Serve para o analista localizar o arquivo.
-- `link_visualizar`: link `https://` que abre o arquivo no navegador quando ele exibe o formato (PDF, imagem). Se a prévia estiver configurada, Word e Excel abrem como PDF. Não pede login.
-- `link_baixar`: link `https://` que sempre baixa o arquivo, com o nome original. Não pede login; serve também para `curl -fsSL -OJ '<link_baixar>'`.
-- `expira_em`: os dois links valem 30 minutos e podem ser usados várias vezes. Depois disso, busque de novo.
-- Sem os links acima (chave de bot ou resultado sem a página de origem), podem vir `brain_link` (abre no explorador do Cérebro) e `brain_download_link` (baixa pelo Cérebro). Os dois pedem o login do Odoo.
+- `link`: link curto único `https://` (`/a/<codigo>`). Abre a visualização no navegador (e converte Word/Excel em PDF se a prévia estiver configurada) com botão para baixar o arquivo original; acrescentando `?b=1` baixa o original diretamente (`curl -fsSL -OJ '<link>?b=1'`). Não pede login nem expõe o e-mail na URL.
+- `expira_em`: vale 30 minutos e pode ser usado várias vezes. Depois disso, busque de novo.
+- Sem `link` (chave de bot ou resultado sem a página de origem), podem vir `brain_link` (abre no explorador do Cérebro) e `brain_download_link` (baixa pelo Cérebro). Os dois pedem o login do Odoo.
 
-Quando houver `original`, termine a resposta com a seção **Arquivos**, no formato (links em markdown, nunca a URL por extenso):
+Quando houver `original`, termine a resposta com a seção **Arquivos**, no formato (link curto em markdown, nunca a URL por extenso):
 
-- **Nome do arquivo** (empresa e assunto, tamanho e data, se vierem) · [Visualizar](link_visualizar) · [Baixar arquivo](link_baixar)
+- **Nome do arquivo** (empresa e assunto, tamanho e data, se vierem) · [Visualizar](link)
   - Caminho: `file_path`
 
 Exemplo:
 
-- **LUIZ - CAT RECEITA FEDERAL MG.pdf** (AForça, CAT do CREA-MG) · [Visualizar](https://realmak.duckdns.org/mcp/arquivos/cerebro/eyJ0…) · [Baixar arquivo](https://realmak.duckdns.org/mcp/arquivos/cerebro/eyJ1…)
+- **LUIZ - CAT RECEITA FEDERAL MG.pdf** (AForça, CAT do CREA-MG) · [Visualizar](https://realmak.duckdns.org/a/Ab3xK9mPq)
   - Caminho: `E:\acervo-2.0\aforca\habilitacao\atestados\registrado_cat\LUIZ - CAT RECEITA FEDERAL MG.pdf`
 
-Se listar links temporários, informe que eles valem 30 minutos. Para links legados, informe que exigem login do Odoo.
+Se listar links temporários, informe que eles valem 30 minutos e que a visualização já traz o botão para baixar o arquivo. Para links legados, informe que exigem login do Odoo.
 
 Regras da seção:
 
 - Liste cada arquivo uma vez. Resultados com o mesmo `sha256` são o mesmo arquivo.
 - Na resposta ao analista, priorize os arquivos que sustentam a conclusão. Preserve todos os candidatos pertinentes na lista de trabalho, com os dados de recuperação disponíveis.
-- Use as URLs exatamente como vieram, só como destino do link. Mostre [Visualizar](link_visualizar) ou, na falta desse campo, [Abrir](brain_link) se existir. Mostre [Baixar arquivo](link_baixar) ou, na falta desse campo, [Baixar arquivo](brain_download_link) se existir. Sem nenhum link, mostre só o `file_path`.
+- Use a URL exatamente como veio, só como destino do link, sem reescrever nem alongar. Mostre `[Visualizar](link)` quando `link` existir; na falta dele, mostre `[Abrir](brain_link)` e `[Baixar arquivo](brain_download_link)` se existirem. Sem nenhum link, mostre só o `file_path`.
 - Se o resultado não tiver `original`, diga que a fonte é só texto indexado e não monte link.
 - Nunca invente caminho nem link.
 - O link `file://` só abre se o computador enxergar o compartilhamento de arquivos da empresa. Se não abrir, o analista precisa pedir acesso ao compartilhamento a quem administra a rede.

@@ -54,6 +54,12 @@ handle /mcp* {
         flush_interval -1
     }
 }
+
+handle /a/* {
+    reverse_proxy <destino>:8095 {
+        flush_interval -1
+    }
+}
 ```
 
 `flush_interval -1` desliga o buffer: o MCP por HTTP responde em fluxo (SSE) e o buffer
@@ -220,7 +226,7 @@ de 16 MiB de entrada, 24 MiB de PDF e 85 s. Se a prévia falhar, a resposta orie
 **Baixar arquivo**, que sempre entrega o original pela origem.
 
 Conferir depois de qualquer deploy do Brain ou do MCP: abra um link de
-visualização (`/mcp/arquivos/...`) de um `.doc` e espere `HTTP 200` com
+visualização (`/a/<codigo>?v=1` ou `/mcp/arquivos/...`) de um `.doc` e espere `HTTP 200` com
 `application/pdf`. Teste local com o visualizador real: `TESTE_VISUALIZADOR_URL`
 (sem `/pdf`) e `TESTE_VISUALIZADOR_FIXTURES` (`arquivo.doc`, `.docx`, `.xls`,
 `.xlsx`), depois `uv run --locked pytest -q tests/test_previa_office.py -k visualizador-real`.

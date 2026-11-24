@@ -1,16 +1,17 @@
 """Links de arquivo: ver e baixar um documento (da licitação ou original do cérebro) e enviar um arquivo grande, sem o
 conteúdo passar pela conversa.
 
-O link leva um token assinado com `MCP_REALMAK_OAUTH_SECRET`, preso à pessoa e ao arquivo; não pede login. O servidor
-repassa ao Odoo (ou ao gateway do cérebro) pela rede interna, como a pessoa, e quem guarda o arquivo confere a permissão
-de novo.
+Leitura (cérebro e licitação): cada documento recebe um link curto único (`/a/<codigo>`, válido por 30 minutos e
+por vários usos), cujo token assinado fica guardado em SQLite no servidor sem expor e-mail na URL. Abrir no navegador
+exibe a visualização (incluindo prévia PDF para Word e Excel quando configurada) com o botão para baixar o original;
+`?b=1` entrega o original em `attachment` direto. Os acessos são registrados e links vencidos são limpos.
 
-- Download: cada arquivo tem dois links, que valem 30 minutos e podem ser usados várias vezes. O de visualizar responde
-  `Content-Disposition: inline` (o navegador mostra o que sabe exibir e baixa o resto); o de baixar, `attachment`.
-- Envio: vale 15 minutos e uma vez.
+Compatibilidade: os links assinados legados (`/mcp/arquivos/cerebro/<token>` e `/mcp/arquivos/<token>`) continuam
+aceitos normalmente. Envio (15 minutos, uma vez) e base de custos seguem nos caminhos atuais:
 
-    GET       {MCP_REALMAK_PUBLIC_URL}/mcp/arquivos/<token>            documento da licitação
-    GET       {MCP_REALMAK_PUBLIC_URL}/mcp/arquivos/cerebro/<token>    original do cérebro
+    GET       {MCP_REALMAK_PUBLIC_URL}/a/<codigo>                   visualização (?v=1) ou download (?b=1)
+    GET       {MCP_REALMAK_PUBLIC_URL}/mcp/arquivos/<token>         documento da licitação (legado)
+    GET       {MCP_REALMAK_PUBLIC_URL}/mcp/arquivos/cerebro/<token> original do cérebro (legado)
     PUT/POST  {MCP_REALMAK_PUBLIC_URL}/mcp/arquivos/envio/<token>   corpo = bytes do arquivo
     POST      {MCP_REALMAK_PUBLIC_URL}/mcp/arquivos/base-custos/<token>   multipart: base (JSON) ou planilha (xlsx)
 
@@ -22,6 +23,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import hmac
+import html
 import json
 import logging
 import secrets
@@ -37,11 +39,11 @@ from urllib.parse import quote
 import httpx
 from starlette.background import BackgroundTask
 from starlette.requests import Request
-from starlette.responses import JSONResponse, Response, StreamingResponse
+from starlette.responses import HTMLResponse, JSONResponse, Response, StreamingResponse
 
 from ..cerebro.client import GaleedClient
 from ..config import NOMES_EMPRESAS, Settings, load_settings
-from . import previa
+from . import links_curtos, previa
 from .client import OdooApiError, OdooClient, interpretar
 
 log = logging.getLogger("mcp_realmak.licitacao")
@@ -104,12 +106,30 @@ def links_disponiveis(settings: Settings) -> bool:
 
 
 def links_download(settings: Settings, caminho: str, dados: dict[str, Any]) -> dict[str, Any]:
-    """Links de visualizar e de baixar o mesmo arquivo: 30 minutos, vários usos."""
+    """Links legados de visualizar e de baixar o mesmo arquivo: 30 minutos, vários usos."""
     x = int(time.time()) + VALIDADE_DOWNLOAD_S
     base = f"{settings.oauth_public_url}/mcp/arquivos/{caminho}"
     return {
         "link_visualizar": base + assinar(settings, {**dados, "modo": "v", "x": x}),
         "link_baixar": base + assinar(settings, {**dados, "modo": "b", "x": x}),
+        "expira_em": _expira_em(x),
+    }
+
+
+def link_curto(settings: Settings, dados: dict[str, Any], *, nome: str = "") -> dict[str, Any]:
+    """Link curto único (/a/<codigo>): 30 minutos, vários usos, abre visualização e oferece Baixar."""
+    x = int(time.time()) + VALIDADE_DOWNLOAD_S
+    token = assinar(settings, {**dados, "x": x})
+    codigo = links_curtos.criar(
+        settings,
+        tipo=dados["t"],
+        token=token,
+        email=dados.get("e", ""),
+        expira_em=x,
+        nome=nome,
+    )
+    return {
+        "link": f"{settings.oauth_public_url}/a/{codigo}",
         "expira_em": _expira_em(x),
     }
 
@@ -145,6 +165,85 @@ def disposicao(modo: str, nome: str) -> str:
 
 def _erro(status: int, mensagem: str) -> JSONResponse:
     return JSONResponse({"erro": mensagem}, status_code=status, headers=_NO_STORE)
+
+
+def _ip_cliente(request: Request) -> str:
+    xff = request.headers.get("x-forwarded-for", "")
+    if xff:
+        return xff.split(",")[0].strip()
+    return request.client.host if request.client else ""
+
+
+def _pagina_visualizacao(codigo: str, nome: str) -> HTMLResponse:
+    titulo = html.escape(nome or "Documento")
+    baixar_url = html.escape(f"/a/{codigo}?b=1")
+    ver_url = html.escape(f"/a/{codigo}?v=1")
+    corpo = f"""<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{titulo}</title>
+<style>
+  html, body {{ margin: 0; padding: 0; height: 100%; font-family: system-ui, -apple-system, sans-serif; background: #111827; color: #f9fafb; display: flex; flex-direction: column; }}
+  header {{ display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; background: #1f2937; border-bottom: 1px solid #374151; }}
+  .nome {{ font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
+  .acoes {{ display: flex; align-items: center; gap: 12px; flex-shrink: 0; }}
+  .validade {{ font-size: 12px; color: #9ca3af; }}
+  .btn {{ display: inline-block; padding: 7px 14px; border-radius: 6px; background: #2563eb; color: #fff; text-decoration: none; font-size: 13px; font-weight: 600; }}
+  .btn:hover {{ background: #1d4ed8; }}
+  iframe {{ flex: 1; width: 100%; border: 0; background: #fff; }}
+</style>
+</head>
+<body>
+<header>
+  <span class="nome" title="{titulo}">{titulo}</span>
+  <div class="acoes">
+    <span class="validade">Link válido por 30 min</span>
+    <a class="btn" href="{baixar_url}" download>Baixar arquivo</a>
+  </div>
+</header>
+<iframe src="{ver_url}" title="{titulo}"></iframe>
+</body>
+</html>"""
+    return HTMLResponse(
+        corpo,
+        headers={
+            **_NO_STORE,
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "SAMEORIGIN",
+            "Content-Security-Policy": (
+                "default-src 'none'; style-src 'unsafe-inline'; frame-src 'self'; "
+                "base-uri 'none'; form-action 'none'"
+            ),
+        },
+    )
+
+
+def _erro_iframe(codigo: str, resp: JSONResponse) -> HTMLResponse:
+    try:
+        mensagem = json.loads(resp.body).get("erro") or f"HTTP {resp.status_code}"
+    except ValueError:
+        mensagem = f"HTTP {resp.status_code}"
+    msg_html = html.escape(str(mensagem))
+    baixar_url = html.escape(f"/a/{codigo}?b=1")
+    botao = (
+        f'<p><a href="{baixar_url}" download style="display:inline-block;padding:8px 16px;'
+        'border-radius:6px;background:#2563eb;color:#fff;text-decoration:none;font-weight:600">'
+        "Baixar arquivo</a></p>"
+        if resp.status_code in (413, 422, 502, 503, 504)
+        else ""
+    )
+    corpo = f"""<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><title>Prévia indisponível</title></head>
+<body style="font-family:system-ui,-apple-system,sans-serif;padding:32px;color:#111827;background:#f9fafb">
+<p>{msg_html}</p>{botao}
+</body></html>"""
+    return HTMLResponse(
+        corpo,
+        status_code=resp.status_code,
+        headers={**_NO_STORE, "X-Content-Type-Options": "nosniff", "X-Frame-Options": "SAMEORIGIN"},
+    )
 
 
 async def _transmitir(
@@ -225,29 +324,81 @@ def rotas(
         usados[jti] = expira
         return True
 
-    async def baixar(request: Request) -> Response:
-        settings = load_settings()
-        dados = ler_token(settings, request.path_params["token"], "baixar")
-        if dados is None or dados.get("modo") not in MODOS or not settings.licitacao_configured:
+    async def _servir_lic(settings: Settings, dados: dict[str, Any], modo: str) -> Response:
+        if not settings.licitacao_configured:
             return _erro(404, "Link inválido ou expirado (vale 30 minutos). Peça outro com licitacao_link_arquivo.")
         try:
             cliente, pedido = OdooClient(settings, dados["e"], transport).baixar(dados["l"], dados["d"])
         except OdooApiError as exc:
             return _erro(503, f"Licitações indisponíveis: {exc}.")
-        return await _transmitir(cliente, pedido, dados["modo"], _erro_odoo, "O Odoo não respondeu. Tente de novo.", settings.visualizador_url)
+        return await _transmitir(cliente, pedido, modo, _erro_odoo, "O Odoo não respondeu. Tente de novo.", settings.visualizador_url)
 
-    async def baixar_cerebro(request: Request) -> Response:
-        settings = load_settings()
-        dados = ler_token(settings, request.path_params["token"], "cerebro")
-        if dados is None or dados.get("modo") not in MODOS or not settings.galeed_configured:
+    async def _servir_cerebro(settings: Settings, dados: dict[str, Any], modo: str) -> Response:
+        if not settings.galeed_configured:
             return _erro(404, "Link inválido ou expirado (vale 30 minutos). Busque o arquivo de novo no cérebro.")
         chave = settings.service_keys.get(dados["m"], "")
         if not chave:
             return _erro(503, f"O cérebro da empresa {NOMES_EMPRESAS.get(dados['m'], dados['m'])} não está configurado neste servidor.")
         cliente, pedido = GaleedClient(settings.galeed_api_url, chave, timeout=settings.galeed_timeout_s,
                                        transport=galeed_transport, act_as=dados["e"]).original(dados["s"])
-        return await _transmitir(cliente, pedido, dados["modo"], _erro_cerebro(chave),
+        return await _transmitir(cliente, pedido, modo, _erro_cerebro(chave),
                                  "O cérebro não respondeu. Tente de novo.", settings.visualizador_url)
+
+    async def curto(request: Request) -> Response:
+        settings = load_settings()
+        codigo = request.path_params["codigo"]
+        registro = links_curtos.buscar(settings, codigo)
+        if registro is None:
+            return _erro(404, "Link inválido ou expirado (vale 30 minutos). Busque o arquivo de novo.")
+        dados = ler_token(settings, registro.token, registro.tipo)
+        if dados is None:
+            return _erro(404, "Link inválido ou expirado (vale 30 minutos). Busque o arquivo de novo.")
+        qp = request.query_params
+        if qp.get("b") in ("1", "true", "sim") or qp.get("download") in ("1", "true") or qp.get("modo") == "b":
+            modo = "b"
+        elif qp.get("v") in ("1", "true", "sim") or qp.get("modo") == "v":
+            modo = "v"
+        elif "text/html" in request.headers.get("accept", "").lower():
+            return _pagina_visualizacao(codigo, registro.nome)
+        else:
+            modo = "v"
+
+        resp = (
+            await _servir_cerebro(settings, dados, modo)
+            if registro.tipo == "cerebro"
+            else await _servir_lic(settings, dados, modo)
+        )
+        links_curtos.registrar_acesso(
+            settings,
+            codigo=codigo,
+            tipo=registro.tipo,
+            email=str(dados.get("e", "")),
+            modo=modo,
+            ip=_ip_cliente(request),
+            user_agent=request.headers.get("user-agent", ""),
+            status=resp.status_code,
+        )
+        if (
+            isinstance(resp, JSONResponse)
+            and resp.status_code >= 400
+            and request.headers.get("sec-fetch-dest", "").lower() == "iframe"
+        ):
+            return _erro_iframe(codigo, resp)
+        return resp
+
+    async def baixar(request: Request) -> Response:
+        settings = load_settings()
+        dados = ler_token(settings, request.path_params["token"], "baixar")
+        if dados is None or dados.get("modo") not in MODOS:
+            return _erro(404, "Link inválido ou expirado (vale 30 minutos). Peça outro com licitacao_link_arquivo.")
+        return await _servir_lic(settings, dados, dados["modo"])
+
+    async def baixar_cerebro(request: Request) -> Response:
+        settings = load_settings()
+        dados = ler_token(settings, request.path_params["token"], "cerebro")
+        if dados is None or dados.get("modo") not in MODOS:
+            return _erro(404, "Link inválido ou expirado (vale 30 minutos). Busque o arquivo de novo no cérebro.")
+        return await _servir_cerebro(settings, dados, dados["modo"])
 
     async def enviar(request: Request) -> Response:
         settings = load_settings()
@@ -304,6 +455,7 @@ def rotas(
         return JSONResponse({"resultado": resultado}, headers=_NO_STORE)
 
     return [
+        ("/a/{codigo}", ["GET"], curto),
         ("/mcp/arquivos/cerebro/{token}", ["GET"], baixar_cerebro),
         ("/mcp/arquivos/envio/{token}", ["PUT", "POST"], enviar),
         ("/mcp/arquivos/base-custos/{token}", ["POST"], enviar_base_custos),

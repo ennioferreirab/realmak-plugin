@@ -55,6 +55,8 @@ def test_busca_por_nome_so_resolve_com_hash_e_empresa_corretos():
     assert codigo == 2 and decisao["nome"] == "certidao.pdf"
     dados["busca"].append({"empresa": "empresa-a", "sha256": HASH, "tem_link_baixar": True})
     assert resolver(dados)[1]["indice"] == 2
+    dados["busca"] = [{"empresa": "empresa-a", "sha256": HASH, "tem_link": True}]
+    assert resolver(dados) == (0, {"estado": "selecionado", "origem": "busca", "indice": 0, "sha256": HASH})
 
 
 def test_pagina_versoes_e_preserva_ambiguidade():
