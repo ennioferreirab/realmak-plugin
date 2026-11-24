@@ -28,8 +28,9 @@ Sistema = Literal["macos", "linux", "windows"]
 OS_DESC = (
     "Sistema do computador onde o analista vai abrir os arquivos originais: macos, linux ou "
     "windows. Os analistas da Realmak usam windows: passe 'windows', salvo indicação de outro sistema (o servidor exige). "
-    "Os links a entregar são original.link_visualizar (Visualizar) e original.link_baixar (Baixar), válidos por 30 minutos; "
-    "sem eles, original.brain_link (Abrir) e original.brain_download_link (Baixar). Sempre exatamente como vieram."
+    "O link a entregar é original.link (válido por 30 minutos; abre a visualização com botão para baixar, "
+    "ou '?b=1' para baixar direto); sem ele, original.brain_link (Abrir) e original.brain_download_link (Baixar). "
+    "Sempre exatamente como veio."
 )
 
 REGISTROS_TAG = "registros"
@@ -87,24 +88,38 @@ def sem_link_de_arquivo(valor: Any) -> Any:
     return valor
 
 
-def com_links_de_arquivo(valor: Any, settings: Settings, email: str, empresa: Empresa) -> Any:
-    """Para a pessoa logada, troca os links do painel (pedem login) pelos links assinados de visualizar e baixar.
+def com_links_de_arquivo(
+    valor: Any,
+    settings: Settings,
+    email: str,
+    empresa: Empresa,
+    _cache: dict[str, dict[str, Any]] | None = None,
+) -> Any:
+    """Para a pessoa logada, troca os links do painel (pedem login) pelo link curto único (/a/<codigo>).
 
     Vale para cada `original` com slug da página (`original.slug` ou `slug` ao lado). Sem slug, fica como veio.
     """
+    cache = {} if _cache is None else _cache
     if isinstance(valor, list):
-        return [com_links_de_arquivo(v, settings, email, empresa) for v in valor]
+        return [com_links_de_arquivo(v, settings, email, empresa, cache) for v in valor]
     if not isinstance(valor, dict):
         return valor
-    saida = {k: com_links_de_arquivo(v, settings, email, empresa) for k, v in valor.items()}
+    saida = {k: com_links_de_arquivo(v, settings, email, empresa, cache) for k, v in valor.items()}
     original = saida.get("original")
     if isinstance(original, dict):
         slug = next((s for s in (original.get("slug"), valor.get("slug")) if isinstance(s, str) and s), None)
         if slug:
-            dados = {"t": "cerebro", "e": email, "m": empresa, "s": slug}
+            curto = cache.get(slug)
+            if curto is None:
+                nome = ""
+                if isinstance(original.get("file_path"), str):
+                    nome = original["file_path"].replace("\\", "/").rsplit("/", 1)[-1]
+                dados = {"t": "cerebro", "e": email, "m": empresa, "s": slug}
+                curto = arquivos.link_curto(settings, dados, nome=nome)
+                cache[slug] = curto
             saida["original"] = {
                 **{k: v for k, v in original.items() if k not in ("brain_link", "brain_download_link")},
-                **arquivos.links_download(settings, "cerebro/", dados),
+                **curto,
             }
     return saida
 
@@ -212,7 +227,7 @@ async def cerebro_buscar(
     os: Annotated[Sistema | None, Field(description=OS_DESC)] = None,
     empresa: Annotated[Empresa, Field(description=EMPRESA_DESC)] = "realmak",
 ) -> str:
-    """Busca no cérebro da empresa escolhida (texto e semântica) e devolve trechos com fonte e os links do arquivo original (original.link_visualizar e original.link_baixar, 30 minutos), sem redigir resposta. Use para qualquer pergunta sobre funcionários, responsáveis técnicos, atestados, CATs, ARTs, contratos, licitações e atas. Não gasta LLM. Monte a resposta a partir dos trechos e diga o que ficou sem confirmação."""
+    """Busca no cérebro da empresa escolhida (texto e semântica) e devolve trechos com fonte e o link curto do arquivo original (original.link, 30 minutos), sem redigir resposta. Use para qualquer pergunta sobre funcionários, responsáveis técnicos, atestados, CATs, ARTs, contratos, licitações e atas. Não gasta LLM. Monte a resposta a partir dos trechos e diga o que ficou sem confirmação."""
     return await executar(empresa, "retrieve", query, limit, include_facts, os)
 
 
@@ -253,7 +268,7 @@ async def cerebro_provas(
     os: Annotated[Sistema | None, Field(description=OS_DESC)] = None,
     empresa: Annotated[Empresa, Field(description=EMPRESA_DESC)] = "realmak",
 ) -> str:
-    """Provas dos registros: para cada id devolvido por cerebro_consulta, o documento, a posição e o trecho literal de cada valor, com o arquivo original (original.file_path, original.link_visualizar e original.link_baixar, válidos por 30 minutos; sem eles, original.brain_link e original.brain_download_link). Não gasta LLM."""
+    """Provas dos registros: para cada id devolvido por cerebro_consulta, o documento, a posição e o trecho literal de cada valor, com o arquivo original (original.file_path e original.link, válido por 30 minutos; sem ele, original.brain_link e original.brain_download_link). Não gasta LLM."""
     return await executar(empresa, "provas", list(ids), os)
 
 
@@ -281,12 +296,12 @@ INSTRUCOES = """Cérebros das empresas do grupo (Realmak, AForça, Nortfort, UNA
   informado pelo analista. cerebro_esquema recebe só empresa; cerebro_consulta recebe sql, limite e empresa.
   cerebro_provas recebe ids como lista de strings reais da consulta, sempre na mesma empresa.
 - Resultado com 'original': termine a resposta com a seção Arquivos, um item por sha256, em markdown e sem URL
-  por extenso: '**nome** · [Visualizar](original.link_visualizar) · [Baixar arquivo](original.link_baixar)' e, na linha
-  de baixo, 'Caminho: original.file_path'. Use as URLs exatamente como vieram. Os links temporários valem
-  30 minutos e não pedem login. Se faltar link_visualizar, use '[Abrir](original.brain_link)' se existir.
-  Se faltar link_baixar, use '[Baixar arquivo](original.brain_download_link)' se existir. Os links legados
-  exigem login do Odoo. Omita ações sem URL.
-  sem nenhum link, só o Caminho. Sem 'original', a fonte é só texto indexado: não monte link.
+  por extenso: '**nome** · [Visualizar](original.link)' e, na linha de baixo, 'Caminho: original.file_path'.
+  Use a URL curta exatamente como veio, sem reescrever nem repetir. O link vale 30 minutos, não pede login,
+  abre a visualização e traz o botão para baixar o original (no terminal, acrescente '?b=1'). Se faltar
+  original.link, use '[Abrir](original.brain_link)' e '[Baixar arquivo](original.brain_download_link)' se
+  existirem (exigem login do Odoo). Omita ações sem URL; sem nenhum link, só o Caminho. Sem 'original', a
+  fonte é só texto indexado: não monte link.
 - Em HTTP 5xx ou timeout do cérebro, aguarde e tente de novo. Se persistir, tente outra via de busca e registre a limitação.
 - Em HTTP 400, corrija a consulta pelo esquema ou pela mensagem antes de reenviar.
 - Nº de CAT, atestado ou contrato encontrado como pista: faça busca dirigida pelo identificador e confira o original.

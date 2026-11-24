@@ -359,10 +359,12 @@ async def test_original_ganha_links_assinados_para_pessoa_e_mantem_painel_para_b
 
         data = result_data(await call_tool(c, "cerebro_buscar", {"query": "x", "os": "windows", "empresa": "aforca"}, token))
         com_slug, sem_slug = (h["original"] for h in data["hits"])
-        assert set(com_slug) == {"file_path", "copies", "link_visualizar", "link_baixar", "expira_em"}
+        assert set(com_slug) == {"file_path", "copies", "link", "expira_em"}
         assert com_slug["copies"] == [{"file_path": "E:\\c.pdf"}]
-        assert com_slug["link_visualizar"].startswith("https://mcp.test/mcp/arquivos/cerebro/")
-        assert com_slug["link_visualizar"] != com_slug["link_baixar"]
+        assert com_slug["link"].startswith("https://mcp.test/a/")
+        codigo = com_slug["link"].rsplit("/", 1)[-1]
+        assert 8 <= len(codigo) <= 10 and codigo.isalnum()
+        assert EMAIL not in com_slug["link"]
         assert sem_slug == painel  # sem slug, não há como pedir o original
 
         bot = result_data(await call_tool(c, "cerebro_buscar", {"query": "x", "os": "windows", "empresa": "aforca"}, BOT))
@@ -392,9 +394,9 @@ async def test_link_do_cerebro_repassa_o_original_e_o_erro_do_gateway(monkeypatc
         data = result_data(await call_tool(c, "cerebro_provas", {"ids": [registro], "empresa": "una"}, token))
         links = data["provas"][0]["original"]
         assert "brain_download_link" not in links
-        ver, baixar = urlsplit(links["link_visualizar"]).path, urlsplit(links["link_baixar"]).path
+        caminho_curto = urlsplit(links["link"]).path
 
-        r = await c.get(baixar)
+        r = await c.get(f"{caminho_curto}?b=1")
         assert r.status_code == 200 and r.content == b"\xd0\xcf\x11\xe0 doc"
         assert r.headers["content-disposition"] == (
             "attachment; filename=\"Atestado obra c.doc\"; filename*=UTF-8''Atestado%20obra%20%C3%A7.doc")
@@ -402,13 +404,13 @@ async def test_link_do_cerebro_repassa_o_original_e_o_erro_do_gateway(monkeypatc
         pedido = original.calls.last.request
         assert pedido.url.params["slug"] == "atestado-x" and pedido.headers["x-galeed-act-as"] == EMAIL
         assert pedido.headers["authorization"] == f"Bearer {KEYS['una']}"
-        r = await c.get(ver)
+        r = await c.get(caminho_curto)
         assert r.status_code == 200 and r.headers["content-disposition"] == "inline"
-        r = await c.get(ver)
+        r = await c.get(caminho_curto)
         assert r.status_code == 403 and "fora do escopo" in r.json()["erro"]
-        r = await c.get(baixar)
+        r = await c.get(f"{caminho_curto}?b=1")
         assert r.status_code == 404 and "sem original" in r.json()["erro"]
-        assert (await c.get(baixar[:-3] + "xyz")).status_code == 404 and original.call_count == 4
+        assert (await c.get(caminho_curto[:-3] + "xyz")).status_code == 404 and original.call_count == 4
         vencido = arquivos.assinar(load_settings(), {
             "t": "cerebro", "e": EMAIL, "m": "una", "s": "atestado-x", "modo": "b",
             "x": int(time.time()) - 1,

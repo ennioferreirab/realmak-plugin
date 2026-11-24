@@ -71,8 +71,8 @@ def reconciliar(dados):
 
     for origem in ("provas", "busca"):
         for indice, resultado in enumerate(dados.get(origem, [])):
-            if (resultado.get("empresa") == empresa and resultado.get("sha256") == alvo
-                    and resultado.get("tem_link_baixar") is True):
+            tem_link = resultado.get("tem_link") is True or resultado.get("tem_link_baixar") is True
+            if resultado.get("empresa") == empresa and resultado.get("sha256") == alvo and tem_link:
                 return {"estado": "selecionado", "origem": origem, "indice": indice,
                         "sha256": alvo}
     caminho = registrados.get(alvo)
