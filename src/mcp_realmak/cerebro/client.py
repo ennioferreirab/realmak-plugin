@@ -83,6 +83,12 @@ class GaleedClient:
             body["os"] = os
         return await self._request("POST", "/consulta/provas", json_body=body)
 
+    async def corpos(self, shas: list[str], brain: str | None = None) -> Any:
+        body: dict[str, Any] = {"shas": shas}
+        if brain:
+            body["brain"] = brain
+        return await self._request("POST", "/corpos", json_body=body)
+
     def original(self, slug: str) -> tuple[httpx.AsyncClient, httpx.Request]:
         """Cliente e pedido do original em fluxo; quem chama abre `send(stream=True)` e fecha os dois."""
         cliente = httpx.AsyncClient(timeout=self._timeout, transport=self._transport, follow_redirects=False)

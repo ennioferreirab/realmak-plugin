@@ -11,6 +11,7 @@ from starlette.responses import JSONResponse
 from . import __version__
 from .auth import GaleedTokenVerifier
 from .capping import ResultCapMiddleware
+from .cerebro.corpos import rota_corpos
 from .cerebro.tools import INSTRUCOES as CEREBRO_INSTRUCOES
 from .cerebro.tools import build_cerebro_server
 from .cerebro.visibility import RegistrosVisibilityMiddleware
@@ -110,6 +111,7 @@ def build_server(
     mcp.add_middleware(PessoaVisibilityMiddleware(acesso_odoo, acesso_cerebro, transport=galeed_transport))
     for caminho, metodos, rota in licitacao_arquivos.rotas(odoo_transport, galeed_transport):
         mcp.custom_route(caminho, methods=metodos)(rota)
+    mcp.custom_route("/mcp/corpos", methods=["POST"])(rota_corpos(settings, galeed_transport))
 
     @mcp.custom_route("/healthz", methods=["GET"])
     async def healthz(request: Request) -> JSONResponse:
