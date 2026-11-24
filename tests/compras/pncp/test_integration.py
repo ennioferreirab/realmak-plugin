@@ -155,3 +155,25 @@ class TestToolExecution:
                     {"cnpj": "00394460000141", "ano": 2024, "sequencial": 1},
                 )
                 assert "Contratação teste" in result.data
+
+    async def test_consultar_contratacao_detalhe_por_controle_e2e(self) -> None:
+        mock_data = Contratacao(
+            orgao_nome="MINISTERIO DO TURISMO",
+            numero_controle_pncp="05457283000119-1-000030/2026",
+            objeto="Manutenção predial",
+            modalidade_id=6,
+            situacao_nome="Divulgada no PNCP",
+            data_encerramento="2026-11-10T09:30:00",
+        )
+        with patch(
+            f"{CLIENT_MODULE}.consultar_contratacao_detalhe",
+            new_callable=AsyncMock,
+            return_value=mock_data,
+        ) as mock_fn:
+            async with Client(mcp) as c:
+                result = await c.call_tool(
+                    "consultar_contratacao_detalhe",
+                    {"numero_controle_pncp": "05457283000119-1-000030/2026"},
+                )
+                assert "2026-11-10T09:30:00" in result.data
+        mock_fn.assert_awaited_once_with(cnpj="05457283000119", ano=2026, sequencial=30)

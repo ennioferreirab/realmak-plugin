@@ -358,6 +358,31 @@ class TestBuscarUasg:
         result = await tools.buscar_uasg(ctx)
         assert "Informe pelo menos um filtro" in result
 
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("codigo", [540004, "540004"])
+    async def test_aceita_codigo_uasg_int_e_str(self, codigo: int | str) -> None:
+        mock_data = UasgResultado(
+            total=1,
+            uasgs=[Uasg(codigo_uasg="540004", nome_uasg="COORDENACAO-GERAL DE RECURSOS LOGISTICOS")],
+        )
+        ctx = _mock_ctx()
+        with patch(
+            f"{CLIENT_MODULE}.buscar_uasg",
+            new_callable=AsyncMock,
+            return_value=mock_data,
+        ) as mock_fn:
+            result = await tools.buscar_uasg(ctx, codigo_uasg=codigo)
+        mock_fn.assert_awaited_once_with(codigo_uasg="540004", sigla_uf=None, pagina=1)
+        assert "540004" in result
+
+    def test_docstrings_legado_avisam_pncp(self) -> None:
+        assert "SIASG" in (tools.buscar_pregoes.__doc__ or "")
+        assert "14.133" in (tools.buscar_pregoes.__doc__ or "")
+        assert "pncp_" in (tools.buscar_pregoes.__doc__ or "")
+        assert "SIASG" in (tools.buscar_dispensas.__doc__ or "")
+        assert "14.133" in (tools.buscar_dispensas.__doc__ or "")
+        assert "pncp_" in (tools.buscar_dispensas.__doc__ or "")
+
 
 # ---------------------------------------------------------------------------
 # pesquisar_preco_material / pesquisar_preco_servico

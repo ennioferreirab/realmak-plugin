@@ -562,7 +562,7 @@ async def pesquisar_preco_servico(
 
 
 async def buscar_uasg(
-    codigo_uasg: str | None = None,
+    codigo_uasg: str | int | None = None,
     sigla_uf: str | None = None,
     status_uasg: bool = True,
     pagina: int = 1,
@@ -574,8 +574,8 @@ async def buscar_uasg(
         "pagina": str(pagina),
         "tamanhoPagina": str(_ensure_min_page_size(tamanho)),
     }
-    if codigo_uasg:
-        params["codigoUasg"] = codigo_uasg
+    if codigo_uasg is not None and str(codigo_uasg).strip():
+        params["codigoUasg"] = str(codigo_uasg).strip()
     if sigla_uf:
         params["siglaUf"] = sigla_uf
 
