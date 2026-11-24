@@ -23,8 +23,9 @@ São dados abertos de qualquer órgão do país, não só da Realmak. As ferrame
 
 Regras de bolso:
 
-- Licitação de órgão municipal ou estadual: PNCP. Compra federal: PNCP e `dadosabertos_*`.
-- `dadosabertos_buscar_licitacoes` cobre só o sistema legado (SIASG/ComprasNet, até 2020). Para licitações recentes, prefira o PNCP.
+- Licitação de órgão municipal ou estadual: PNCP. Compra federal: PNCP para editais/pregões/dispensas da Lei 14.133 e `dadosabertos_*` para contratos, UASG, fornecedores, CATMAT/CATSER e preços.
+- `dadosabertos_buscar_licitacoes`, `dadosabertos_buscar_pregoes` e `dadosabertos_buscar_dispensas` cobrem só o sistema legado SIASG/ComprasNet (Lei 8.666) e retornam vazio para compras recentes da Lei 14.133 (2024+). Para pregões e dispensas recentes, use `pncp_*` (`pncp_pesquisar`, `pncp_consultar_contratacao_detalhe`, `pncp_historico_contratacao`, `pncp_itens_contratacao`).
+- Em `pncp_consultar_contratacao_detalhe`, `Situação: Divulgada no PNCP` não garante prazo aberto (permanece ativa durante julgamento/diligência): confira sempre `Encerramento propostas` junto com `pncp_historico_contratacao` e `pncp_itens_contratacao`.
 - Para licitações dentro do perfil da Realmak, o ConLicitação (skill `conlicitacao`) é a primeira fonte. Use o PNCP quando a licitação estiver fora do perfil ou para conferir o edital no portal de origem.
 
 ## Contratos vigentes de um CNPJ

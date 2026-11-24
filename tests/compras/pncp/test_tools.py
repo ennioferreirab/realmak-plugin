@@ -542,6 +542,48 @@ class TestConsultarContratacaoDetalhe:
         assert "Homologada" in result
         assert "00394460000141-1-000001/2024" in result
 
+    @pytest.mark.asyncio
+    async def test_numero_controle_pncp_e_encerramento(self) -> None:
+        mock_data = Contratacao(
+            orgao_cnpj="05457283000119",
+            orgao_nome="MINISTERIO DO TURISMO",
+            numero_controle_pncp="05457283000119-1-000030/2026",
+            objeto="Manutenção predial",
+            modalidade_id=6,
+            situacao_nome="Divulgada no PNCP",
+            data_publicacao="2026-10-22T04:00:44",
+            data_abertura="2026-10-22T08:00:00",
+            data_encerramento="2026-11-10T09:30:00",
+            data_atualizacao="2026-10-22T04:01:05",
+            link_origem="https://cnetmobile.estaleiro.serpro.gov.br/comprasnet-web/public/compras/acompanhamento-compra?compra=54000405000832026",
+            uf="DF",
+            municipio="Brasília",
+            esfera="Federal",
+        )
+        ctx = _mock_ctx()
+        with patch(
+            f"{CLIENT_MODULE}.consultar_contratacao_detalhe",
+            new_callable=AsyncMock,
+            return_value=mock_data,
+        ) as mock_fn:
+            result = await tools.consultar_contratacao_detalhe(
+                ctx=ctx,
+                numero_controle_pncp="05457283000119-1-000030/2026",
+            )
+        mock_fn.assert_awaited_once_with(cnpj="05457283000119", ano=2026, sequencial=30)
+        assert "**Encerramento propostas:** 2026-11-10T09:30:00" in result
+        assert "**Data atualização:** 2026-10-22T04:01:05" in result
+        assert "**Link sistema origem:** https://cnetmobile.estaleiro.serpro.gov.br/" in result
+
+    @pytest.mark.asyncio
+    async def test_numero_controle_invalido(self) -> None:
+        ctx = _mock_ctx()
+        result = await tools.consultar_contratacao_detalhe(
+            ctx=ctx,
+            numero_controle_pncp="invalido",
+        )
+        assert "Erro de validação" in result
+
 
 # ---------------------------------------------------------------------------
 # buscar_pca

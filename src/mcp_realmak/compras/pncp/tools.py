@@ -633,26 +633,44 @@ async def buscar_atas_atualizadas(
 
 
 async def consultar_contratacao_detalhe(
-    cnpj: str,
-    ano: int,
-    sequencial: int,
-    ctx: Context,
+    cnpj: str | None = None,
+    ano: int | None = None,
+    sequencial: int | None = None,
+    ctx: Context | None = None,
+    numero_controle_pncp: str | None = None,
 ) -> str:
     """Consulta detalhes de uma contratação específica no PNCP.
 
-    Busca uma contratação individual usando o CNPJ do órgão, ano e número
-    sequencial. Útil quando se conhece o identificador exato da contratação.
+    Busca uma contratação individual usando `numero_controle_pncp` OU
+    `cnpj` + `ano` + `sequencial`. Retorna objeto, órgão, modalidade, situação,
+    valores, datas (publicação, abertura, encerramento de propostas e atualização)
+    e links.
+
+    IMPORTANTE: `Situação: Divulgada no PNCP` não garante prazo aberto — ela
+    permanece ativa durante julgamento e diligências. Confira sempre
+    `Encerramento propostas` junto com `pncp_historico_contratacao` e
+    `pncp_itens_contratacao`.
 
     Args:
-        cnpj: CNPJ do órgão contratante.
+        numero_controle_pncp: Nº de controle do edital no PNCP, no formato
+            CNPJ-1-SEQUENCIAL/ANO (ex.: 05457283000119-1-000030/2026). Use isto
+            OU cnpj + ano + sequencial.
+        cnpj: CNPJ do órgão contratante (14 dígitos).
         ano: Ano da compra.
         sequencial: Número sequencial da compra no ano.
 
     Returns:
         Detalhes da contratação.
     """
-    await ctx.info(f"Consultando contratação {cnpj}/{ano}/{sequencial}...")
-    c = await client.consultar_contratacao_detalhe(cnpj=cnpj, ano=ano, sequencial=sequencial)
+    try:
+        cnpj_, ano_, seq_ = _ler_compra(numero_controle_pncp, cnpj, ano, sequencial)
+        if ctx is not None:
+            await ctx.info(f"Consultando contratação {cnpj_}/{ano_}/{seq_}...")
+        c = await client.consultar_contratacao_detalhe(cnpj=cnpj_, ano=ano_, sequencial=seq_)
+    except ValueError as e:
+        return f"Erro de validação: {e}"
+    except HttpClientError as e:
+        return f"O PNCP não devolveu os detalhes da contratação: {e}"
 
     modalidade_desc = MODALIDADES.get(c.modalidade_id or 0, c.modalidade_nome or "N/A")
     valor_est = format_brl(c.valor_estimado) if c.valor_estimado else "N/A"
@@ -667,8 +685,13 @@ async def consultar_contratacao_detalhe(
         f"**Valor homologado:** {valor_hom}",
         f"**Data publicação:** {c.data_publicacao or 'N/A'}",
         f"**Abertura propostas:** {c.data_abertura or 'N/A'}",
+        f"**Encerramento propostas:** {c.data_encerramento or 'N/A'}",
         f"**Local:** {c.municipio or 'N/A'}/{c.uf or 'N/A'} ({c.esfera or 'N/A'})",
     ]
+    if c.data_atualizacao:
+        lines.append(f"**Data atualização:** {c.data_atualizacao}")
+    if c.link_origem:
+        lines.append(f"**Link sistema origem:** {c.link_origem}")
     if c.link_pncp:
         lines.append(f"[Ver no PNCP]({c.link_pncp})")
     return "\n".join(lines)

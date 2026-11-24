@@ -90,10 +90,13 @@ async def buscar_pregoes(
     co_uasg: int | None = None,
     pagina: int = 1,
 ) -> str:
-    """Busca pregões eletrônicos no SIASG/ComprasNet.
+    """Busca pregões eletrônicos no módulo legado SIASG/ComprasNet (Lei 8.666).
 
-    Pregões são a modalidade mais utilizada para aquisição de bens e
-    serviços comuns pelo governo federal.
+    ATENÇÃO: consulta apenas o módulo legado (`/modulo-legado/3_consultarPregoes`)
+    e retorna vazio para pregões da Lei 14.133/2021 (compras recentes / 2024+).
+    Para pregões recentes pela Lei 14.133, use `pncp_pesquisar`,
+    `pncp_consultar_contratacao_detalhe`, `pncp_historico_contratacao` e
+    `pncp_itens_contratacao`.
 
     Args:
         data_edital_inicial: Data início do edital YYYY-MM-DD (obrigatório).
@@ -142,10 +145,13 @@ async def buscar_dispensas(
     co_uasg: int | None = None,
     pagina: int = 1,
 ) -> str:
-    """Busca compras sem licitação (dispensas e inexigibilidades).
+    """Busca compras sem licitação no módulo legado SIASG (Lei 8.666).
 
-    Dispensas são compras realizadas sem processo licitatório, conforme
-    previsão legal (art. 24 da Lei 8.666/93 ou art. 75 da Lei 14.133/2021).
+    ATENÇÃO: consulta apenas o módulo legado (`/modulo-legado/5_consultarComprasSemLicitacao`)
+    e retorna vazio para dispensas e inexigibilidades da Lei 14.133/2021 (2024+).
+    Para contratações diretas recentes pela Lei 14.133, use `pncp_pesquisar`
+    (modalidades `"8"` ou `"9"`), `pncp_consultar_contratacao_detalhe`,
+    `pncp_historico_contratacao` e `pncp_itens_contratacao`.
 
     Args:
         ano_aviso: Ano do aviso de dispensa (obrigatório, ex: 2020).
@@ -458,7 +464,7 @@ async def buscar_servico_catser(
 
 async def buscar_uasg(
     ctx: Context,
-    codigo_uasg: str | None = None,
+    codigo_uasg: str | int | None = None,
     sigla_uf: str | None = None,
     pagina: int = 1,
 ) -> str:
@@ -468,20 +474,21 @@ async def buscar_uasg(
     ferramenta para encontrar o código UASG de um órgão e filtrar buscas.
 
     Args:
-        codigo_uasg: Código da UASG (opcional).
+        codigo_uasg: Código da UASG, string ou inteiro (ex.: "540004" ou 540004) (opcional).
         sigla_uf: Sigla da UF (ex: SP, RJ, DF) (opcional).
         pagina: Página de resultados (padrão 1).
 
     Returns:
         Lista de UASGs encontradas.
     """
-    if not any([codigo_uasg, sigla_uf]):
+    codigo_norm = str(codigo_uasg).strip() if codigo_uasg is not None else None
+    if not codigo_norm and not sigla_uf:
         return "Informe pelo menos um filtro: codigo_uasg ou sigla_uf."
 
-    desc = codigo_uasg or sigla_uf or "UASG"
+    desc = codigo_norm or sigla_uf or "UASG"
     await ctx.info(f"Buscando UASG '{desc}'...")
     resultado = await client.buscar_uasg(
-        codigo_uasg=codigo_uasg,
+        codigo_uasg=codigo_norm,
         sigla_uf=sigla_uf,
         pagina=pagina,
     )

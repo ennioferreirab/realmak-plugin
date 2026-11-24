@@ -191,6 +191,7 @@ def _parse_contratacao(item: dict[str, Any]) -> Contratacao:
         data_publicacao=item.get("dataPublicacaoPncp"),
         data_abertura=item.get("dataAberturaProposta"),
         data_encerramento=item.get("dataEncerramentoProposta"),
+        data_atualizacao=item.get("dataAtualizacaoGlobal") or item.get("dataAtualizacao"),
         uf=unidade.get("ufSigla") or orgao.get("ufSigla"),
         municipio=unidade.get("municipioNome") or orgao.get("municipioNome"),
         unidade_nome=unidade.get("nomeUnidade"),

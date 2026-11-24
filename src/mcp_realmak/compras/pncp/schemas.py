@@ -23,6 +23,7 @@ class Contratacao(BaseModel):
     data_publicacao: str | None = None
     data_abertura: str | None = None
     data_encerramento: str | None = None
+    data_atualizacao: str | None = None
     uf: str | None = None
     municipio: str | None = None
     unidade_nome: str | None = None
