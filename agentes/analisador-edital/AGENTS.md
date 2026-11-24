@@ -63,8 +63,7 @@ crm_resumo:                        # resumo IA do ConLicitação, baixado uma ve
   container: realmak-crm-postgres-1   # transitório, só fora do daemon (docker exec)
   precos: referencias/precos/EMPRESAS_PRECOS_FILTRADA.xlsx
 cerebro:                           # ferramentas cerebro_* (MCP da Realmak, só leitura); empresas em contexto/empresas.json
-  os: macos                        # define os_open_link dos originais
-  montagem: ~/mnt/realmak-servidor-E   # SMB //guest@servidor.tail434c96.ts.net/E, só leitura; E:\OneDrive\… -> <montagem>/OneDrive/…
+  os: windows                      # sistema onde os analistas abrem os originais (parâmetro exigido pelas ferramentas cerebro_*)
   limite_trechos: 15
 score:                             # regra na skill score; quem calcula é score.py
   pontos: {triagem: 30, lote: 30, margem: 40}   # podemos participar?, dá para executar?, dá lucro?
