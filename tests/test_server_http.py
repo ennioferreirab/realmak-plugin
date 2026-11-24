@@ -151,3 +151,99 @@ async def test_consulta_400_aponta_o_esquema(servidor):
     r = await call_tool(servidor, "cerebro_consulta", {"sql": "select x from y"})
     assert "cerebro_esquema" in r["content"][0]["text"]
     assert "coluna x não existe" in r["content"][0]["text"]
+
+
+@com_servidor
+async def test_mcp_corpos_auth_e_validacao(servidor):
+    sha = "a" * 64
+    assert (await servidor.post("/mcp/corpos", json={"empresa": "realmak", "shas": [sha]})).status_code == 401
+    assert (
+        await servidor.post(
+            "/mcp/corpos",
+            headers={"Authorization": "Bearer gld_live_ruim"},
+            json={"empresa": "realmak", "shas": [sha]},
+        )
+    ).status_code == 401
+    headers = {"Authorization": "Bearer gld_live_boa"}
+    assert (await servidor.post("/mcp/corpos", headers=headers, json={"empresa": "invalida", "shas": [sha]})).status_code == 400
+    assert (await servidor.post("/mcp/corpos", headers=headers, json={"empresa": "realmak", "shas": []})).status_code == 400
+    assert (await servidor.post("/mcp/corpos", headers=headers, json={"empresa": "realmak", "shas": ["curto"]})).status_code == 400
+    assert (await servidor.post("/mcp/corpos", headers=headers, json={"empresa": "realmak", "shas": [sha] * 101})).status_code == 400
+
+
+@com_servidor
+async def test_mcp_corpos_repassa_e_preserva_texto_grande(servidor):
+    sha = "a" * 64
+    texto_grande = "[PÁGINA 1]\n" + ("x" * 60_000)
+    rota = servidor.galeed.post(f"{GALEED}/corpos").mock(
+        return_value=httpx.Response(
+            200,
+            json={"brain": "Realmak", "corpos": {sha: {"corpo": texto_grande, "body_sha": "b" * 64}}, "ausentes": [], "adiados": []},
+        )
+    )
+    r = await servidor.post(
+        "/mcp/corpos",
+        headers={"Authorization": "Bearer gld_live_boa"},
+        json={"empresa": "Realmak", "shas": [sha.upper(), sha]},
+    )
+    assert r.status_code == 200
+    assert r.headers.get("cache-control") == "private, no-store"
+    dados = r.json()
+    assert dados["brain"] == "Realmak"
+    assert len(dados["corpos"][sha]["corpo"]) == len(texto_grande)
+    assert rota.calls[0].request.headers["authorization"] == "Bearer gld_live_boa"
+    enviado = rota.calls[0].request.content.decode()
+    assert f'"shas":["{sha}"]' in enviado.replace(" ", "")
+
+
+async def test_mcp_corpos_oauth_repassa_chave_da_empresa_e_act_as(monkeypatch):
+    monkeypatch.setenv("GALEED_API_URL", GALEED)
+    monkeypatch.setenv("GALEED_SERVICE_KEYS", "realmak=gld_srv_rk,nortfort=gld_srv_nf")
+    monkeypatch.setenv("MCP_REALMAK_PUBLIC_URL", "https://mcp.test")
+    monkeypatch.setenv("MCP_REALMAK_OAUTH_SECRET", "segredo-de-teste-com-32-caracteres-ok")
+    monkeypatch.setenv("GALEED_LOGIN_URL", "https://painel.galeed.test")
+
+    from mcp_realmak.oauth import ACCESS_PREFIX, OAuthServer
+    from mcp_realmak.server import build_server
+
+    srv = build_server()
+    oauth: OAuthServer = srv.auth.oauth  # type: ignore[union-attr]
+    token = ACCESS_PREFIX + oauth.seal("at", {"e": "analista@realmak.test"}, ttl=3600)
+    app = srv.http_app(path="/mcp", stateless_http=True)
+
+    sha = "4" * 64
+    with respx.mock(assert_all_called=False) as mock:
+        def acesso_resp(req: httpx.Request) -> httpx.Response:
+            auth = req.headers["authorization"]
+            if auth == "Bearer gld_srv_rk":
+                return httpx.Response(200, json={"brain": "Realmak", "nivel": "total", "areas": ["*"], "registros": True})
+            if auth == "Bearer gld_srv_nf":
+                return httpx.Response(403, json={"error": "sem acesso"})
+            return httpx.Response(401)
+
+        mock.get(f"{GALEED}/acesso").mock(side_effect=acesso_resp)
+        corpos_mock = mock.post(f"{GALEED}/corpos").mock(
+            return_value=httpx.Response(
+                200,
+                json={"brain": "Realmak", "corpos": {sha: {"corpo": "[PÁGINA 1] ok", "body_sha": "c" * 64}}, "ausentes": [], "adiados": []},
+            )
+        )
+        async with app.router.lifespan_context(app):
+            async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as c:
+                # Empresa liberada: repassa chave de serviço da empresa + X-Galeed-Act-As
+                ok = await c.post(
+                    "/mcp/corpos",
+                    headers={"Authorization": f"Bearer {token}"},
+                    json={"empresa": "realmak", "shas": [sha]},
+                )
+                assert ok.status_code == 200
+                assert corpos_mock.calls[0].request.headers["authorization"] == "Bearer gld_srv_rk"
+                assert corpos_mock.calls[0].request.headers["x-galeed-act-as"] == "analista@realmak.test"
+                # Empresa não liberada para a pessoa: 403
+                negado = await c.post(
+                    "/mcp/corpos",
+                    headers={"Authorization": f"Bearer {token}"},
+                    json={"empresa": "nortfort", "shas": [sha]},
+                )
+                assert negado.status_code == 403
+
