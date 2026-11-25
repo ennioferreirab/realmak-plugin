@@ -437,6 +437,11 @@ INSTRUCOES = """Cérebros das empresas do grupo (Realmak, AForça, Nortfort, UNA
 - Sem acesso a uma empresa: diga isso. Não use outra empresa no lugar.
 - Pergunta sobre pessoa, assunto ou documento: cerebro_buscar (include_facts=true anexa os fatos) e
   cerebro_fatos. Monte a resposta a partir dos trechos.
+- Apelidos de documentos que não aparecem no texto oficial: ao buscar pelo apelido, busque também pelo título oficial:
+  - cartão CNPJ -> "comprovante de inscrição e de situação cadastral"
+  - CND federal / conjunta -> "certidão negativa de débitos relativos aos tributos federais"
+  - CRF / FGTS -> "certificado de regularidade do fgts"
+  - CNDT / trabalhista -> "certidão negativa de débitos trabalhistas"
 - Documentos vigentes x substituídos/vencidos em cerebro_buscar:
   - Responda sempre com o documento vigente (incluir_historico=false é o padrão). Quando a resposta trouxer `historico_omitido.aviso`, mencione que versões anteriores/vencidas não foram mostradas.
   - Só use `incluir_historico=true` e cite versões anteriores se a pessoa pedir ou se for preciso provar o que foi entregue numa licitação ou contrato.
