@@ -157,11 +157,15 @@ Procure especialmente o que costuma tirar a empresa de disputas:
 Identifique o portal onde ocorre a sessão pública (disputa eletrônica), distinguindo-o do PNCP quando este for apenas o portal de divulgação.
 
 - **Nomes canônicos comuns:** `Compras.gov.br`, `SISLOG`, `BLL`, `Licitações-e`, `BNC`, `Portal de Compras Públicas` ou o nome curto do portal próprio do órgão/ente.
-- **Link (`url`):** informe o endereço mais direto à sessão pública que o edital ou a fonte oficial sustentar (página específica do certame no portal, quando disponível; caso contrário, a página inicial do portal indicado no edital). Aceite apenas `http://` ou `https://`, ou `null` se não houver URL confirmada. Nunca invente link.
+- **Link (`url`):** informe o endereço mais direto à sessão pública que o edital ou a fonte oficial sustentar (página específica do certame no portal, quando disponível; caso contrário, a página inicial do portal identificado). Aceite apenas `http://` ou `https://`, ou `null` se não houver URL confirmada. Nunca invente link.
 - **Padrão seguro para Compras.gov.br:** quando o identificador completo da compra no sistema (17 dígitos: UASG 6 + modalidade 2 + número 5 + ano 4) estiver confirmado por consulta oficial ou metadados do PNCP, use `https://cnetmobile.estaleiro.serpro.gov.br/comprasnet-web/public/compras/acompanhamento-compra?compra=<17_digitos>`. Sem certeza do código de 17 dígitos, use `https://www.gov.br/compras/` (ou a URL expressa no edital) e registre UASG e número/ano em `id_no_portal`.
 - **Identificador (`id_no_portal`):** número ou código da licitação no portal da sessão (ex.: número SISLOG, identificador no Licitações-e, `idCompra` ou `UASG + número/ano` no Compras.gov.br), ou `null` quando não constar.
-- **Fonte (`fonte`):** item ou página do edital/aviso (ex.: `Edital 2.3`, `Edital 1.1`), ou `"PNCP"` quando vier dos metadados da contratação.
-- **Portal não identificado:** se nem o edital nem os metadados oficiais identificarem o portal da sessão com segurança, use `portal_sessao: null` e registre um aviso em `avisos` explicando a ausência — nunca invente portal nem URL.
+- **Pesquisa obrigatória antes de gravar `null`:** se o edital e os anexos não identificarem o portal ou o link da sessão, pesquise nesta ordem (sem teto curto artificial de chamadas; apenas proteção contra laço):
+  1. **Metadados do PNCP da contratação** (API pública do PNCP ou ferramentas `pncp_*`): verifique `usuarioNome` (ex.: `"SISLOG - Sistema de Logística de Goiás"`), `linkSistemaOrigem`, `linkProcessoEletronico` e `numeroCompra`.
+  2. **Busca na web e no site oficial do órgão** pelo certame (número, órgão, UASG) para localizar a página direta da sessão pública.
+  3. **Página inicial do portal identificado:** na falta de link direto confirmado para o certame, use a página inicial oficial do portal identificado nas etapas anteriores.
+- **Fonte (`fonte`):** registre de onde veio a informação — item ou página do edital/aviso (ex.: `Edital 2.3`, `Edital 1.1`), `"PNCP"`, `"site do órgão"` ou a URL oficial consultada.
+- **Portal não identificado:** grave `portal_sessao: null` **somente** depois de esgotar as vias acima, registrando em `avisos` as vias tentadas — nunca invente portal nem URL.
 
 ## Regras
 

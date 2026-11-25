@@ -159,7 +159,7 @@ def test_fluxo_e_referencias():
 def test_visao_fluxo_contrato_canvas():
     visao = ler_json(ANALISADOR / "visao.json")
     assert visao["versao"] == 1
-    assert visao["gerado_de"]["plugin_versao"] == "0.15.7"
+    assert visao["gerado_de"]["plugin_versao"] == "0.15.8"
     destinos_validos = {"proxima", "parar", "humano", "rerodar", "precos"}
     itens_por_id = {}
     for etapa in visao["etapas"]:
@@ -298,7 +298,20 @@ def _validar_portal_sessao(portal_sessao):
 
 def test_contrato_portal_sessao_edital():
     skill = (SKILLS / "analisar-edital/SKILL.md").read_text(encoding="utf-8")
-    for termo in ("portal_sessao", "Compras.gov.br", "SISLOG", "BLL", "Licitações-e", "acompanhamento-compra?compra="):
+    for termo in (
+        "portal_sessao",
+        "Compras.gov.br",
+        "SISLOG",
+        "BLL",
+        "Licitações-e",
+        "acompanhamento-compra?compra=",
+        "usuarioNome",
+        "linkSistemaOrigem",
+        "linkProcessoEletronico",
+        "numeroCompra",
+        "site do órgão",
+        "vias tentadas",
+    ):
         assert termo in skill
 
     card_6623_sislog = {
@@ -309,6 +322,15 @@ def test_contrato_portal_sessao_edital():
     }
     _validar_portal_sessao(card_6623_sislog)
 
+    # Edital sem portal no texto: resolvido pelos metadados do PNCP (usuarioNome + numeroCompra) com fallback para a home do portal
+    pncp_sem_portal_no_edital = {
+        "nome": "SISLOG",
+        "url": "https://sislog.go.gov.br/",
+        "id_no_portal": "124137",
+        "fonte": "PNCP",
+    }
+    _validar_portal_sessao(pncp_sem_portal_no_edital)
+
     compras_gov_direto = {
         "nome": "Compras.gov.br",
         "url": "https://cnetmobile.estaleiro.serpro.gov.br/comprasnet-web/public/compras/acompanhamento-compra?compra=92638005000472026",
@@ -316,6 +338,14 @@ def test_contrato_portal_sessao_edital():
         "fonte": "PNCP",
     }
     _validar_portal_sessao(compras_gov_direto)
+
+    site_orgao = {
+        "nome": "Portal próprio",
+        "url": "https://www.orgao.gov.br/licitacoes/pe-12-2026",
+        "id_no_portal": "PE 12/2026",
+        "fonte": "site do órgão",
+    }
+    _validar_portal_sessao(site_orgao)
     _validar_portal_sessao(None)
 
     with pytest.raises(AssertionError):
