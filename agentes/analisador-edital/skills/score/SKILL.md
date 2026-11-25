@@ -18,7 +18,7 @@ Três perguntas, pontos em `score.pontos` (AGENTS §2). Não precisa ser exato; 
 | **Dá lucro?** (`margem`, 40) | `precificacao.json`: inexequível 0; `margem_pct` ≥ `precificacao.margem_minima_pct` 100%; entre 0 e a mínima, metade; negativa 0. Sem margem ou sem precificação: 1/4. |
 
 ## Nota 1–5
-1. Trava (sessão em menos de `dias_minimos_preparo` dias corridos; todas as empresas avaliadas `nao_atende`; análise técnica `nao`; preço inexequível): score até 20, nota 1.
+1. Trava (prazo de envio de propostas/sessão já encerrado; todas as empresas avaliadas `nao_atende`; análise técnica `nao`; preço inexequível): score até 20, nota 1. Prazo curto mas ainda aberto (hoje ou amanhã) não aciona trava.
 2. Sem margem calculada e com execução possível: nota 3, Inconclusivo. O score continua visível.
 3. Senão, `score.faixas_nota`: 0–29 → 1 · 30–54 → 2 · 55–74 → 4 · 75–100 → 5.
 

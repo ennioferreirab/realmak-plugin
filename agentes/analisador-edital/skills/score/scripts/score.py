@@ -24,10 +24,10 @@ import re
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parents[4]
+BRT = _dt.timezone(_dt.timedelta(hours=-3))
 PADRAO = {
     "nome_agente": "analisador-edital",
     "pasta_licitacoes": "/data/conlicitacao/licitacoes",
-    "dias_minimos_preparo": 3,
     "score": {
         "pontos": {"triagem": 30, "lote": 30, "margem": 40},
         "faixas_nota": {"baixa": 0, "media": 30, "oportunidade": 55, "alta": 75},
@@ -112,7 +112,7 @@ def parametros(raiz):
 
 ADERENCIA = {"alta": 1.0, "media": 0.75, "baixa": 0.4, "nao_atende": 0.0}
 VIAVEL = {"sim": 1.0, "com_ressalvas": 2 / 3, "nao": 0.0}
-SESSAO = re.compile(r"sess[aã]o", re.I)
+SESSAO = re.compile(r"sess[aã]o|envio\s+de\s+propostas?|encerramento\s+(?:de\s+|das?\s+)?propostas?", re.I)
 
 
 def ler(pasta, nome):
@@ -123,13 +123,44 @@ def ler(pasta, nome):
         return None
 
 
+def _interpretar_prazo(texto):
+    texto = str(texto or "").strip()
+    m = re.match(
+        r"(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2}))?(Z|[+-]\d{2}:?\d{2})?)?",
+        texto,
+    )
+    if not m:
+        return None
+    ano, mes, dia = int(m[1]), int(m[2]), int(m[3])
+    if m[4] is None:
+        return _dt.date(ano, mes, dia)
+    hora, minuto, segundo = int(m[4]), int(m[5]), int(m[6] or 0)
+    fuso = BRT
+    if m[7]:
+        if m[7] == "Z":
+            fuso = _dt.UTC
+        else:
+            offset = m[7].replace(":", "")
+            sinal = 1 if offset[0] == "+" else -1
+            fuso = _dt.timezone(sinal * _dt.timedelta(hours=int(offset[1:3]), minutes=int(offset[3:5])))
+    return _dt.datetime(ano, mes, dia, hora, minuto, segundo, tzinfo=fuso).astimezone(BRT)
+
+
 def data_sessao(edital):
     for p in (edital or {}).get("prazos") or []:
         if isinstance(p, dict) and SESSAO.search(str(p.get("prazo") or "")):
-            m = re.match(r"(\d{4})-(\d{2})-(\d{2})", str(p.get("data") or ""))
-            if m:
-                return _dt.date(int(m[1]), int(m[2]), int(m[3])), p.get("fonte") or "edital"
+            valor = _interpretar_prazo(p.get("data"))
+            if valor is not None:
+                return valor, p.get("fonte") or "edital"
     return None, None
+
+
+def prazo_encerrado(sessao, hoje, agora):
+    if isinstance(sessao, _dt.datetime):
+        if agora is not None:
+            return sessao < agora
+        return sessao.date() < hoje
+    return sessao < hoje
 
 
 def termo_participar(hab, maximo):
@@ -221,7 +252,7 @@ def nota_de(score, config):
     return 5 if score >= f["alta"] else 4 if score >= f["oportunidade"] else 2 if score >= f["media"] else 1
 
 
-def calcular(pasta, params, fallbacks=(), hoje=None):
+def calcular(pasta, params, fallbacks=(), hoje=None, agora=None):
     edital, hab, tec, prec = (ler(pasta, n) for n in ("edital", "habilitacao", "tecnica", "precificacao"))
     config = params["score"]
     maximos = config["pontos"]
@@ -231,12 +262,17 @@ def calcular(pasta, params, fallbacks=(), hoje=None):
     score = pt + pl + pm
 
     travas, avisos = [], []
-    hoje = hoje or _dt.datetime.now(_dt.timezone(_dt.timedelta(hours=-3))).date()
+    if agora is not None:
+        agora = agora.astimezone(BRT) if agora.tzinfo else agora.replace(tzinfo=BRT)
+        hoje = hoje or agora.date()
+    elif hoje is None:
+        agora = _dt.datetime.now(BRT)
+        hoje = agora.date()
     sessao, fonte = data_sessao(edital)
     if sessao is None:
         avisos.append("Data da sessão não encontrada em edital.json")
-    elif 0 <= (sessao - hoje).days < params["dias_minimos_preparo"]:
-        travas.append({"motivo": f"Sessão em menos de {params['dias_minimos_preparo']} dias", "escopo": "global", "fonte": fonte})
+    elif prazo_encerrado(sessao, hoje, agora):
+        travas.append({"motivo": "Prazo da sessão/envio de propostas já encerrado", "escopo": "global", "fonte": fonte})
     avaliadas = [e for e in (hab or {}).get("empresas") or [] if isinstance(e, dict) and e.get("exigencias")]
     if avaliadas and all(e.get("aderencia") == "nao_atende" for e in avaliadas):
         travas.append({"motivo": "Nenhuma empresa do grupo atende à habilitação", "escopo": "global", "fonte": "habilitacao.json"})

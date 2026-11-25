@@ -1,6 +1,6 @@
 import json
 import runpy
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -8,14 +8,15 @@ import pytest
 SCORE = runpy.run_path(str(
     Path(__file__).resolve().parents[1] / "agentes/analisador-edital/skills/score/scripts/score.py"
 ))
+BRT = timezone(timedelta(hours=-3))
 
 
-def calcular(tmp_path, **arquivos):
+def calcular(tmp_path, *, hoje=date(2026, 10, 15), agora=None, **arquivos):
     analise = tmp_path / "analise"
     analise.mkdir(parents=True)
     for nome, dados in arquivos.items():
         (analise / f"{nome}.json").write_text(json.dumps(dados), encoding="utf-8")
-    return SCORE["calcular"](tmp_path, SCORE["PADRAO"], hoje=date(2026, 10, 15))
+    return SCORE["calcular"](tmp_path, SCORE["PADRAO"], hoje=hoje if agora is None else None, agora=agora)
 
 
 @pytest.mark.parametrize(("tecnica", "preco"), [(True, False), (False, True), (True, True)])
@@ -102,3 +103,61 @@ def test_score_nao_sinaliza_tributos_pendente_quando_falso_ou_ausente(tmp_path):
     })
     assert not any("pendente" in a.lower() for a in ausente["avisos"])
     assert "alíquota pendente" not in ausente["hipotese_precificacao"]
+
+
+def test_score_nao_trava_sessao_aberta_hoje_ou_amanha(tmp_path):
+    agora = datetime(2026, 11, 25, 13, 0, tzinfo=BRT)
+    base = {
+        "habilitacao": {"mais_aderente": "realmak", "empresas": [{"empresa": "realmak", "aderencia": "alta", "exigencias": [{}]}]},
+        "tecnica": {"conclusao": {"viavel": "sim"}},
+        "precificacao": {"exequivel": "sim", "margem_pct": 12.0},
+    }
+    amanha = calcular(
+        tmp_path / "amanha",
+        agora=agora,
+        edital={"prazos": [{"prazo": "Sessão pública", "data": "2026-11-26T14:00", "fonte": "Edital 1.1"}]},
+        **base,
+    )
+    assert amanha["trava"] is None and amanha["nota"] == 5
+
+    hoje_aberta = calcular(
+        tmp_path / "hoje_aberta",
+        agora=agora,
+        edital={"prazos": [{"prazo": "Sessão pública", "data": "2026-11-25T16:00", "fonte": "Edital 1.1"}]},
+        **base,
+    )
+    assert hoje_aberta["trava"] is None and hoje_aberta["nota"] == 5
+
+    so_data_hoje = calcular(
+        tmp_path / "so_data_hoje",
+        agora=agora,
+        edital={"prazos": [{"prazo": "Sessão pública", "data": "2026-11-25", "fonte": "Edital 1.1"}]},
+        **base,
+    )
+    assert so_data_hoje["trava"] is None and so_data_hoje["nota"] == 5
+
+
+def test_score_trava_quando_prazo_ja_encerrado(tmp_path):
+    agora = datetime(2026, 11, 25, 13, 0, tzinfo=BRT)
+    base = {
+        "habilitacao": {"mais_aderente": "realmak", "empresas": [{"empresa": "realmak", "aderencia": "alta", "exigencias": [{}]}]},
+        "tecnica": {"conclusao": {"viavel": "sim"}},
+        "precificacao": {"exequivel": "sim", "margem_pct": 12.0},
+    }
+    hoje_passou = calcular(
+        tmp_path / "hoje_passou",
+        agora=agora,
+        edital={"prazos": [{"prazo": "Sessão pública", "data": "2026-11-25T10:00", "fonte": "Edital 1.1"}]},
+        **base,
+    )
+    assert hoje_passou["nota"] == 1 and hoje_passou["score"] <= 20
+    assert [t["fonte"] for t in hoje_passou["trava"]] == ["Edital 1.1"]
+
+    ontem = calcular(
+        tmp_path / "ontem",
+        agora=agora,
+        edital={"prazos": [{"prazo": "Envio de propostas", "data": "2026-11-24", "fonte": "Edital 1.2"}]},
+        **base,
+    )
+    assert ontem["nota"] == 1 and ontem["score"] <= 20
+    assert [t["fonte"] for t in ontem["trava"]] == ["Edital 1.2"]
