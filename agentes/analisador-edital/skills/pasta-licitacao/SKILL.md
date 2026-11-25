@@ -6,7 +6,7 @@ description: Localiza manifesto, textos e originais de uma licitação por `lici
 # Pasta da licitação
 
 ## Entradas
-- `licitacao_id` (ex.: `19478221`). Documento que não veio do CRM (ex.: edital por e-mail): registre a origem em `analise/edital.json` (`documentos[].origem`).
+- `licitacao_id` (ID numérico do ConLicitação, ex.: `19478221`, ou chave da fonte externa, ex.: `pncp-02292266000180-1-000164-2026`). Documento que não veio do CRM (ex.: edital por e-mail): registre a origem em `analise/edital.json` (`documentos[].origem`).
 - Parâmetros (AGENTS §2): `pasta_licitacoes`, `nome_agente`, `crm_resumo`.
 
 ## Referências

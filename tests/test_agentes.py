@@ -1,7 +1,10 @@
 """Confere a definição distribuída e as saídas que o card consome."""
 
 import json
+import os
 import re
+import subprocess
+import sys
 from datetime import date
 from graphlib import TopologicalSorter
 from pathlib import Path
@@ -156,7 +159,7 @@ def test_fluxo_e_referencias():
 def test_visao_fluxo_contrato_canvas():
     visao = ler_json(ANALISADOR / "visao.json")
     assert visao["versao"] == 1
-    assert visao["gerado_de"]["plugin_versao"] == "0.15.5"
+    assert visao["gerado_de"]["plugin_versao"] == "0.15.6"
     destinos_validos = {"proxima", "parar", "humano", "rerodar", "precos"}
     itens_por_id = {}
     for etapa in visao["etapas"]:
@@ -184,6 +187,50 @@ def test_visao_fluxo_contrato_canvas():
     assert itens_por_id["tecnica"]["skill_caminho"] == "analisador-edital/skills/analise-tecnica/SKILL.md"
     assert itens_por_id["habilitacao"]["skill_origem"] == "plugin"
     assert itens_por_id["habilitacao"]["skill_caminho"] == "analisar-habilitacao/SKILL.md"
+
+
+def test_scripts_aceitam_chave_externa_e_rejeitam_caminho_inseguro(tmp_path):
+    chave = "pncp-02292266000180-1-000164-2026"
+    pasta = tmp_path / chave
+    (pasta / "anexos/h1/envios/u1").mkdir(parents=True)
+    (pasta / "anexos/h2/envios/u2").mkdir(parents=True)
+    (pasta / "extraidos/anexos/h1/envios/u1").mkdir(parents=True)
+    (pasta / "manifesto.json").write_text(json.dumps({"versao": 1, "chave": chave, "licitacao_id": None}), encoding="utf-8")
+    (pasta / "anexos/h1/envios/u1/2-edital-no-47-2026.pdf").write_bytes(b"%PDF-1.4")
+    (pasta / "anexos/h2/envios/u2/1-edital.pdf").write_bytes(b"%PDF-1.4")
+    (pasta / "extraidos/anexos/h1/envios/u1/2-edital-no-47-2026.pdf.txt").write_text(
+        "--- Página 1 ---\nEdital nº 47/2026\n--- Página 2 ---\nQualificação técnica e atestado de capacidade\n",
+        encoding="utf-8",
+    )
+    env = {**os.environ, "PASTA_LICITACOES": str(tmp_path), "NOME_AGENTE": "analisador-edital"}
+
+    resumo_py = str(ANALISADOR / "skills/pasta-licitacao/scripts/resumo_conlicitacao.py")
+    localizar_py = str(ANALISADOR / "skills/guia-leitura-edital/scripts/localizar.py")
+    score_py = str(ANALISADOR / "skills/score/scripts/score.py")
+
+    r_resumo = subprocess.run([sys.executable, resumo_py, chave], env=env, capture_output=True, text=True, check=True)
+    dados_resumo = json.loads(r_resumo.stdout)
+    assert dados_resumo["situacao"] == "sem_resumo"
+    assert dados_resumo["licitacao_id"] == chave
+    assert "pendencia" not in dados_resumo
+
+    r_mapa = subprocess.run([sys.executable, localizar_py, chave], env=env, capture_output=True, text=True, check=True)
+    assert "mapa:" in r_mapa.stdout
+    mapa_json = ler_json(pasta / "agents/analisador-edital/fontes/mapa_leitura.json")
+    assert mapa_json["licitacao_id"] == chave
+    assert len(mapa_json["documentos"]) == 1
+    assert mapa_json["documentos"][0]["arquivo"] == "2-edital-no-47-2026.pdf"
+    assert mapa_json["documentos"][0]["paginas"] == 2
+    assert any("1-edital.pdf" in a for a in mapa_json["avisos"])
+
+    r_score = subprocess.run([sys.executable, score_py, chave], env=env, capture_output=True, text=True, check=True)
+    assert json.loads(r_score.stdout)["nota"] >= 1
+    assert (pasta / "agents/analisador-edital/relatorio/topo.json").is_file()
+
+    for invalida in ("../etc", "a/b", "..", ""):
+        for script in (resumo_py, localizar_py, score_py):
+            proc = subprocess.run([sys.executable, script, invalida], env=env, capture_output=True, text=True)
+            assert proc.returncode != 0, f"{script} aceitou chave insegura {invalida!r}"
 
 
 @pytest.mark.parametrize(("arquivo", "objetos", "listas"), [

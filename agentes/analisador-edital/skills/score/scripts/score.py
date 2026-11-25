@@ -113,6 +113,11 @@ def parametros(raiz):
 ADERENCIA = {"alta": 1.0, "media": 0.75, "baixa": 0.4, "nao_atende": 0.0}
 VIAVEL = {"sim": 1.0, "com_ressalvas": 2 / 3, "nao": 0.0}
 SESSAO = re.compile(r"sess[aã]o|envio\s+de\s+propostas?|encerramento\s+(?:de\s+|das?\s+)?propostas?", re.I)
+CHAVE_SEGURA = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
+
+
+def chave_segura(valor):
+    return bool(CHAVE_SEGURA.fullmatch(str(valor or ""))) and ".." not in str(valor or "")
 
 
 def ler(pasta, nome):
@@ -333,7 +338,7 @@ def main():
         pasta = RAIZ / "referencias" / "card" / "exemplo"
     elif args.dados:
         pasta = args.dados
-    elif args.licitacao_id and args.licitacao_id.isdigit():
+    elif args.licitacao_id and chave_segura(args.licitacao_id):
         raiz = Path(os.environ.get("PASTA_LICITACOES", params["pasta_licitacoes"]))
         nome = os.environ.get("NOME_AGENTE", params["nome_agente"])
         pasta = raiz / args.licitacao_id / "agents" / nome
