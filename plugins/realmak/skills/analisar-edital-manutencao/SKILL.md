@@ -23,6 +23,7 @@ Da habilitação, esta skill trata só da **qualificação técnica**, porque el
 ## Entrada
 
 - **Análise geral do edital** (`analisar-edital`), quando existir. Parta dela e não repita o que ela já traz. Se não existir, recomende rodá-la; se o analista quiser só a análise técnica, siga sem ela e diga isso na entrega.
+- **Análise de habilitação** (`analisar-habilitacao`), quando já existir. Herde explicitamente os atestados, CATs e provas de capacidade técnica validados nessa análise e nunca contradiga os quantitativos ou acervos já comprovados (por exemplo, não afirme capacidade máxima inferior à de uma CAT validada na habilitação).
 - **Documentos do certame:** edital, termo de referência, ETP, minuta de contrato, inventários de equipamentos e locais, listas de peças e histórico de manutenção.
 
 Se o trabalho for feito na plataforma de licitações, leia a skill `licitacao` para abrir a licitação, ler os documentos, anexar os arquivos e registrar as pendências. Fora da plataforma, obtenha os documentos como a skill `analisar-edital` orienta na seção "Onde estão os documentos": anexos da conversa, ConLicitação e, quando faltar algum arquivo, o portal de origem da licitação.

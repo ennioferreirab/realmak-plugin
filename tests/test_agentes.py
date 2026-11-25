@@ -47,7 +47,14 @@ def test_manifestos_e_contexto():
 
 def test_skills_unicas_e_frontmatter():
     locais = {p.parent.name for p in (ANALISADOR / "skills").glob("*/SKILL.md")}
-    assert locais == {"pasta-licitacao", "guia-leitura-edital", "analise-tecnica", "cotacao-fornecedor", "score"}
+    assert locais == {
+        "pasta-licitacao",
+        "guia-leitura-edital",
+        "analise-tecnica",
+        "conferir-habilitacao",
+        "cotacao-fornecedor",
+        "score",
+    }
     assert not (ANALISADOR / ".agents/skills").exists()
     assert not (ANALISADOR / "skills-plugin.json").exists()
     assert locais.isdisjoint(p.parent.name for p in SKILLS.glob("*/SKILL.md"))
@@ -59,7 +66,7 @@ def test_skills_unicas_e_frontmatter():
 
 def test_fluxo_e_referencias():
     fluxo = ler_json(ANALISADOR / "fluxo.json")
-    assert fluxo["versao"] >= 5
+    assert fluxo["versao"] == 6
     ids = set()
     saidas = {}
     etapas = {}
@@ -102,12 +109,20 @@ def test_fluxo_e_referencias():
                 } for p in cmd)
                 assert Path(cmd[1].replace("{pasta_agente_def}", str(ANALISADOR))).is_file()
     assert set(saidas) >= {f"analise/{p.name}" for p in EXEMPLO.glob("*.json")}
+    e0 = {i["id"]: i for i in etapas["E0"]["itens"]}
+    assert set(e0) == {"resumo", "mapa"}
+    e1 = {i["id"]: i for i in etapas["E1"]["itens"]}
+    assert set(e1) == {"edital", "triagem-cerebro"}
+    triagem = e1["triagem-cerebro"]
+    assert (triagem["skill"], triagem["tier"]) == ("cerebro", "T2")
+    assert triagem["depende_de"] == ["edital"] and triagem["saida"] == "fontes/triagem_cerebro.json"
     e2 = {i["id"]: i for i in etapas["E2"]["itens"]}
+    assert "cerebro" not in e2
     parciais = {f"habilitacao-{empresa}" for empresa in EMPRESAS}
     for empresa in EMPRESAS:
         pesquisa = e2[f"pesquisa-habilitacao-{empresa}"]
-        assert (pesquisa["skill"], pesquisa["tier"]) == ("analisar-habilitacao", "T1")
-        assert empresa in pesquisa["passos"] and pesquisa["depende_de"] == ["cerebro"]
+        assert (pesquisa["skill"], pesquisa["tier"], pesquisa["empresa"]) == ("analisar-habilitacao", "T1", empresa)
+        assert empresa in pesquisa["passos"] and not pesquisa.get("depende_de")
         assert pesquisa["tolera_falha"] is True
         assert pesquisa["saida"] == f"fontes/habilitacao/{empresa}/candidatos.json"
         baixar = e2[f"baixar-habilitacao-{empresa}"]
@@ -116,19 +131,57 @@ def test_fluxo_e_referencias():
         assert baixar["entrada"] == pesquisa["saida"]
         assert baixar["saida"] == f"fontes/habilitacao/{empresa}/downloads.json"
         item = e2[f"habilitacao-{empresa}"]
-        assert (item["skill"], item["tier"]) == ("analisar-habilitacao", "T2")
+        assert (item["skill"], item["tier"], item["empresa"]) == ("analisar-habilitacao", "T2", empresa)
         assert empresa in item["passos"] and item["depende_de"] == [baixar["id"]]
         assert item["tolera_falha"] is True
         assert item["saida"] == f"analise/habilitacao/{empresa}.json"
     final = e2["habilitacao"]
     assert set(final["depende_de"]) == parciais and final["tolera_falha"] is True
     assert final["saida"] == "analise/habilitacao.json" and final["tier"] == "T2"
+    tecnica = e2["tecnica"]
+    assert tecnica["depende_de"] == ["habilitacao"] and tecnica["tier"] == "T2"
     assert "rerodar" in etapas["G2"]["decisoes"]
     assert {nome for nome, etapa in e2.items() if etapa.get("cerebro_apoio")} == {"pecas", "tecnica"}
     pecas = e2["pecas"]
     assert pecas["tier"] == "T1" and pecas["skill"] == "cotar-pecas-materiais-licitacoes"
     assert not pecas.get("depende_de") and pecas["saida"] == "fontes/pecas.json"
-    assert pecas["saida"] in etapas["E3"]["itens"][0]["passos"]
+    e3 = {i["id"]: i for i in etapas["E3"]["itens"]}
+    assert set(e3) == {"precificacao", "score"}
+    assert pecas["saida"] in e3["precificacao"]["passos"]
+    assert e3["score"]["depende_de"] == ["precificacao"]
+
+
+def test_visao_fluxo_contrato_canvas():
+    visao = ler_json(ANALISADOR / "visao.json")
+    assert visao["versao"] == 1
+    assert visao["gerado_de"]["plugin_versao"] == "0.15.0"
+    destinos_validos = {"proxima", "parar", "humano", "rerodar", "precos"}
+    itens_por_id = {}
+    for etapa in visao["etapas"]:
+        assert isinstance(etapa["objetivo"], str) and etapa["objetivo"].strip()
+        assert isinstance(etapa["criterios"], list) and etapa["criterios"]
+        if "portao" in etapa:
+            portao = etapa["portao"]
+            assert isinstance(portao["objetivo"], str) and portao["objetivo"].strip()
+            for decisao in portao["decisoes"]:
+                assert decisao["destino"] in destinos_validos
+        for grupo in etapa["grupos"]:
+            for item in grupo["itens"]:
+                itens_por_id[item["id"]] = item
+                assert isinstance(item["objetivo"], str) and item["objetivo"].strip()
+                assert isinstance(item["criterios"], list)
+                assert item["skill_origem"] in {"agente", "plugin", None}
+                if item["skill"] is not None:
+                    assert item["skill_origem"] in {"agente", "plugin"}
+                    assert isinstance(item["skill_caminho"], str) and item["skill_caminho"].endswith("/SKILL.md")
+                    assert "SKILL.md" in item["skill_arquivos"]
+                else:
+                    assert item["skill_origem"] is None and item["skill_caminho"] is None
+                    assert item["skill_arquivos"] == []
+    assert itens_por_id["tecnica"]["skill_origem"] == "agente"
+    assert itens_por_id["tecnica"]["skill_caminho"] == "analisador-edital/skills/analise-tecnica/SKILL.md"
+    assert itens_por_id["habilitacao"]["skill_origem"] == "plugin"
+    assert itens_por_id["habilitacao"]["skill_caminho"] == "analisar-habilitacao/SKILL.md"
 
 
 @pytest.mark.parametrize(("arquivo", "objetos", "listas"), [

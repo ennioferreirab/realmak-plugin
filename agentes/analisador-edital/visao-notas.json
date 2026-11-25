@@ -1,5 +1,5 @@
 {
-  "resumo": "Analisa o edital, compara a cobertura das empresas e estima execução, preço e margem para revisão humana.",
+  "resumo": "Analisa o edital, tria as 4 empresas ativas no Cérebro, aprofunda somente as elegíveis e calcula execução, preço e score para revisão humana.",
   "modelos": {
     "T0": null,
     "T1": "claude-haiku-5-5",
@@ -7,6 +7,10 @@
   },
   "etapas": {
     "E0": {
+      "objetivo": "Preparar os insumos determinísticos de leitura sem custo de modelo.",
+      "criterios": [
+        "Garante resumo do ConLicitação e mapa de localização de cláusulas antes de ler o edital."
+      ],
       "descricao": "Prepara os insumos da leitura e da triagem.",
       "grupos": [
         {
@@ -16,43 +20,38 @@
             "resumo",
             "mapa"
           ]
-        },
-        {
-          "tipo": "sequencia",
-          "rotulo": "Histórico inicial",
-          "itens": [
-            "cerebro-g1"
-          ]
         }
       ]
     },
     "E1": {
-      "descricao": "Consolida os fatos do edital antes da decisão de prosseguir.",
+      "objetivo": "Extrair fatos do edital e triar por SQL qual das 4 empresas ativas tem prova própria.",
+      "criterios": [
+        "Lê o edital completo antes de consultar o Cérebro.",
+        "Consulta apenas realmak, nortfort, aforca e una (nunca sublime) distinguindo prova própria de terceiro."
+      ],
+      "descricao": "Consolida os fatos do edital e executa triagem SQL no Cérebro antes do portão G1.",
       "grupos": [
         {
           "tipo": "sequencia",
-          "rotulo": "Leitura do edital",
+          "rotulo": "Leitura e triagem",
           "itens": [
-            "edital"
+            "edital",
+            "triagem-cerebro"
           ]
         }
       ]
     },
     "E2": {
-      "descricao": "Pesquisa histórico, habilitação, requisitos técnicos e peças. A consolidação espera os quatro cruzamentos.",
+      "objetivo": "Aprofundar a habilitação das empresas selecionadas, cotar peças e validar a execução técnica.",
+      "criterios": [
+        "Executa o leque de habilitação apenas para as empresas selecionadas em G1 (demais puladas).",
+        "Análise técnica roda após a consolidação para herdar atestados e CATs validados."
+      ],
+      "descricao": "Aprofunda habilitação dirigida, cota peças em paralelo e consolida a análise técnica com base nas provas validadas.",
       "grupos": [
         {
-          "tipo": "paralelo",
-          "rotulo": "Frentes iniciais",
-          "itens": [
-            "cerebro",
-            "tecnica",
-            "pecas"
-          ]
-        },
-        {
           "tipo": "leque",
-          "rotulo": "Habilitação por empresa",
+          "rotulo": "Habilitação dirigida por empresa",
           "itens": [
             "pesquisa-habilitacao-aforca",
             "baixar-habilitacao-aforca",
@@ -69,33 +68,35 @@
           ]
         },
         {
-          "tipo": "sequencia",
-          "rotulo": "Consolidar habilitação",
+          "tipo": "paralelo",
+          "rotulo": "Consolidação e peças",
           "itens": [
-            "habilitacao"
+            "habilitacao",
+            "pecas"
+          ]
+        },
+        {
+          "tipo": "sequencia",
+          "rotulo": "Análise técnica coerente",
+          "itens": [
+            "tecnica"
           ]
         }
       ]
     },
     "E3": {
-      "descricao": "Calcula preço e exequibilidade após a decisão do G2.",
+      "objetivo": "Precificar a empresa escolhida em G2 e calcular o score final do card.",
+      "criterios": [
+        "Precifica estritamente a empresa_escolhida de G2 gravando empresa_precificada.",
+        "Score determinístico consolida habilitação, técnica e margem para o fechamento."
+      ],
+      "descricao": "Calcula preço, exequibilidade e score após a escolha da empresa em G2.",
       "grupos": [
         {
           "tipo": "sequencia",
-          "rotulo": "Custos e preço",
+          "rotulo": "Preço e score",
           "itens": [
-            "precificacao"
-          ]
-        }
-      ]
-    },
-    "E4": {
-      "descricao": "Calcula o score antes do fechamento.",
-      "grupos": [
-        {
-          "tipo": "sequencia",
-          "rotulo": "Score e trava",
-          "itens": [
+            "precificacao",
             "score"
           ]
         }
@@ -104,6 +105,10 @@
   },
   "itens": {
     "resumo": {
+      "objetivo": "Garantir o resumo IA do ConLicitação disponível na pasta da análise.",
+      "criterios": [
+        "Reaproveita resumo_conlicitacao.json do CRM ou grava cópia local em fontes/."
+      ],
       "resumo": [
         "Usa resumo_conlicitacao.json do CRM e, se ausente, tenta obter ou registrar uma cópia em fontes/resumo_conlicitacao.json."
       ],
@@ -114,6 +119,10 @@
       "saida": "resumo_conlicitacao.json"
     },
     "mapa": {
+      "objetivo": "Indexar os documentos do certame para orientar a leitura do edital.",
+      "criterios": [
+        "Mapeia cláusulas, anexos e páginas sem texto extraído."
+      ],
       "resumo": [
         "Localiza os documentos e indica a ordem de leitura e os achados."
       ],
@@ -123,16 +132,11 @@
       "skill": "guia-leitura-edital",
       "saida": "fontes/mapa_leitura.json"
     },
-    "cerebro-g1": {
-      "resumo": [
-        "Busca histórico do órgão, objetos similares e sanções antes do G1.",
-        "Registra pistas numeradas com a empresa titular."
-      ],
-      "restricoes": [
-        "Se a fonte estiver indisponível, registra a limitação. Pista não equivale a prova lida."
-      ]
-    },
     "edital": {
+      "objetivo": "Extrair prazos, exigências de habilitação, declarações, impugnações e pontos de atenção do edital.",
+      "criterios": [
+        "Cada exigência traz cláusula, grupo, fonte e observações verificáveis."
+      ],
       "resumo": [
         "Lê o edital, TR, ETP, anexos e minutas e registra prazos, exigências, avisos e pontos de atenção."
       ],
@@ -140,23 +144,200 @@
         "Cita a fonte de cada exigência e confere a versão vigente."
       ]
     },
-    "cerebro": {
+    "triagem-cerebro": {
+      "objetivo": "Cruzar exigências eliminatórias do edital com o Cérebro das 4 empresas ativas via SQL estruturado.",
+      "criterios": [
+        "Consulta reg_balanco, vw_atestados_quantitativos e reg_certidao apenas em realmak, nortfort, aforca e una.",
+        "Distingue titularidade própria vs terceiro, base financeira global vs por item e recomenda 1 principal + no máximo 1 reserva."
+      ],
       "resumo": [
-        "Pesquisa preços, compras, BDI, atas e recursos e reúne as pistas do G1 e as novas."
+        "Executa triagem SQL nas 4 empresas ativas (nunca sublime) cruzando balanço, atestados e certidões com o edital.",
+        "Sinaliza ausência de prova própria em exigência eliminatória pesada e aponta pistas para diligência."
       ],
       "restricoes": [
-        "Distingue compra efetiva, preço proposto e estimativa. Preserva todos os candidatos pertinentes."
+        "Nunca consultar sublime. Documento de terceiro não conta como prova própria.",
+        "Pista numerada não substitui leitura do original."
       ]
     },
-    "tecnica": {
+    "pesquisa-habilitacao-aforca": {
+      "objetivo": "Localizar candidatos de habilitação da AForça para cada exigência do edital.",
+      "criterios": [
+        "Verifica certidões emitíveis na hora em 1 consulta SQL (reg_certidao) sem busca semântica.",
+        "Aprofunda buscas e pistas de triagem_cerebro.json para exigências eliminatórias."
+      ],
       "resumo": [
-        "Roteia para manutenção ou fornecimento. Registra escopo, requisitos, itens e viabilidade."
+        "Pesquisa as exigências de aforca no Cérebro e na pasta local com base em analise/edital.json e fontes/triagem_cerebro.json."
       ],
       "restricoes": [
-        "O cenário-base usa o dimensionamento do órgão quando disponível. Na ausência dele, consulta histórico comparável. Premissa que altera equipe ou recomendação fica em cenário alternativo."
+        "Usa a pauta comum do edital e cita achados do Cérebro pela ref emitida pelo daemon.",
+        "Grava a pauta antes da busca e preserva achados e tentativas a cada consulta."
+      ]
+    },
+    "baixar-habilitacao-aforca": {
+      "objetivo": "Disponibilizar os originais e textos extraídos dos candidatos da AForça.",
+      "criterios": [
+        "Resolve refs na montagem somente leitura sem copiar binários do acervo."
+      ],
+      "resumo": [
+        "Localiza os originais na montagem somente leitura, extrai texto sem OCR e grava leitura.txt quando disponível."
+      ],
+      "restricoes": [
+        "A saída mantém o link de prova e distingue o caminho do original e o texto opcional.",
+        "Indisponibilidade do servidor de arquivos deixa a leitura pendente."
+      ]
+    },
+    "habilitacao-aforca": {
+      "objetivo": "Confrontar os originais baixados da AForça contra cada exigência do edital.",
+      "criterios": [
+        "Confere titularidade/CNPJ, validade, escopo e quantitativo no original para exigências decisivas."
+      ],
+      "resumo": [
+        "Lê o texto extraído de cada candidato e confere titularidade, validade, escopo e quantitativo no original quando decisivos."
+      ],
+      "restricoes": [
+        "Abre o original se faltar texto e lê visualmente páginas relevantes de documento digitalizado.",
+        "Sem prova suficiente, mantém verificar e registra a causa."
+      ]
+    },
+    "pesquisa-habilitacao-realmak": {
+      "objetivo": "Localizar candidatos de habilitação da Realmak para cada exigência do edital.",
+      "criterios": [
+        "Verifica certidões emitíveis na hora em 1 consulta SQL (reg_certidao) sem busca semântica.",
+        "Aprofunda buscas e pistas de triagem_cerebro.json para exigências eliminatórias."
+      ],
+      "resumo": [
+        "Pesquisa as exigências de realmak no Cérebro e na pasta local com base em analise/edital.json e fontes/triagem_cerebro.json."
+      ],
+      "restricoes": [
+        "Usa a pauta comum do edital e cita achados do Cérebro pela ref emitida pelo daemon.",
+        "Grava a pauta antes da busca e preserva achados e tentativas a cada consulta."
+      ]
+    },
+    "baixar-habilitacao-realmak": {
+      "objetivo": "Disponibilizar os originais e textos extraídos dos candidatos da Realmak.",
+      "criterios": [
+        "Resolve refs na montagem somente leitura sem copiar binários do acervo."
+      ],
+      "resumo": [
+        "Localiza os originais na montagem somente leitura, extrai texto sem OCR e grava leitura.txt quando disponível."
+      ],
+      "restricoes": [
+        "A saída mantém o link de prova e distingue o caminho do original e o texto opcional.",
+        "Indisponibilidade do servidor de arquivos deixa a leitura pendente."
+      ]
+    },
+    "habilitacao-realmak": {
+      "objetivo": "Confrontar os originais baixados da Realmak contra cada exigência do edital.",
+      "criterios": [
+        "Confere titularidade/CNPJ, validade, escopo e quantitativo no original para exigências decisivas."
+      ],
+      "resumo": [
+        "Lê o texto extraído de cada candidato e confere titularidade, validade, escopo e quantitativo no original quando decisivos."
+      ],
+      "restricoes": [
+        "Abre o original se faltar texto e lê visualmente páginas relevantes de documento digitalizado.",
+        "Sem prova suficiente, mantém verificar e registra a causa."
+      ]
+    },
+    "pesquisa-habilitacao-una": {
+      "objetivo": "Localizar candidatos de habilitação da UNA para cada exigência do edital.",
+      "criterios": [
+        "Verifica certidões emitíveis na hora em 1 consulta SQL (reg_certidao) sem busca semântica.",
+        "Aprofunda buscas e pistas de triagem_cerebro.json para exigências eliminatórias."
+      ],
+      "resumo": [
+        "Pesquisa as exigências de una no Cérebro e na pasta local com base em analise/edital.json e fontes/triagem_cerebro.json."
+      ],
+      "restricoes": [
+        "Usa a pauta comum do edital e cita achados do Cérebro pela ref emitida pelo daemon.",
+        "Grava a pauta antes da busca e preserva achados e tentativas a cada consulta."
+      ]
+    },
+    "baixar-habilitacao-una": {
+      "objetivo": "Disponibilizar os originais e textos extraídos dos candidatos da UNA.",
+      "criterios": [
+        "Resolve refs na montagem somente leitura sem copiar binários do acervo."
+      ],
+      "resumo": [
+        "Localiza os originais na montagem somente leitura, extrai texto sem OCR e grava leitura.txt quando disponível."
+      ],
+      "restricoes": [
+        "A saída mantém o link de prova e distingue o caminho do original e o texto opcional.",
+        "Indisponibilidade do servidor de arquivos deixa a leitura pendente."
+      ]
+    },
+    "habilitacao-una": {
+      "objetivo": "Confrontar os originais baixados da UNA contra cada exigência do edital.",
+      "criterios": [
+        "Confere titularidade/CNPJ, validade, escopo e quantitativo no original para exigências decisivas."
+      ],
+      "resumo": [
+        "Lê o texto extraído de cada candidato e confere titularidade, validade, escopo e quantitativo no original quando decisivos."
+      ],
+      "restricoes": [
+        "Abre o original se faltar texto e lê visualmente páginas relevantes de documento digitalizado.",
+        "Sem prova suficiente, mantém verificar e registra a causa."
+      ]
+    },
+    "pesquisa-habilitacao-nortfort": {
+      "objetivo": "Localizar candidatos de habilitação da Nortfort para cada exigência do edital.",
+      "criterios": [
+        "Verifica certidões emitíveis na hora em 1 consulta SQL (reg_certidao) sem busca semântica.",
+        "Aprofunda buscas e pistas de triagem_cerebro.json para exigências eliminatórias."
+      ],
+      "resumo": [
+        "Pesquisa as exigências de nortfort no Cérebro e na pasta local com base em analise/edital.json e fontes/triagem_cerebro.json."
+      ],
+      "restricoes": [
+        "Usa a pauta comum do edital e cita achados do Cérebro pela ref emitida pelo daemon.",
+        "Grava a pauta antes da busca e preserva achados e tentativas a cada consulta."
+      ]
+    },
+    "baixar-habilitacao-nortfort": {
+      "objetivo": "Disponibilizar os originais e textos extraídos dos candidatos da Nortfort.",
+      "criterios": [
+        "Resolve refs na montagem somente leitura sem copiar binários do acervo."
+      ],
+      "resumo": [
+        "Localiza os originais na montagem somente leitura, extrai texto sem OCR e grava leitura.txt quando disponível."
+      ],
+      "restricoes": [
+        "A saída mantém o link de prova e distingue o caminho do original e o texto opcional.",
+        "Indisponibilidade do servidor de arquivos deixa a leitura pendente."
+      ]
+    },
+    "habilitacao-nortfort": {
+      "objetivo": "Confrontar os originais baixados da Nortfort contra cada exigência do edital.",
+      "criterios": [
+        "Confere titularidade/CNPJ, validade, escopo e quantitativo no original para exigências decisivas."
+      ],
+      "resumo": [
+        "Lê o texto extraído de cada candidato e confere titularidade, validade, escopo e quantitativo no original quando decisivos."
+      ],
+      "restricoes": [
+        "Abre o original se faltar texto e lê visualmente páginas relevantes de documento digitalizado.",
+        "Sem prova suficiente, mantém verificar e registra a causa."
+      ]
+    },
+    "habilitacao": {
+      "objetivo": "Consolidar as empresas aprofundadas e resumir as puladas na triagem para escolha em G2.",
+      "criterios": [
+        "Nunca elege preferida entre duas empresas indeterminadas com base apenas em certidões secundárias.",
+        "Preserva provas das aprofundadas e inclui resumo curto da triagem para empresas puladas."
+      ],
+      "resumo": [
+        "Consolida as avaliações das empresas aprofundadas, inclui resumo curto das puladas e aponta mais_aderente só com diferença material decisiva."
+      ],
+      "restricoes": [
+        "Usa parcial válido com rodada_anterior na ordenação e só recria como verificar quando não há avaliação válida.",
+        "Preserva provas, ações, cobertura e lacunas."
       ]
     },
     "pecas": {
+      "objetivo": "Levantar preços online e estimativas de peças e materiais em paralelo com a habilitação.",
+      "criterios": [
+        "Registra ofertas verificáveis com link individual ou declara não aplicável quando não há peças."
+      ],
       "resumo": [
         "Pesquisa histórico e ofertas atuais e registra estimativas, pendências e cobertura."
       ],
@@ -165,18 +346,29 @@
         "Cobertura é informativa e não condiciona a precificação."
       ]
     },
-    "habilitacao": {
+    "tecnica": {
+      "objetivo": "Avaliar escopo, dimensionamento e viabilidade técnica herdando as provas validadas da habilitação.",
+      "criterios": [
+        "Depende de analise/habilitacao.json e nunca contradiz atestados ou CATs já validados.",
+        "Usa o dimensionamento do órgão no cenário-base e isola premissas decisivas em cenário alternativo."
+      ],
       "resumo": [
-        "Consolida as quatro avaliações e aponta a empresa mais aderente quando houver diferença material de cobertura."
+        "Roteia para manutenção ou fornecimento, herda os atestados/CATs de habilitacao.json e registra escopo, requisitos e viabilidade."
       ],
       "restricoes": [
-        "Usa parcial válido com rodada_anterior na ordenação e identifica sua origem no resultado. Só recria como verificar quando não há avaliação válida.",
-        "Preserva provas, ações, cobertura e lacunas."
+        "O cenário-base usa o dimensionamento do órgão quando disponível.",
+        "Premissa que altera equipe ou recomendação fica em cenário alternativo."
       ]
     },
     "precificacao": {
+      "objetivo": "Formar preço e exequibilidade exclusivamente para a empresa_escolhida em G2.",
+      "criterios": [
+        "Grava empresa_precificada idêntica à empresa_escolhida de G2.",
+        "Bloqueia planilha de manutenção em obra/reforma sem planilha orçamentária válida.",
+        "Não reaplica encargos sobre custo-hora cheio e explicita faixa/ressalva tributária quando alíquota ausente ou n=1."
+      ],
       "resumo": [
-        "Calcula custos, preço, tributos, margem e cenários. Em manutenção, preenche a planilha pelo script da skill."
+        "Calcula custos, preço, tributos, margem e cenários para a empresa_escolhida. Em manutenção, preenche a planilha pelo script da skill."
       ],
       "restricoes": [
         "Mantém subtotais fundamentados e reserva para lacunas sem duplicar custos.",
@@ -184,6 +376,10 @@
       ]
     },
     "score": {
+      "objetivo": "Calcular score 0–100 e nota 1–5 determinísticos a partir das saídas consolidadas.",
+      "criterios": [
+        "Combina participação (30), execução (30) e margem (40) após precificacao."
+      ],
       "resumo": [
         "Calcula a régua de participação, execução e lucro e publica nota, trava e avisos."
       ],
@@ -191,149 +387,74 @@
         "Usa tributos e margem da precificação quando disponíveis. Premissa decisiva isolada não aciona nota 1."
       ],
       "skill": "score"
-    },
-    "pesquisa-habilitacao-aforca": {
-      "resumo": [
-        "Pesquisa as exigências de aforca no Cérebro e na pasta local e procura cada pista pela identificação disponível."
-      ],
-      "restricoes": [
-        "Usa a pauta comum do edital, uma busca por documento, e cita achados do Cérebro pela ref emitida pelo daemon. Para cópia local sem ref, registra o hash calculado, título e motivo.",
-        "Grava a pauta antes da busca e acrescenta achados plausíveis e tentativas a cada consulta. O cruzamento julga conflitos, titularidade e quantitativos."
-      ]
-    },
-    "baixar-habilitacao-aforca": {
-      "resumo": [
-        "Localiza os originais na montagem somente leitura, extrai texto sem OCR e grava leitura.txt quando disponível. O binário permanece no acervo."
-      ],
-      "restricoes": [
-        "A saída mantém o link de prova e distingue o caminho do original e o texto opcional.",
-        "Indisponibilidade do servidor de arquivos deixa a leitura pendente."
-      ]
-    },
-    "habilitacao-aforca": {
-      "resumo": [
-        "Lê o texto extraído de cada candidato e confere titularidade, validade, escopo e quantitativo no original quando decisivos."
-      ],
-      "restricoes": [
-        "Abre o original se faltar texto e lê visualmente as páginas relevantes de documento digitalizado. Usa o link de prova fornecido pelo daemon.",
-        "Sem prova suficiente, mantém verificar e registra a causa."
-      ]
-    },
-    "pesquisa-habilitacao-realmak": {
-      "resumo": [
-        "Pesquisa as exigências de realmak no Cérebro e na pasta local e procura cada pista pela identificação disponível."
-      ],
-      "restricoes": [
-        "Usa a pauta comum do edital, uma busca por documento, e cita achados do Cérebro pela ref emitida pelo daemon. Para cópia local sem ref, registra o hash calculado, título e motivo.",
-        "Grava a pauta antes da busca e acrescenta achados plausíveis e tentativas a cada consulta. O cruzamento julga conflitos, titularidade e quantitativos."
-      ]
-    },
-    "baixar-habilitacao-realmak": {
-      "resumo": [
-        "Localiza os originais na montagem somente leitura, extrai texto sem OCR e grava leitura.txt quando disponível. O binário permanece no acervo."
-      ],
-      "restricoes": [
-        "A saída mantém o link de prova e distingue o caminho do original e o texto opcional.",
-        "Indisponibilidade do servidor de arquivos deixa a leitura pendente."
-      ]
-    },
-    "habilitacao-realmak": {
-      "resumo": [
-        "Lê o texto extraído de cada candidato e confere titularidade, validade, escopo e quantitativo no original quando decisivos."
-      ],
-      "restricoes": [
-        "Abre o original se faltar texto e lê visualmente as páginas relevantes de documento digitalizado. Usa o link de prova fornecido pelo daemon.",
-        "Sem prova suficiente, mantém verificar e registra a causa."
-      ]
-    },
-    "pesquisa-habilitacao-una": {
-      "resumo": [
-        "Pesquisa as exigências de una no Cérebro e na pasta local e procura cada pista pela identificação disponível."
-      ],
-      "restricoes": [
-        "Usa a pauta comum do edital, uma busca por documento, e cita achados do Cérebro pela ref emitida pelo daemon. Para cópia local sem ref, registra o hash calculado, título e motivo.",
-        "Grava a pauta antes da busca e acrescenta achados plausíveis e tentativas a cada consulta. O cruzamento julga conflitos, titularidade e quantitativos."
-      ]
-    },
-    "baixar-habilitacao-una": {
-      "resumo": [
-        "Localiza os originais na montagem somente leitura, extrai texto sem OCR e grava leitura.txt quando disponível. O binário permanece no acervo."
-      ],
-      "restricoes": [
-        "A saída mantém o link de prova e distingue o caminho do original e o texto opcional.",
-        "Indisponibilidade do servidor de arquivos deixa a leitura pendente."
-      ]
-    },
-    "habilitacao-una": {
-      "resumo": [
-        "Lê o texto extraído de cada candidato e confere titularidade, validade, escopo e quantitativo no original quando decisivos."
-      ],
-      "restricoes": [
-        "Abre o original se faltar texto e lê visualmente as páginas relevantes de documento digitalizado. Usa o link de prova fornecido pelo daemon.",
-        "Sem prova suficiente, mantém verificar e registra a causa."
-      ]
-    },
-    "pesquisa-habilitacao-nortfort": {
-      "resumo": [
-        "Pesquisa as exigências de nortfort no Cérebro e na pasta local e procura cada pista pela identificação disponível."
-      ],
-      "restricoes": [
-        "Usa a pauta comum do edital, uma busca por documento, e cita achados do Cérebro pela ref emitida pelo daemon. Para cópia local sem ref, registra o hash calculado, título e motivo.",
-        "Grava a pauta antes da busca e acrescenta achados plausíveis e tentativas a cada consulta. O cruzamento julga conflitos, titularidade e quantitativos."
-      ]
-    },
-    "baixar-habilitacao-nortfort": {
-      "resumo": [
-        "Localiza os originais na montagem somente leitura, extrai texto sem OCR e grava leitura.txt quando disponível. O binário permanece no acervo."
-      ],
-      "restricoes": [
-        "A saída mantém o link de prova e distingue o caminho do original e o texto opcional.",
-        "Indisponibilidade do servidor de arquivos deixa a leitura pendente."
-      ]
-    },
-    "habilitacao-nortfort": {
-      "resumo": [
-        "Lê o texto extraído de cada candidato e confere titularidade, validade, escopo e quantitativo no original quando decisivos."
-      ],
-      "restricoes": [
-        "Abre o original se faltar texto e lê visualmente as páginas relevantes de documento digitalizado. Usa o link de prova fornecido pelo daemon.",
-        "Sem prova suficiente, mantém verificar e registra a causa."
-      ]
     }
   },
   "portoes": {
     "G1": {
+      "objetivo": "Decidir se vale aprofundar e selecionar as 1–2 empresas alvo para E2.",
       "criterios": [
-        "Confere edital, prazos, exigências e história do Cérebro. Cita a empresa do achado ou registra indisponibilidade.",
-        "Os parâmetros atuais do agente são 3 dias corridos de preparo e R$ 100 mil na parcela disputada."
+        "Cruza analise/edital.json com fontes/triagem_cerebro.json das 4 empresas ativas.",
+        "Informa empresas_selecionadas ao seguir; evita gastar +60 min quando não há prova própria plausível."
       ],
       "decisoes": {
-        "seguir": "Demais casos, inclusive documento de rotina pendente ou atestado comum ainda não localizado.",
-        "parar": "Trava factual sem solução a tempo, valor abaixo do parâmetro ou objeto fora do foco e da região sem oportunidade financeira.",
-        "humano": "Exigência incomum e eliminatória, busca esgotada e resposta capaz de mudar a decisão ou o lote."
+        "seguir": {
+          "quando": "Há ao menos 1 empresa elegível ou pista concreta que justifique aprofundamento. Informa empresas_selecionadas.",
+          "destino": "proxima"
+        },
+        "parar": {
+          "quando": "Trava factual sem solução a tempo, valor abaixo do mínimo ou objeto fora do foco e da região sem oportunidade financeira.",
+          "destino": "parar"
+        },
+        "humano": {
+          "quando": "Exigência eliminatória pesada sem prova própria plausível (trazendo pistas para diligência) ou dúvida decisiva com busca esgotada.",
+          "destino": "humano"
+        }
       }
     },
     "G2": {
+      "objetivo": "Validar cobertura eliminatória após E2 e definir a empresa_escolhida para precificação.",
       "criterios": [
-        "Confere cobertura de cada exigência eliminatória nos quatro parciais, consolidação e conclusão técnica.",
-        "Falha de acesso ou falta de prova mantém a lacuna; não demonstra impedimento."
+        "Confere habilitacao.json, parciais aprofundados e tecnica.json.",
+        "Informa empresa_escolhida ao seguir; não manda precificar sem cobertura eliminatória."
       ],
       "decisoes": {
-        "seguir": "Demais casos ou lacuna persistente após nova rodada. Precifica sob condição quando faltar prova.",
-        "parar": "Impedimento comprovado para todas as empresas a tempo, inviabilidade técnica documentada ou fornecimento muito acima do estimado sem alternativa.",
-        "humano": "Exigência incomum e eliminatória, busca esgotada e resposta capaz de mudar a decisão ou o lote. Também cabe exceção estratégica.",
-        "rerodar": "Primeira rodada com exigência eliminatória sem prova lida e pesquisa falha ou incompleta. Repete a fase afetada e suas dependências posteriores."
+        "seguir": {
+          "quando": "Há empresa coberta para precificar. Informa empresa_escolhida.",
+          "destino": "proxima"
+        },
+        "parar": {
+          "quando": "Nenhuma empresa habilitável a tempo, ausência de cobertura eliminatória sem saída ou inviabilidade técnica documentada.",
+          "destino": "parar"
+        },
+        "humano": {
+          "quando": "Nenhuma empresa comprovou exigência eliminatória após E2 mas há diligência viável, ou exceção estratégica.",
+          "destino": "humano"
+        },
+        "rerodar": {
+          "quando": "Somente diante de erro real de busca/download (pesquisa_incompleta/falha técnica) ou pista concreta não lida capaz de mudar o veredito.",
+          "destino": "rerodar"
+        }
       }
     },
     "G3": {
+      "objetivo": "Conferir coerência final entre empresa, técnica, precificação e score antes de publicar.",
       "criterios": [
-        "Confronta recomendação e trava com a origem das horas, equipe, custos e margem.",
-        "A orientação acompanha a nota do score. Premissa decisiva isolada não impõe nota 1."
+        "Exige precificacao.empresa_precificada igual a G2.empresa_escolhida e ausência de arquivos desatualizados.",
+        "Confere ressalvas tributárias/técnicas explícitas e premissas decisivas."
       ],
       "decisoes": {
-        "seguir": "Relatório coerente e fundamento conferido, ou conclusão condicionada com lacuna explícita.",
-        "humano": "Exigência incomum e eliminatória, busca esgotada e resposta capaz de mudar a decisão ou o lote. Também cabe exceção estratégica.",
-        "rerodar": "Uma vez quando premissa decisiva sustenta a recomendação ou a trava, ou quando as saídas se contradizem. Indica os itens afetados."
+        "seguir": {
+          "quando": "Relatório coerente, empresa consistente e ressalvas tributárias/técnicas explícitas.",
+          "destino": "proxima"
+        },
+        "humano": {
+          "quando": "Exigência eliminatória em aberto com busca esgotada ou exceção estratégica comercial.",
+          "destino": "humano"
+        },
+        "rerodar": {
+          "quando": "Uma vez se houver divergência de empresa, contradição entre saídas ou premissa decisiva sustentando trava.",
+          "destino": "rerodar"
+        }
       }
     }
   }

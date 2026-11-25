@@ -7,6 +7,28 @@ from pathlib import Path
 import yaml
 
 RAIZ = Path(__file__).resolve().parents[1]
+DESTINOS_VALIDOS = {"proxima", "parar", "humano", "rerodar", "precos"}
+DESTINO_PADRAO = {
+    "seguir": "proxima",
+    "parar": "parar",
+    "humano": "humano",
+    "rerodar": "rerodar",
+    "precos": "precos",
+}
+EXTENSOES_LEGIVEIS = {
+    ".md",
+    ".txt",
+    ".json",
+    ".yaml",
+    ".yml",
+    ".py",
+    ".sh",
+    ".csv",
+    ".html",
+    ".css",
+    ".js",
+    ".toml",
+}
 
 
 def ler_json(caminho):
@@ -36,33 +58,76 @@ def conferir_ids(esperados, encontrados, origem):
         raise ValueError(f"{origem}: IDs esperados {list(esperados)}, encontrados {list(encontrados)}")
 
 
-def nome_skill(pasta, skill):
+def listar_arquivos_skill(pasta_skill):
+    arquivos = []
+    for caminho in sorted(pasta_skill.rglob("*")):
+        if not caminho.is_file():
+            continue
+        rel = caminho.relative_to(pasta_skill)
+        if any(parte.startswith(".") or parte == "__pycache__" for parte in rel.parts):
+            continue
+        if caminho.suffix.lower() not in EXTENSOES_LEGIVEIS:
+            continue
+        arquivos.append(rel.as_posix())
+    return arquivos
+
+
+def resolver_skill(pasta, skill):
     if skill is None:
-        return None
-    for raiz in (pasta / ".agents/skills", pasta / "skills", RAIZ / "plugins/realmak/skills"):
-        caminho = raiz / skill / "SKILL.md"
+        return None, None, None, []
+    candidatos = (
+        ("agente", pasta / ".agents/skills", RAIZ / "agentes"),
+        ("agente", pasta / "skills", RAIZ / "agentes"),
+        ("plugin", RAIZ / "plugins/realmak/skills", RAIZ / "plugins/realmak/skills"),
+    )
+    for origem, raiz, base_rel in candidatos:
+        pasta_skill = raiz / skill
+        caminho = pasta_skill / "SKILL.md"
         if caminho.is_file():
             partes = caminho.read_text(encoding="utf-8").split("---", 2)
             if len(partes) == 3 and not partes[0].strip():
                 metadados = yaml.safe_load(partes[1])
                 if metadados["name"] == skill:
-                    return metadados["name"]
+                    caminho_rel = caminho.relative_to(base_rel).as_posix()
+                    return metadados["name"], origem, caminho_rel, listar_arquivos_skill(pasta_skill)
             raise ValueError(f"{caminho}: frontmatter inválido ou nome diferente de {skill}")
     raise ValueError(f"{pasta.name}: skill inexistente: {skill}")
+
+
+def gerar_decisao(id_etapa, valor, entrada):
+    if isinstance(entrada, dict):
+        quando = texto(entrada, "quando", f"{id_etapa}.{valor}")
+        destino = texto(entrada, "destino", f"{id_etapa}.{valor}")
+    else:
+        if not isinstance(entrada, str) or not entrada.strip():
+            raise ValueError(f"{id_etapa}: preencha decisoes.{valor}")
+        quando = entrada
+        destino = DESTINO_PADRAO.get(valor, "")
+    if destino not in DESTINOS_VALIDOS:
+        raise ValueError(f"{id_etapa}.{valor}: destino inválido: {destino}")
+    return {"valor": valor, "quando": quando, "destino": destino}
 
 
 def gerar_item(pasta, item, nota, modelos):
     id_item = item["id"]
     tier = item["tier"]
+    skill_nome, skill_origem, skill_caminho, skill_arquivos = resolver_skill(
+        pasta, item.get("skill") or nota.get("skill")
+    )
     return {
         "id": id_item,
         "titulo": item["titulo"],
-        "skill": nome_skill(pasta, item.get("skill") or nota.get("skill")),
+        "skill": skill_nome,
+        "skill_origem": skill_origem,
+        "skill_caminho": skill_caminho,
+        "skill_arquivos": skill_arquivos,
         "tier": tier,
         "modelo": modelos[tier],
         "depende_de": item.get("depende_de", []),
         "entrada": item.get("entrada"),
         "saida": item.get("saida") or nota.get("saida"),
+        "objetivo": texto(nota, "objetivo", id_item),
+        "criterios": textos(nota, "criterios", id_item, minimo=0),
         "resumo": textos(nota, "resumo", id_item),
         "restricoes": textos(nota, "restricoes", id_item, minimo=0),
         "tolera_falha": item.get("tolera_falha", False),
@@ -89,9 +154,10 @@ def gerar_etapas(pasta, fluxo, notas):
             etapas[-1]["portao"] = {
                 "id": id_etapa,
                 "titulo": etapa["titulo"],
+                "objetivo": texto(nota, "objetivo", id_etapa),
                 "criterios": textos(nota, "criterios", id_etapa),
                 "decisoes": [
-                    {"valor": valor, "quando": texto(nota["decisoes"], valor, id_etapa)}
+                    gerar_decisao(id_etapa, valor, nota["decisoes"][valor])
                     for valor in etapa["decisoes"]
                 ],
             }
@@ -115,6 +181,8 @@ def gerar_etapas(pasta, fluxo, notas):
         etapas.append({
             "id": id_etapa,
             "titulo": etapa["titulo"],
+            "objetivo": texto(nota, "objetivo", id_etapa),
+            "criterios": textos(nota, "criterios", id_etapa, minimo=0),
             "descricao": texto(nota, "descricao", id_etapa),
             "grupos": grupos,
         })
@@ -135,6 +203,8 @@ def gerar_visao(pasta, versao_plugin):
             {
                 "id": texto(etapa, "id", pasta.name),
                 "titulo": texto(etapa, "titulo", pasta.name),
+                "objetivo": texto(etapa, "objetivo", pasta.name),
+                "criterios": textos(etapa, "criterios", pasta.name, minimo=0),
                 "descricao": texto(etapa, "descricao", pasta.name),
                 "grupos": [],
             }
