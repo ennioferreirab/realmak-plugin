@@ -159,7 +159,7 @@ def test_fluxo_e_referencias():
 def test_visao_fluxo_contrato_canvas():
     visao = ler_json(ANALISADOR / "visao.json")
     assert visao["versao"] == 1
-    assert visao["gerado_de"]["plugin_versao"] == "0.15.6"
+    assert visao["gerado_de"]["plugin_versao"] == "0.15.7"
     destinos_validos = {"proxima", "parar", "humano", "rerodar", "precos"}
     itens_por_id = {}
     for etapa in visao["etapas"]:
@@ -247,6 +247,9 @@ def test_contrato_do_card(arquivo, objetos, listas):
         assert isinstance(exemplo[campo], dict)
     for campo in listas:
         assert isinstance(exemplo[campo], list)
+    if arquivo == "edital":
+        assert "portal_sessao" in exemplo["cabecalho"]
+        _validar_portal_sessao(exemplo["cabecalho"]["portal_sessao"])
     if arquivo == "habilitacao":
         assert exemplo["mais_aderente"] in (*EMPRESAS, None)
         assert {e["empresa"] for e in exemplo["empresas"]} == set(EMPRESAS)
@@ -278,3 +281,47 @@ def test_contrato_do_card(arquivo, objetos, listas):
                 aliases.add(alerta["empresa"])
                 assert alerta["motivo"]
             assert {linha["empresa"] for linha in linhas.values() if linha["estado"] == "falha"} <= aliases
+
+
+def _validar_portal_sessao(portal_sessao):
+    if portal_sessao is None:
+        return
+    assert isinstance(portal_sessao, dict)
+    assert set(portal_sessao) == {"nome", "url", "id_no_portal", "fonte"}
+    assert isinstance(portal_sessao["nome"], str) and portal_sessao["nome"].strip()
+    url = portal_sessao["url"]
+    assert url is None or (isinstance(url, str) and url.startswith(("http://", "https://")))
+    id_no_portal = portal_sessao["id_no_portal"]
+    assert id_no_portal is None or (isinstance(id_no_portal, str) and id_no_portal.strip())
+    assert isinstance(portal_sessao["fonte"], str) and portal_sessao["fonte"].strip()
+
+
+def test_contrato_portal_sessao_edital():
+    skill = (SKILLS / "analisar-edital/SKILL.md").read_text(encoding="utf-8")
+    for termo in ("portal_sessao", "Compras.gov.br", "SISLOG", "BLL", "Licitações-e", "acompanhamento-compra?compra="):
+        assert termo in skill
+
+    card_6623_sislog = {
+        "nome": "SISLOG",
+        "url": "https://sislog.go.gov.br/",
+        "id_no_portal": "124137",
+        "fonte": "Edital 2.3; Aviso PNCP/DJE",
+    }
+    _validar_portal_sessao(card_6623_sislog)
+
+    compras_gov_direto = {
+        "nome": "Compras.gov.br",
+        "url": "https://cnetmobile.estaleiro.serpro.gov.br/comprasnet-web/public/compras/acompanhamento-compra?compra=92638005000472026",
+        "id_no_portal": "92638005000472026",
+        "fonte": "PNCP",
+    }
+    _validar_portal_sessao(compras_gov_direto)
+    _validar_portal_sessao(None)
+
+    with pytest.raises(AssertionError):
+        _validar_portal_sessao({
+            "nome": "SISLOG",
+            "url": "javascript:alert(1)",
+            "id_no_portal": "124137",
+            "fonte": "Edital 2.3",
+        })

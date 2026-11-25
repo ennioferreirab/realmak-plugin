@@ -9,7 +9,8 @@ O agente grava em `licitacoes/<id>/agents/analisador-edital/analise/`. Toda list
 ```json
 {"versao": 1, "gerado_em": "AAAA-MM-DDTHH:MM",
  "cabecalho": {"modalidade": "", "orgao": "", "uasg": "", "objeto": "", "tipo_objeto": "manutencao|fornecimento|outro_servico|misto",
-   "valor_estimado": 0, "valor_sigiloso": false, "criterio": "", "modo_disputa": "", "portal": "", "link": ""},
+   "valor_estimado": 0, "valor_sigiloso": false, "criterio": "", "modo_disputa": "", "portal": "", "link": "",
+   "portal_sessao": {"nome": "", "url": "", "id_no_portal": "", "fonte": ""}},
  "atencao": [{"titulo": "", "ponto": "", "gravidade": "alta|media|baixa", "fonte": "", "o_que_fazer": ""}],
  "prazos": [{"prazo": "", "data": "", "fonte": "", "observacao": ""}],
  "habilitacao": [{"id": "", "rotulo": "", "grupo": "juridica|fiscal|trabalhista|economico_financeira|tecnica", "exigencia": "", "fonte": "", "observacao": ""}],
@@ -121,5 +122,6 @@ Todos são opcionais para leitura de análises antigas. O analisador preenche qu
 
 - `relatorio/topo.json.sintese`: frase curta de decisão, até 200 caracteres, em linguagem direta, sem nomes de arquivos. O score fornece a síntese inicial pela habilitação, técnica e preço. No G3, atualize a frase para refletir a decisão final e as condições relevantes.
 - `edital.json.atencao[].titulo`: até 80 caracteres. `habilitacao[]` traz `id` estável por requisito e `rotulo` de até 40 caracteres.
+- `edital.json.cabecalho.portal_sessao`: objeto estruturado do portal da sessão pública (`{nome, url, id_no_portal, fonte}`) ou `null`, mantendo o campo texto livre `cabecalho.portal` inalterado. `nome` usa forma canônica curta (`Compras.gov.br`, `SISLOG`, `BLL`, `Licitações-e`, `BNC`, `Portal de Compras Públicas` ou portal próprio); `url` traz o link `http(s)` mais direto sustentado pelo edital ou pela fonte oficial (ou `null`); `id_no_portal` traz o código/número da disputa no portal (ou `null`); `fonte` cita item/página do edital ou `"PNCP"`. Se o portal não for identificado, gravar `portal_sessao: null` e registrar aviso em `avisos[]` (nunca inventar).
 - `empresas[].exigencias[]`: conserve os mesmos `id` e `rotulo` do edital em todas as empresas. Para pauta antiga sem IDs, use a posição original (`hab-001`; em subitens, `hab-001-01`). Traga a pauta inteira, com `situacao: "verificar"` e motivo nas linhas não avaliadas. Só marque `risco_principal: true` quando a lacuna puder impedir a disputa e não for emitível. `acao.tipo` e `acao.onde` acrescentam categoria e órgão/portal à ação existente. Prefira ações a `emitiveis` nas saídas novas; mantenha a leitura do campo legado.
 - `precificacao.json`: `piso_sugerido` é mensal em reais; `sensibilidade[]` leva `rotulo` e `margem_pct` em pontos percentuais; `condicoes[]` leva `id` e `texto`; `pecas_grupos[]` leva `rotulo`, `itens` (contagem), `valor_anual` em reais (opcional sem base) e `situacao` (texto curto); `tributos_pendente` (`boolean`) e `tributos_pendente_motivo` (`string`) sinalizam alíquota tributária pendente no score e no selo do card (problemas sistêmicos do grupo são registrados via ferramenta `registrar_nota_urgente`, fora do JSON).
