@@ -1,9 +1,9 @@
 {
-  "versao": 5,
+  "versao": 6,
   "etapas": [
     {
       "id": "E0",
-      "titulo": "Preparar",
+      "titulo": "Preparação",
       "itens": [
         {
           "id": "resumo",
@@ -26,25 +26,12 @@
             "{pasta_agente_def}/skills/guia-leitura-edital/scripts/localizar.py",
             "{licitacao_id}"
           ]
-        },
-        {
-          "id": "cerebro-g1",
-          "titulo": "Cérebro antes do G1",
-          "modo": "skill",
-          "tier": "T1",
-          "skill": "cerebro",
-          "passos": "consulta curta para o G1",
-          "saida": "fontes/cerebro_g1.json",
-          "depende_de": [
-            "resumo",
-            "mapa"
-          ]
         }
       ]
     },
     {
       "id": "E1",
-      "titulo": "Edital",
+      "titulo": "Leitura e Triagem",
       "itens": [
         {
           "id": "edital",
@@ -53,12 +40,24 @@
           "tier": "T2",
           "skill": "analisar-edital",
           "saida": "analise/edital.json"
+        },
+        {
+          "id": "triagem-cerebro",
+          "titulo": "Triagem estruturada no Cérebro",
+          "modo": "skill",
+          "tier": "T2",
+          "skill": "cerebro",
+          "passos": "triagem SQL nas 4 empresas ativas (realmak, nortfort, aforca, una; nunca sublime) cruzando edital, balanço, atestados e certidões",
+          "saida": "fontes/triagem_cerebro.json",
+          "depende_de": [
+            "edital"
+          ]
         }
       ]
     },
     {
       "id": "G1",
-      "titulo": "Vale disputar?",
+      "titulo": "Triagem e seleção",
       "portao": true,
       "decisoes": [
         "seguir",
@@ -68,28 +67,17 @@
     },
     {
       "id": "E2",
-      "titulo": "Análises",
+      "titulo": "Aprofundamento Dirigido",
       "itens": [
-        {
-          "id": "cerebro",
-          "titulo": "Subsídio histórico",
-          "modo": "skill",
-          "tier": "T1",
-          "skill": "cerebro",
-          "saida": "fontes/cerebro.json",
-          "passos": "histórico de preços, compras, BDI, atas e recursos para a análise do edital"
-        },
         {
           "id": "pesquisa-habilitacao-aforca",
           "titulo": "Pesquisar habilitação · AForça",
           "modo": "skill",
           "tier": "T1",
+          "empresa": "aforca",
           "skill": "analisar-habilitacao",
-          "passos": "fase de pesquisa e localização somente para aforca: buscar por exigência e pelas pistas do G1 e do histórico; listar candidatos para o daemon",
+          "passos": "pesquisa e localização somente para aforca com base em analise/edital.json e fontes/triagem_cerebro.json; certidões emitíveis em 1 SQL",
           "saida": "fontes/habilitacao/aforca/candidatos.json",
-          "depende_de": [
-            "cerebro"
-          ],
           "tolera_falha": true
         },
         {
@@ -109,8 +97,9 @@
           "titulo": "Cruzamento documental · AForça",
           "modo": "skill",
           "tier": "T2",
+          "empresa": "aforca",
           "skill": "analisar-habilitacao",
-          "passos": "fase de cruzamento documental somente para aforca: leia o texto extraído de cada candidato e confira no original indicado em caminho os trechos decisivos ou sem texto",
+          "passos": "cruzamento documental somente para aforca: ler texto extraído e conferir trechos decisivos ou sem texto no original indicado em caminho",
           "saida": "analise/habilitacao/aforca.json",
           "depende_de": [
             "baixar-habilitacao-aforca"
@@ -122,12 +111,10 @@
           "titulo": "Pesquisar habilitação · Realmak",
           "modo": "skill",
           "tier": "T1",
+          "empresa": "realmak",
           "skill": "analisar-habilitacao",
-          "passos": "fase de pesquisa e localização somente para realmak: buscar por exigência e pelas pistas do G1 e do histórico; listar candidatos para o daemon",
+          "passos": "pesquisa e localização somente para realmak com base em analise/edital.json e fontes/triagem_cerebro.json; certidões emitíveis em 1 SQL",
           "saida": "fontes/habilitacao/realmak/candidatos.json",
-          "depende_de": [
-            "cerebro"
-          ],
           "tolera_falha": true
         },
         {
@@ -147,8 +134,9 @@
           "titulo": "Cruzamento documental · Realmak",
           "modo": "skill",
           "tier": "T2",
+          "empresa": "realmak",
           "skill": "analisar-habilitacao",
-          "passos": "fase de cruzamento documental somente para realmak: leia o texto extraído de cada candidato e confira no original indicado em caminho os trechos decisivos ou sem texto",
+          "passos": "cruzamento documental somente para realmak: ler texto extraído e conferir trechos decisivos ou sem texto no original indicado em caminho",
           "saida": "analise/habilitacao/realmak.json",
           "depende_de": [
             "baixar-habilitacao-realmak"
@@ -160,12 +148,10 @@
           "titulo": "Pesquisar habilitação · UNA",
           "modo": "skill",
           "tier": "T1",
+          "empresa": "una",
           "skill": "analisar-habilitacao",
-          "passos": "fase de pesquisa e localização somente para una: buscar por exigência e pelas pistas do G1 e do histórico; listar candidatos para o daemon",
+          "passos": "pesquisa e localização somente para una com base em analise/edital.json e fontes/triagem_cerebro.json; certidões emitíveis em 1 SQL",
           "saida": "fontes/habilitacao/una/candidatos.json",
-          "depende_de": [
-            "cerebro"
-          ],
           "tolera_falha": true
         },
         {
@@ -185,8 +171,9 @@
           "titulo": "Cruzamento documental · UNA",
           "modo": "skill",
           "tier": "T2",
+          "empresa": "una",
           "skill": "analisar-habilitacao",
-          "passos": "fase de cruzamento documental somente para una: leia o texto extraído de cada candidato e confira no original indicado em caminho os trechos decisivos ou sem texto",
+          "passos": "cruzamento documental somente para una: ler texto extraído e conferir trechos decisivos ou sem texto no original indicado em caminho",
           "saida": "analise/habilitacao/una.json",
           "depende_de": [
             "baixar-habilitacao-una"
@@ -198,12 +185,10 @@
           "titulo": "Pesquisar habilitação · Nortfort",
           "modo": "skill",
           "tier": "T1",
+          "empresa": "nortfort",
           "skill": "analisar-habilitacao",
-          "passos": "fase de pesquisa e localização somente para nortfort: buscar por exigência e pelas pistas do G1 e do histórico; listar candidatos para o daemon",
+          "passos": "pesquisa e localização somente para nortfort com base em analise/edital.json e fontes/triagem_cerebro.json; certidões emitíveis em 1 SQL",
           "saida": "fontes/habilitacao/nortfort/candidatos.json",
-          "depende_de": [
-            "cerebro"
-          ],
           "tolera_falha": true
         },
         {
@@ -223,32 +208,14 @@
           "titulo": "Cruzamento documental · Nortfort",
           "modo": "skill",
           "tier": "T2",
+          "empresa": "nortfort",
           "skill": "analisar-habilitacao",
-          "passos": "fase de cruzamento documental somente para nortfort: leia o texto extraído de cada candidato e confira no original indicado em caminho os trechos decisivos ou sem texto",
+          "passos": "cruzamento documental somente para nortfort: ler texto extraído e conferir trechos decisivos ou sem texto no original indicado em caminho",
           "saida": "analise/habilitacao/nortfort.json",
           "depende_de": [
             "baixar-habilitacao-nortfort"
           ],
           "tolera_falha": true
-        },
-        {
-          "id": "tecnica",
-          "titulo": "Análise técnica",
-          "modo": "skill",
-          "tier": "T2",
-          "skill": "analise-tecnica",
-          "cerebro_apoio": true,
-          "saida": "analise/tecnica.json"
-        },
-        {
-          "id": "pecas",
-          "titulo": "Pesquisar preço de peças e materiais",
-          "modo": "skill",
-          "tier": "T1",
-          "skill": "cotar-pecas-materiais-licitacoes",
-          "cerebro_apoio": true,
-          "passos": "cotar peças incluídas no preço com base no edital e no TR; se não houver peças, registrar que não se aplica",
-          "saida": "fontes/pecas.json"
         },
         {
           "id": "habilitacao",
@@ -263,14 +230,37 @@
             "habilitacao-una",
             "habilitacao-nortfort"
           ],
-          "passos": "consolidar as quatro análises por empresa no contrato do card, incluindo lacunas de itens falhos",
+          "passos": "consolidar empresas aprofundadas no contrato do card com resumo curto da triagem para puladas e lacunas de falhas",
           "tolera_falha": true
+        },
+        {
+          "id": "pecas",
+          "titulo": "Pesquisar preço de peças e materiais",
+          "modo": "skill",
+          "tier": "T1",
+          "skill": "cotar-pecas-materiais-licitacoes",
+          "cerebro_apoio": true,
+          "passos": "cotar peças incluídas no preço com base no edital e no TR; se não houver peças, registrar que não se aplica",
+          "saida": "fontes/pecas.json"
+        },
+        {
+          "id": "tecnica",
+          "titulo": "Análise técnica",
+          "modo": "skill",
+          "tier": "T2",
+          "skill": "analise-tecnica",
+          "cerebro_apoio": true,
+          "depende_de": [
+            "habilitacao"
+          ],
+          "passos": "herdar atestados e CATs validados em analise/habilitacao.json para nunca contradizer a habilitação",
+          "saida": "analise/tecnica.json"
         }
       ]
     },
     {
       "id": "G2",
-      "titulo": "Vale precificar?",
+      "titulo": "Cobertura e escolha",
       "portao": true,
       "decisoes": [
         "seguir",
@@ -281,7 +271,7 @@
     },
     {
       "id": "E3",
-      "titulo": "Preço",
+      "titulo": "Precificação e Score",
       "itens": [
         {
           "id": "precificacao",
@@ -290,19 +280,16 @@
           "tier": "T2",
           "skill": "precificar-proposta-exequibilidade",
           "saida": "analise/precificacao.json",
-          "passos": "formar preço usando fontes/pecas.json; para manutenção gerar a planilha pelo script da skill"
-        }
-      ]
-    },
-    {
-      "id": "E4",
-      "titulo": "Score",
-      "itens": [
+          "passos": "formar preço para empresa_escolhida gravando empresa_precificada e usando fontes/pecas.json; bloquear modelo de manutenção em obra/reforma"
+        },
         {
           "id": "score",
           "titulo": "Score e nota",
           "modo": "script",
           "tier": "T0",
+          "depende_de": [
+            "precificacao"
+          ],
           "cmd": [
             "python3",
             "{pasta_agente_def}/skills/score/scripts/score.py",

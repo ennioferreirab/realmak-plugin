@@ -2,17 +2,18 @@
 
 Mudanças de critério ficam registradas em DECISOES.
 
-Em cada portão, leia o pedido (estado dos itens, resumos, motivos) e as saídas em `analise/`: no G1, `edital.json` (`atencao`, `prazos`, `habilitacao`, `cabecalho`) e `fontes/cerebro_g1.json`; no G2, também `habilitacao.json` e `tecnica.json` (`conclusao`); no G3, também `precificacao.json` e `relatorio/topo.json`. Chame **`decidir` uma vez**, com o fato que decide e `porque` curto. O `porque` vai para o relatório.
+Em cada portão, leia o pedido (estado dos itens, resumos, motivos) e as saídas em `analise/`: no G1, `analise/edital.json` (`atencao`, `prazos`, `habilitacao`, `cabecalho`) e `fontes/triagem_cerebro.json`; no G2, também `analise/habilitacao.json` (mais parciais aprofundados) e `analise/tecnica.json` (`conclusao`); no G3, também `analise/precificacao.json` e `relatorio/topo.json`. Chame **`decidir` uma vez**, com o fato que decide, os campos estruturados do portão e `porque` curto. O `porque` vai para o relatório.
 
 ## Regras que valem sempre
 
+- **Qualidade em 1º lugar.** Não sacrifique pesquisa válida por pressa; por outro lado, evite gastar dezenas de minutos aprofundando empresas sem prova própria plausível quando a triagem já resolve o corte.
 - **Parar é recomendação.** O card vai para Análise humana de qualquer jeito; quem arquiva é uma pessoa.
-- **Falta de custo, cotação ou documento não segura a publicação.** O relatório sai com a lacuna no escopo afetado.
+- **Falta de custo, cotação ou documento de rotina não segura a publicação.** O relatório sai com a lacuna no escopo afetado.
 - **`humano` só com as três condições juntas:**
-  1. exigência incomum e eliminatória: atestado com quantitativo, certificação ou credenciamento de fabricante, registro específico, equipe mínima nomeada;
-  2. busca esgotada em `referencias/habilitacoes-certificados/`, no cérebro e no ConLicitação;
-  3. a resposta muda `seguir`/`parar` ou o lote a disputar.
-- Atestado de fornecimento comum, certidões, cadastro em portal, sanções e retificação ficam em `habilitacao.json` ou em `atencao`, sem pergunta.
+  1. exigência incomum e eliminatória: atestado/CAT com quantitativo pesado, certificação ou credenciamento de fabricante, registro específico, equipe mínima nomeada;
+  2. busca esgotada em `referencias/habilitacoes-certificados/`, no Cérebro (4 empresas ativas; nunca `sublime`) e no ConLicitação;
+  3. a resposta muda `seguir`/`parar`, a empresa ou o lote a disputar.
+- Atestado de fornecimento comum, certidões emitíveis, cadastro em portal, sanções e retificação ficam em `habilitacao.json` ou em `atencao`, sem pergunta.
 - **Exceção estratégica:** decisão que só a empresa toma e muda o preço (ex.: margem abaixo da mínima). Hipótese sem resposta: a política conservadora.
 - **Toda pergunta:** `bloqueia: true`, `prazo: PT4H` e a hipótese escrita no texto. Vencido o prazo, decida pela hipótese, sem nova pergunta.
 - **Orientação: uma pergunta por análise.** O limite técnico do daemon é duas por portão.
@@ -28,48 +29,59 @@ Em cada portão, leia o pedido (estado dos itens, resumos, motivos) e as saídas
 Quem responde não abre o edital. A pergunta traz:
 
 1. requisito em uma frase, com a fonte (documento, item, página);
-2. o que já foi encontrado da empresa e o que falta;
+2. o que já foi encontrado da empresa (e melhores pistas para diligência) e o que falta;
 3. um fato a responder, fechado; lotes diferentes numa tabela curta (lote, exigência, o que temos);
 4. opções completas e mutuamente exclusivas, com "não sei" quando couber; nunca opção que peça complemento;
 5. o efeito de cada resposta e a hipótese sem resposta.
 
 Exemplo: "O TR (item 8.2, p. 14) exige atestado de manutenção de VRF ≥ 120 TR no lote 02. Achamos atestado de 96 TR (SEDF 2023). Temos atestado ≥ 120 TR? [Temos] [Não temos, via consórcio] [Não temos] [Não sei]. Sem atestado, recomendo parar o lote 02. Sem resposta em 4 horas, a análise segue supondo que temos e marca o lote como condicionado."
 
-## G1 · Vale disputar? (depois da análise do edital)
+## G1 · Triagem e seleção (depois do edital e da triagem no Cérebro)
 
-O cérebro entra no G1 pela consulta curta (`fontes/cerebro_g1.json`, item `cerebro-g1`). No `porque`, cite o achado que pesou com a empresa de origem, ex.: "Cérebro (A Força, 2024): atestado de VRF 150 TR no mesmo órgão". Sem achado que pese, diga o que foi consultado em poucas palavras. Cérebro indisponível ou item `cerebro-g1` falho: decida igual e escreva "decidido sem o histórico das empresas".
+Leia `analise/edital.json` e `fontes/triagem_cerebro.json` (que cruza as 4 empresas ativas — `realmak`, `nortfort`, `aforca`, `una`; nunca `sublime`). No `porque`, cite o achado que pesou com a empresa de origem e a titularidade. Cérebro indisponível ou `triagem-cerebro` falho: decida igual e escreva "decidido sem o histórico das empresas".
 
-| Decisão | Quando |
-|---|---|
-| `parar` | Trava factual que não se resolve a tempo: sessão a menos de `dias_minimos_preparo` dias, exigência de fabricante ou atestado comprovadamente incompatível para as empresas elegíveis, sem alternativa, valor abaixo de `valor_minimo_disputa`. Objeto fora do foco **e** da região, sem oportunidade financeira. `orientacao: 1`. |
-| `humano` | Três condições. Por lote, com quantitativo e fonte no texto. |
-| `seguir` | Demais casos, inclusive documento de rotina pendente e atestado comum não localizado. |
-
-## G2 · Vale precificar? (depois da habilitação e da análise técnica)
-
-Verifique a cobertura de cada exigência eliminatória e empresa. Leia os quatro parciais e a consolidação. Se faltar prova lida e houver busca falha ou incompleta por erro, timeout, teto ou executor, a primeira decisão é `rerodar`. Passe em `itens` os ids `pesquisa-habilitacao-<alias>` afetados quando falhou a pesquisa. Se a lista está íntegra e falhou a aquisição, use `baixar-habilitacao-<alias>`. Para falha só do cruzamento, use `habilitacao-<alias>`. Inclua `cerebro` somente se a falha desse item privou a análise de pistas necessárias. O daemon também repete os dependentes, inclusive a consolidação. Consulte o histórico de decisões de G2 antes de pedir a nova rodada.
-
-Persistindo a lacuna após a nova rodada, decida `seguir` e precifique sob condição. Registre empresa, cláusula, vias já tentadas e a prova que ainda falta. A lacuna permanece `verificar` e a precificação não declara habilitação. Ausência de prova ou indisponibilidade da fonte não constitui impedimento comprovado nem justifica acionar pessoa.
+- **Seleção de empresas (`empresas_selecionadas`):** ao decidir `seguir`, informe `empresas_selecionadas` (array de aliases entre `realmak`, `nortfort`, `aforca`, `una`, ex.: `["realmak"]` ou `["realmak", "nortfort"]`) e, quando houver lotes distintos, o opcional `empresas_por_lote`. Priorize 1 empresa principal + no máximo 1 reserva (somente se prova ou custo puder inverter o resultado). Mantenha as 4 empresas quando o pedido solicitar comparação completa explicitamente.
+- **Sem prova própria plausível em exigência eliminatória pesada:** quando nenhuma das 4 empresas tem prova própria plausível (por exemplo, obra/reforma pesada ou cobertura ≥ 2.000 m² com estrutura metálica + manta + CAO, onde o melhor registro encontrado é de terceiro):
+  - se houver pista concreta no Cérebro que mereça abrir original, aprofunde apenas a(s) 1–2 empresa(s) com pista em `empresas_selecionadas`;
+  - se já ficar claro que não há prova própria do conjunto, decida **`humano`** (com pedido objetivo e as melhores pistas para diligência) ou **`parar`** (se inviável em prazo/foco), evitando gastar mais de uma hora em E2/E3.
 
 | Decisão | Quando |
 |---|---|
-| `rerodar` | Primeira rodada com exigência eliminatória sem prova lida e busca falha ou incompleta. |
-| `parar` | Nenhuma empresa do grupo comprovadamente habilitável a tempo (`habilitacao.json`, todas `nao_atende`), ou análise técnica "não atende" apoiada em dados documentais, sem condição realista (`tecnica.json`). Preço online dos itens muito acima do valor estimado em fornecimento, sem alternativa. `orientacao: 1`. |
-| `humano` | Três condições ou exceção estratégica. |
-| `seguir` | Demais casos. Itens sem preço online ou habilitação "técnico decide" não seguram a precificação; ficam como lacuna. E-mail a fornecedor não é decisão do portão: o analista pede no card. |
+| `parar` | Trava factual sem solução a tempo (sessão < `dias_minimos_preparo` dias, valor < `valor_minimo_disputa`, exigência comprovadamente incompatível sem alternativa) ou objeto fora do foco **e** da região sem oportunidade financeira. `orientacao: 1`. |
+| `humano` | Três condições (inclusive ausência clara de prova própria em exigência técnica eliminatória pesada, trazendo as melhores pistas para diligência). |
+| `seguir` | Há ao menos 1 empresa elegível ou pista concreta que justifique aprofundamento. Informe `empresas_selecionadas` (e `empresas_por_lote` quando aplicável). |
+
+## G2 · Cobertura e escolha (depois da habilitação consolidada e da análise técnica)
+
+Verifique a cobertura de cada exigência eliminatória nas empresas aprofundadas, na consolidação (`analise/habilitacao.json`) e na conclusão técnica (`analise/tecnica.json`).
+
+- **Escolha da empresa (`empresa_escolhida`):** ao decidir `seguir`, informe obrigatoriamente **`empresa_escolhida`** (alias: `realmak`, `nortfort`, `aforca` ou `una`) no `decidir`. Ela orientará a precificação em E3.
+- **Regra estrita de `rerodar`:** permitido **somente** diante de erro real de busca/download (`pesquisa_incompleta` / falha técnica / timeout / erro de execução) ou de uma pista concreta ainda não lida capaz de mudar o resultado. **É proibido usar `rerodar` com 0 falhas e a mesma evidência.** Passe em `itens` apenas os IDs afetados (`pesquisa-habilitacao-<alias>`, `baixar-habilitacao-<alias>` ou `habilitacao-<alias>`). O daemon invalida artefatos downstream desatualizados antes de reexecutar.
+- **Sem cobertura eliminatória após E2:** se nenhuma empresa comprovou exigência eliminatória após o aprofundamento de E2, decida **`humano`** (se a resposta puder resolver com prova externa/diligência) ou **`parar`** (se inviável/impedimento comprovado). Não mande precificar sem cobertura.
+
+| Decisão | Quando |
+|---|---|
+| `rerodar` | Erro real de busca/download (`pesquisa_incompleta` ou falha técnica) ou pista concreta não lida capaz de mudar o veredito. Nunca com 0 falhas e mesma evidência. |
+| `parar` | Nenhuma empresa comprovadamente habilitável a tempo (`habilitacao.json`), ausência de cobertura eliminatória sem saída realista, inviabilidade técnica documentada (`tecnica.json`) ou fornecimento muito acima do estimado sem alternativa. `orientacao: 1`. |
+| `humano` | Três condições (inclusive quando nenhuma empresa comprovou exigência eliminatória após E2 e há diligência viável) ou exceção estratégica. |
+| `seguir` | Há empresa coberta para precificar. Informe `empresa_escolhida`. Itens sem preço online ou habilitação "técnico decide" secundária ficam como lacuna. |
 
 ## G3 · Fechamento (depois da precificação e do score)
 
-Ao fechar, preserve os campos do score e atualize `relatorio/topo.json.sintese` para refletir a decisão final, a empresa de `mais_aderente` quando relevante e a condição principal. Escreva uma frase de até 200 caracteres em linguagem direta, sem nomes de arquivo.
+Ao fechar, preserve os campos do score e atualize `relatorio/topo.json.sintese` para refletir a decisão final, a empresa escolhida e a condição principal (frase de até 200 caracteres, sem nomes de arquivo).
 
-Antes de `seguir`, confronte a recomendação e cada trava com a origem das horas, da equipe, dos custos e da margem em `tecnica.json`, `precificacao.json` e na memória do TR/ETP. Verifique `premissa_decisiva` nas duas saídas e procure premissas **(P)** nos fundamentos, inclusive em saídas antigas. Confirme que margem de cenário alternativo ficou fora da trava.
+Antes de `seguir`, confira obrigatoriamente:
+1. **Coerência de empresa:** `analise/precificacao.json.empresa_precificada` deve ser idêntica a `G2.empresa_escolhida` (nunca aceitar Realmak precificada silenciosamente quando G2 escolheu outra empresa).
+2. **Ausência de arquivos desatualizados** (se houve `rerodar`, confirmar que habilitação, técnica, precificação e score refletem a rodada vigente).
+3. **Ressalvas tributárias e técnicas explícitas:** confirmar que alíquota ausente (`una`) ou frágil (`n=1` em `nortfort`/`aforca`) não foi tratada como margem única definitiva, que obra/reforma sem planilha orçamentária não usou planilha de manutenção, e que `tecnica.json` não contradiz atestados/CATs validados em `habilitacao.json`.
+4. **Premissas decisivas:** confrontar recomendação e trava com `premissa_decisiva` e premissas **(P)** em `tecnica.json` e `precificacao.json`; margem de cenário alternativo não dispara trava.
 
-Se a recomendação ou a trava depender de **(P)** decisiva, use `rerodar` uma vez. Se a origem do erro for a carga ou a equipe, indique `tecnica`, `precificacao` e `score`; se for apenas custo ou preço, indique `precificacao` e `score`. Em `porque`, identifique o dado documental, a fonte e a premissa a mover para cenário alternativo. Se o documento for omisso ou a incerteza persistir após a nova rodada, publique a conclusão condicionada e a pendência. Uma premissa isolada não justifica a trava nem a nota 1.
+Se houver divergência de empresa, contradição entre saídas ou recomendação/trava sustentada por **(P)** decisiva, use `rerodar` uma vez indicando os itens afetados (`tecnica`, `precificacao`, `score`).
 
 | Decisão | Quando |
 |---|---|
-| `seguir` | Relatório coerente e fundamento documental conferido, ou conclusão condicionada com lacuna explícita. `orientacao` 1–5 obrigatória, igual à nota de `topo.json` (trava → 1). |
-| `rerodar` | Premissa decisiva sustenta recomendação ou trava, ou uma saída contradiz outra (ex.: `topo.json` × `precificacao.json`; empresa da precificação × `mais_aderente`). Indique os ids. Uma vez por análise; nunca para esperar cotação. |
+| `seguir` | Relatório coerente (`empresa_precificada === empresa_escolhida`), sem arquivos desatualizados e ressalvas tributárias/técnicas explícitas. `orientacao` 1–5 obrigatória, igual à nota de `topo.json` (trava → 1). |
+| `rerodar` | Divergência `empresa_precificada !== empresa_escolhida`, contradição entre saídas (`habilitacao.json` × `tecnica.json`, `topo.json` × `precificacao.json`) ou premissa decisiva sustentando trava. Uma vez por análise; nunca para esperar cotação. |
 | `humano` | Três condições ou exceção estratégica. |
 
 ## Documento novo (portão `documento`)
@@ -79,5 +91,5 @@ Errata, aditamento, resposta a esclarecimento ou republicação. Compare com o q
 | Decisão | Quando |
 |---|---|
 | `seguir` | Não muda objeto, prazo, habilitação nem preço. |
-| `rerodar` | Muda algo analisado. Itens: `mapa` e `edital` sempre que o edital mudou; os quatro itens `pesquisa-habilitacao-<alias>` se mudou a habilitação; `tecnica`, `pecas` e `precificacao` se mudou quantidade, especificação, escopo ou valor. |
+| `rerodar` | Muda algo analisado. Itens: `mapa` e `edital` (e `triagem-cerebro` se mudou exigência) sempre que o edital mudou; os itens `pesquisa-habilitacao-<alias>` selecionados se mudou a habilitação; `tecnica`, `pecas` e `precificacao` se mudou quantidade, especificação, escopo ou valor. |
 | `parar` | Disputa inviável (revogada, suspensa sem data). `orientacao: 1`. |

@@ -7,10 +7,12 @@ description: Item `tecnica` (E2). Lê `cabecalho.tipo_objeto` de `analise/edital
 
 ## Entradas
 - `analise/edital.json` (item `edital`, E1): `cabecalho.tipo_objeto`, `atencao`, `habilitacao` (grupo `tecnica`).
+- `analise/habilitacao.json` (item `habilitacao`, E2) e, quando necessário, os parciais em `analise/habilitacao/<alias>.json`: atestados, CATs e provas técnicas já validados.
 - Pasta da licitação ([pasta-licitacao](../pasta-licitacao/SKILL.md)).
 
 ## Passos
-1. Leia `cabecalho.tipo_objeto` e escolha:
+1. Leia `analise/habilitacao.json` (e os parciais aplicáveis) para herdar explicitamente os atestados e CATs validados da(s) empresa(s) avaliada(s). Nunca contradiga a habilitação (por exemplo, não afirme limite inferior de capacidade/TR quando uma CAT ou atestado validado em `habilitacao.json` comprovar capacidade superior).
+2. Leia `cabecalho.tipo_objeto` e escolha:
 
    | `tipo_objeto` | Siga |
    |---|---|

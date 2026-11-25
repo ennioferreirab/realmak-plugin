@@ -14,7 +14,9 @@ O preço parte do escopo e do dimensionamento de equipe. Procure `analise-manute
 - Se existir, use os números dele. Não refaça contagens nem horas por conta própria, para que análise, proposta e eventual recurso falem dos mesmos dados.
 - Se não existir, faça primeiro a análise com `analisar-edital-manutencao`. Preço formado sem carga de trabalho calculada é palpite.
 
-Defina também **qual empresa do grupo vai disputar** (AForça, Realmak, UNA ou Nortfort). Tributos e encargos mudam de uma empresa para outra, então o mesmo contrato tem preço diferente em cada uma. Se a escolha ainda não foi feita, use a conclusão de `analisar-habilitacao` ou pergunte ao analista.
+Defina também **qual empresa do grupo vai disputar** (`aforca`, `realmak`, `una` ou `nortfort`). Tributos e encargos mudam de uma empresa para outra, então o mesmo contrato tem preço diferente em cada uma. Use estritamente a `empresa_escolhida` informada no pedido ou na decisão anterior (fallback: `mais_aderente` de `analisar-habilitacao`); nunca precifique a Realmak silenciosamente quando outra empresa tiver sido escolhida. Em `analise/precificacao.json`, grave obrigatoriamente `empresa_precificada` com o alias efetivamente precificado (`realmak`, `nortfort`, `aforca` ou `una`).
+
+**Bloqueio para obra ou reforma sem planilha orçamentária:** nunca aplique premissas, custos de equipe ou a planilha-modelo de manutenção em licitações de **obra ou reforma** (por exemplo, reforma de cobertura/telhado, obra civil, estrutura metálica) sem uma planilha orçamentária válida do certame ou composição própria de obra. Explicite a limitação e a pendência orçamentária em vez de inventar margem de manutenção.
 
 Se o trabalho for feito na plataforma de licitações, leia a skill `licitacao` para abrir a licitação, achar a análise, anexar os arquivos e registrar as pendências.
 
@@ -79,6 +81,8 @@ Regras da consulta:
 - **Cargo que a empresa não tem.** A consulta usa a faixa do grupo e aplica os encargos da empresa escolhida. Registre isso como premissa.
 - **Prestador de serviço.** Use `--prestador`; o honorário vai inteiro na coluna C, sem encargos.
 - **Avisos.** Leia `avisos` em toda consulta. Custo com mais de 25% fora da composição legal (horas extras, gratificações) só entra se o contrato tiver esses itens.
+- **Encargos sobre custo-hora já carregado:** nunca reaplique encargos sociais ou benefícios sobre o custo-hora ou custo mensal cheio já carregado na `base-custos.json` (use sempre a decomposição `C_salario_base`, `D_encargos_adicionais` e `E_beneficios` de `consultar_base.py`, ou o valor cheio sem multiplicar encargos de novo).
+- **Alíquota de tributos ausente ou frágil (`n=1`):** quando a alíquota efetiva da empresa escolhida estiver ausente na base (ex.: `una`) ou apoiada em apenas 1 nota fiscal (ex.: `nortfort` 6% `n=1`, `aforca` 12,68% `n=1`), **não apresente uma margem única como definitiva**. Deixe a margem definitiva em aberto (`null` ou condicionada) ou simule explicitamente uma faixa tributária (ex.: cenário com a alíquota observada e cenário com alíquota conservadora), sinalizando pendência de confirmação contábil.
 - **Administração central.** O custo mensal da empresa é a base do rateio; o percentual em Premissas B18 sai desse custo dividido pelo faturamento ou pelo número de contratos que o analista informar. Sem esse dado, use premissa identificada.
 - **Markup por segmento.** O lucro e os impostos de cada segmento mostram como a empresa costuma formar preço. Servem de comparação, não substituem a conta de tributos pela alíquota da empresa.
 

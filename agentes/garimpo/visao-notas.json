@@ -4,16 +4,28 @@
     {
       "id": "triagem",
       "titulo": "Triagem de lote",
+      "objetivo": "Triar rapidamente um lote autorizado sem pesquisar preços.",
+      "criterios": [
+        "Aplica garimpo-triagem e encerra via entregar_triagem gravando triagem.json."
+      ],
       "descricao": "Aplica garimpo-triagem ao lote autorizado, sem pesquisar preços. A ferramenta entregar_triagem grava triagem.json e encerra a execução para revisão humana."
     },
     {
       "id": "consolidacao",
       "titulo": "Consolidação de triagem",
+      "objetivo": "Consolidar os lotes selecionados preservando decisões humanas já aceitas.",
+      "criterios": [
+        "Consolida via entregar_triagem sem sobrescrever decisões aceitas."
+      ],
       "descricao": "Consolida os lotes fixados no pedido via entregar_triagem. Uma nova seleção exige nova execução e preserva decisões já aceitas."
     },
     {
       "id": "ficha",
       "titulo": "Ficha de card",
+      "objetivo": "Gerar ficha preliminar e referências públicas de preço para um card.",
+      "criterios": [
+        "Grava garimpo.json, garimpo.md e precos.csv e conclui pela ferramenta de entrega."
+      ],
       "descricao": "Aplica garimpo-ficha aos documentos autorizados. Usa a tipificação Jev e busca pública para referências de preço. Grava garimpo.json, garimpo.md e precos.csv e conclui pela ferramenta de entrega. Aceite e decisão são humanos."
     }
   ]

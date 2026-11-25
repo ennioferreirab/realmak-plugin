@@ -91,7 +91,7 @@ Somente para empresas cujo item não concluiu e que não têm avaliação válid
 `precificacao.json` (`precificar-proposta-exequibilidade`; preços de peças por `cotar-pecas-materiais-licitacoes`):
 
 ```json
-{"versao": 1, "gerado_em": "", "valor_estimado": 0,
+{"versao": 1, "gerado_em": "", "empresa_precificada": "realmak|nortfort|aforca|una", "valor_estimado": 0,
  "custo_mensal": 0, "preco_mensal": 0, "preco_global": 0, "bdi_pct": 0, "margem_pct": 0,
  "exequivel": "sim|no_limite|nao", "resumo": "", "piso_sugerido": 0,
  "sensibilidade": [{"rotulo": "", "margem_pct": 0}], "condicoes": [{"id": "", "texto": ""}],

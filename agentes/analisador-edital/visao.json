@@ -3,14 +3,18 @@
   "agente": "analisador-edital",
   "titulo": "Analisador de Edital",
   "gerado_de": {
-    "plugin_versao": "0.14.1",
-    "fluxo_sha256": "aa79b2ce61d0c3b31e5b190b8a0e16277bd53d5a27b4b8c22b0899cb21acf7db"
+    "plugin_versao": "0.15.0",
+    "fluxo_sha256": "de37ccd994fd2890f5cd0caa4dc3dc0022d912ec8368066cd21d4cc0b3894283"
   },
-  "resumo": "Analisa o edital, compara a cobertura das empresas e estima execução, preço e margem para revisão humana.",
+  "resumo": "Analisa o edital, tria as 4 empresas ativas no Cérebro, aprofunda somente as elegíveis e calcula execução, preço e score para revisão humana.",
   "etapas": [
     {
       "id": "E0",
-      "titulo": "Preparar",
+      "titulo": "Preparação",
+      "objetivo": "Preparar os insumos determinísticos de leitura sem custo de modelo.",
+      "criterios": [
+        "Garante resumo do ConLicitação e mapa de localização de cláusulas antes de ler o edital."
+      ],
       "descricao": "Prepara os insumos da leitura e da triagem.",
       "grupos": [
         {
@@ -21,11 +25,22 @@
               "id": "resumo",
               "titulo": "Resumo IA do ConLicitação",
               "skill": "pasta-licitacao",
+              "skill_origem": "agente",
+              "skill_caminho": "analisador-edital/skills/pasta-licitacao/SKILL.md",
+              "skill_arquivos": [
+                "SKILL.md",
+                "referencias/DECISOES.md",
+                "scripts/resumo_conlicitacao.py"
+              ],
               "tier": "T0",
               "modelo": null,
               "depende_de": [],
               "entrada": null,
               "saida": "resumo_conlicitacao.json",
+              "objetivo": "Garantir o resumo IA do ConLicitação disponível na pasta da análise.",
+              "criterios": [
+                "Reaproveita resumo_conlicitacao.json do CRM ou grava cópia local em fontes/."
+              ],
               "resumo": [
                 "Usa resumo_conlicitacao.json do CRM e, se ausente, tenta obter ou registrar uma cópia em fontes/resumo_conlicitacao.json."
               ],
@@ -39,11 +54,25 @@
               "id": "mapa",
               "titulo": "Mapa de leitura do edital",
               "skill": "guia-leitura-edital",
+              "skill_origem": "agente",
+              "skill_caminho": "analisador-edital/skills/guia-leitura-edital/SKILL.md",
+              "skill_arquivos": [
+                "SKILL.md",
+                "referencias/DECISOES.md",
+                "referencias/ONDE-ESTA.md",
+                "referencias/catalogo.json",
+                "referencias/medicao-2026-10-15.json",
+                "scripts/localizar.py"
+              ],
               "tier": "T0",
               "modelo": null,
               "depende_de": [],
               "entrada": null,
               "saida": "fontes/mapa_leitura.json",
+              "objetivo": "Indexar os documentos do certame para orientar a leitura do edital.",
+              "criterios": [
+                "Mapeia cláusulas, anexos e páginas sem texto extraído."
+              ],
               "resumo": [
                 "Localiza os documentos e indica a ordem de leitura e os achados."
               ],
@@ -54,60 +83,80 @@
               "cerebro_apoio": false
             }
           ]
-        },
-        {
-          "tipo": "sequencia",
-          "rotulo": "Histórico inicial",
-          "itens": [
-            {
-              "id": "cerebro-g1",
-              "titulo": "Cérebro antes do G1",
-              "skill": "cerebro",
-              "tier": "T1",
-              "modelo": "claude-haiku-5-5",
-              "depende_de": [
-                "resumo",
-                "mapa"
-              ],
-              "entrada": null,
-              "saida": "fontes/cerebro_g1.json",
-              "resumo": [
-                "Busca histórico do órgão, objetos similares e sanções antes do G1.",
-                "Registra pistas numeradas com a empresa titular."
-              ],
-              "restricoes": [
-                "Se a fonte estiver indisponível, registra a limitação. Pista não equivale a prova lida."
-              ],
-              "tolera_falha": false,
-              "cerebro_apoio": false
-            }
-          ]
         }
       ]
     },
     {
       "id": "E1",
-      "titulo": "Edital",
-      "descricao": "Consolida os fatos do edital antes da decisão de prosseguir.",
+      "titulo": "Leitura e Triagem",
+      "objetivo": "Extrair fatos do edital e triar por SQL qual das 4 empresas ativas tem prova própria.",
+      "criterios": [
+        "Lê o edital completo antes de consultar o Cérebro.",
+        "Consulta apenas realmak, nortfort, aforca e una (nunca sublime) distinguindo prova própria de terceiro."
+      ],
+      "descricao": "Consolida os fatos do edital e executa triagem SQL no Cérebro antes do portão G1.",
       "grupos": [
         {
           "tipo": "sequencia",
-          "rotulo": "Leitura do edital",
+          "rotulo": "Leitura e triagem",
           "itens": [
             {
               "id": "edital",
               "titulo": "Análise do edital",
               "skill": "analisar-edital",
+              "skill_origem": "plugin",
+              "skill_caminho": "analisar-edital/SKILL.md",
+              "skill_arquivos": [
+                "SKILL.md",
+                "agents/openai.yaml"
+              ],
               "tier": "T2",
               "modelo": "claude-sonnet-5-5",
               "depende_de": [],
               "entrada": null,
               "saida": "analise/edital.json",
+              "objetivo": "Extrair prazos, exigências de habilitação, declarações, impugnações e pontos de atenção do edital.",
+              "criterios": [
+                "Cada exigência traz cláusula, grupo, fonte e observações verificáveis."
+              ],
               "resumo": [
                 "Lê o edital, TR, ETP, anexos e minutas e registra prazos, exigências, avisos e pontos de atenção."
               ],
               "restricoes": [
                 "Cita a fonte de cada exigência e confere a versão vigente."
+              ],
+              "tolera_falha": false,
+              "cerebro_apoio": false
+            },
+            {
+              "id": "triagem-cerebro",
+              "titulo": "Triagem estruturada no Cérebro",
+              "skill": "cerebro",
+              "skill_origem": "plugin",
+              "skill_caminho": "cerebro/SKILL.md",
+              "skill_arquivos": [
+                "SKILL.md",
+                "agents/openai.yaml"
+              ],
+              "tier": "T2",
+              "modelo": "claude-sonnet-5-5",
+              "depende_de": [
+                "edital"
+              ],
+              "entrada": null,
+              "saida": "fontes/triagem_cerebro.json",
+              "objetivo": "Cruzar exigências eliminatórias do edital com o Cérebro das 4 empresas ativas via SQL estruturado.",
+              "criterios": [
+                "Consulta reg_balanco, vw_atestados_quantitativos e reg_certidao apenas em realmak, nortfort, aforca e una.",
+                "Distingue titularidade própria vs terceiro, base financeira global vs por item e recomenda 1 principal + no máximo 1 reserva."
+              ],
+              "resumo": [
+                "Executa triagem SQL nas 4 empresas ativas (nunca sublime) cruzando balanço, atestados e certidões com o edital.",
+                "Sinaliza ausência de prova própria em exigência eliminatória pesada e aponta pistas para diligência."
+              ],
+              "restricoes": [
+                "Nunca consultar sublime. Documento de terceiro não conta como prova própria.",
+                "Pista numerada não substitui leitura do original."
               ],
               "tolera_falha": false,
               "cerebro_apoio": false
@@ -117,81 +166,560 @@
       ],
       "portao": {
         "id": "G1",
-        "titulo": "Vale disputar?",
+        "titulo": "Triagem e seleção",
+        "objetivo": "Decidir se vale aprofundar e selecionar as 1–2 empresas alvo para E2.",
         "criterios": [
-          "Confere edital, prazos, exigências e história do Cérebro. Cita a empresa do achado ou registra indisponibilidade.",
-          "Os parâmetros atuais do agente são 3 dias corridos de preparo e R$ 100 mil na parcela disputada."
+          "Cruza analise/edital.json com fontes/triagem_cerebro.json das 4 empresas ativas.",
+          "Informa empresas_selecionadas ao seguir; evita gastar +60 min quando não há prova própria plausível."
         ],
         "decisoes": [
           {
             "valor": "seguir",
-            "quando": "Demais casos, inclusive documento de rotina pendente ou atestado comum ainda não localizado."
+            "quando": "Há ao menos 1 empresa elegível ou pista concreta que justifique aprofundamento. Informa empresas_selecionadas.",
+            "destino": "proxima"
           },
           {
             "valor": "parar",
-            "quando": "Trava factual sem solução a tempo, valor abaixo do parâmetro ou objeto fora do foco e da região sem oportunidade financeira."
+            "quando": "Trava factual sem solução a tempo, valor abaixo do mínimo ou objeto fora do foco e da região sem oportunidade financeira.",
+            "destino": "parar"
           },
           {
             "valor": "humano",
-            "quando": "Exigência incomum e eliminatória, busca esgotada e resposta capaz de mudar a decisão ou o lote."
+            "quando": "Exigência eliminatória pesada sem prova própria plausível (trazendo pistas para diligência) ou dúvida decisiva com busca esgotada.",
+            "destino": "humano"
           }
         ]
       }
     },
     {
       "id": "E2",
-      "titulo": "Análises",
-      "descricao": "Pesquisa histórico, habilitação, requisitos técnicos e peças. A consolidação espera os quatro cruzamentos.",
+      "titulo": "Aprofundamento Dirigido",
+      "objetivo": "Aprofundar a habilitação das empresas selecionadas, cotar peças e validar a execução técnica.",
+      "criterios": [
+        "Executa o leque de habilitação apenas para as empresas selecionadas em G1 (demais puladas).",
+        "Análise técnica roda após a consolidação para herdar atestados e CATs validados."
+      ],
+      "descricao": "Aprofunda habilitação dirigida, cota peças em paralelo e consolida a análise técnica com base nas provas validadas.",
       "grupos": [
         {
-          "tipo": "paralelo",
-          "rotulo": "Frentes iniciais",
+          "tipo": "leque",
+          "rotulo": "Habilitação dirigida por empresa",
           "itens": [
             {
-              "id": "cerebro",
-              "titulo": "Subsídio histórico",
-              "skill": "cerebro",
+              "id": "pesquisa-habilitacao-aforca",
+              "titulo": "Pesquisar habilitação · AForça",
+              "skill": "analisar-habilitacao",
+              "skill_origem": "plugin",
+              "skill_caminho": "analisar-habilitacao/SKILL.md",
+              "skill_arquivos": [
+                "SKILL.md",
+                "agents/openai.yaml",
+                "references/delegacao.md",
+                "references/descoberta.md",
+                "references/dossie.md",
+                "references/leitura.md",
+                "scripts/conferir_dossie.py",
+                "scripts/controle_validacao.py",
+                "scripts/descobrir_atestados.py",
+                "scripts/fila_documental.py",
+                "scripts/guardar_original.py",
+                "scripts/ler_original.py",
+                "scripts/reconciliar_original.py"
+              ],
               "tier": "T1",
               "modelo": "claude-haiku-5-5",
               "depende_de": [],
               "entrada": null,
-              "saida": "fontes/cerebro.json",
+              "saida": "fontes/habilitacao/aforca/candidatos.json",
+              "objetivo": "Localizar candidatos de habilitação da AForça para cada exigência do edital.",
+              "criterios": [
+                "Verifica certidões emitíveis na hora em 1 consulta SQL (reg_certidao) sem busca semântica.",
+                "Aprofunda buscas e pistas de triagem_cerebro.json para exigências eliminatórias."
+              ],
               "resumo": [
-                "Pesquisa preços, compras, BDI, atas e recursos e reúne as pistas do G1 e as novas."
+                "Pesquisa as exigências de aforca no Cérebro e na pasta local com base em analise/edital.json e fontes/triagem_cerebro.json."
               ],
               "restricoes": [
-                "Distingue compra efetiva, preço proposto e estimativa. Preserva todos os candidatos pertinentes."
+                "Usa a pauta comum do edital e cita achados do Cérebro pela ref emitida pelo daemon.",
+                "Grava a pauta antes da busca e preserva achados e tentativas a cada consulta."
+              ],
+              "tolera_falha": true,
+              "cerebro_apoio": false
+            },
+            {
+              "id": "baixar-habilitacao-aforca",
+              "titulo": "Baixar candidatos · AForça",
+              "skill": null,
+              "skill_origem": null,
+              "skill_caminho": null,
+              "skill_arquivos": [],
+              "tier": "T0",
+              "modelo": null,
+              "depende_de": [
+                "pesquisa-habilitacao-aforca"
+              ],
+              "entrada": "fontes/habilitacao/aforca/candidatos.json",
+              "saida": "fontes/habilitacao/aforca/downloads.json",
+              "objetivo": "Disponibilizar os originais e textos extraídos dos candidatos da AForça.",
+              "criterios": [
+                "Resolve refs na montagem somente leitura sem copiar binários do acervo."
+              ],
+              "resumo": [
+                "Localiza os originais na montagem somente leitura, extrai texto sem OCR e grava leitura.txt quando disponível."
+              ],
+              "restricoes": [
+                "A saída mantém o link de prova e distingue o caminho do original e o texto opcional.",
+                "Indisponibilidade do servidor de arquivos deixa a leitura pendente."
               ],
               "tolera_falha": false,
               "cerebro_apoio": false
             },
             {
-              "id": "tecnica",
-              "titulo": "Análise técnica",
-              "skill": "analise-tecnica",
+              "id": "habilitacao-aforca",
+              "titulo": "Cruzamento documental · AForça",
+              "skill": "analisar-habilitacao",
+              "skill_origem": "plugin",
+              "skill_caminho": "analisar-habilitacao/SKILL.md",
+              "skill_arquivos": [
+                "SKILL.md",
+                "agents/openai.yaml",
+                "references/delegacao.md",
+                "references/descoberta.md",
+                "references/dossie.md",
+                "references/leitura.md",
+                "scripts/conferir_dossie.py",
+                "scripts/controle_validacao.py",
+                "scripts/descobrir_atestados.py",
+                "scripts/fila_documental.py",
+                "scripts/guardar_original.py",
+                "scripts/ler_original.py",
+                "scripts/reconciliar_original.py"
+              ],
               "tier": "T2",
               "modelo": "claude-sonnet-5-5",
-              "depende_de": [],
+              "depende_de": [
+                "baixar-habilitacao-aforca"
+              ],
               "entrada": null,
-              "saida": "analise/tecnica.json",
+              "saida": "analise/habilitacao/aforca.json",
+              "objetivo": "Confrontar os originais baixados da AForça contra cada exigência do edital.",
+              "criterios": [
+                "Confere titularidade/CNPJ, validade, escopo e quantitativo no original para exigências decisivas."
+              ],
               "resumo": [
-                "Roteia para manutenção ou fornecimento. Registra escopo, requisitos, itens e viabilidade."
+                "Lê o texto extraído de cada candidato e confere titularidade, validade, escopo e quantitativo no original quando decisivos."
               ],
               "restricoes": [
-                "O cenário-base usa o dimensionamento do órgão quando disponível. Na ausência dele, consulta histórico comparável. Premissa que altera equipe ou recomendação fica em cenário alternativo."
+                "Abre o original se faltar texto e lê visualmente páginas relevantes de documento digitalizado.",
+                "Sem prova suficiente, mantém verificar e registra a causa."
+              ],
+              "tolera_falha": true,
+              "cerebro_apoio": false
+            },
+            {
+              "id": "pesquisa-habilitacao-realmak",
+              "titulo": "Pesquisar habilitação · Realmak",
+              "skill": "analisar-habilitacao",
+              "skill_origem": "plugin",
+              "skill_caminho": "analisar-habilitacao/SKILL.md",
+              "skill_arquivos": [
+                "SKILL.md",
+                "agents/openai.yaml",
+                "references/delegacao.md",
+                "references/descoberta.md",
+                "references/dossie.md",
+                "references/leitura.md",
+                "scripts/conferir_dossie.py",
+                "scripts/controle_validacao.py",
+                "scripts/descobrir_atestados.py",
+                "scripts/fila_documental.py",
+                "scripts/guardar_original.py",
+                "scripts/ler_original.py",
+                "scripts/reconciliar_original.py"
+              ],
+              "tier": "T1",
+              "modelo": "claude-haiku-5-5",
+              "depende_de": [],
+              "entrada": null,
+              "saida": "fontes/habilitacao/realmak/candidatos.json",
+              "objetivo": "Localizar candidatos de habilitação da Realmak para cada exigência do edital.",
+              "criterios": [
+                "Verifica certidões emitíveis na hora em 1 consulta SQL (reg_certidao) sem busca semântica.",
+                "Aprofunda buscas e pistas de triagem_cerebro.json para exigências eliminatórias."
+              ],
+              "resumo": [
+                "Pesquisa as exigências de realmak no Cérebro e na pasta local com base em analise/edital.json e fontes/triagem_cerebro.json."
+              ],
+              "restricoes": [
+                "Usa a pauta comum do edital e cita achados do Cérebro pela ref emitida pelo daemon.",
+                "Grava a pauta antes da busca e preserva achados e tentativas a cada consulta."
+              ],
+              "tolera_falha": true,
+              "cerebro_apoio": false
+            },
+            {
+              "id": "baixar-habilitacao-realmak",
+              "titulo": "Baixar candidatos · Realmak",
+              "skill": null,
+              "skill_origem": null,
+              "skill_caminho": null,
+              "skill_arquivos": [],
+              "tier": "T0",
+              "modelo": null,
+              "depende_de": [
+                "pesquisa-habilitacao-realmak"
+              ],
+              "entrada": "fontes/habilitacao/realmak/candidatos.json",
+              "saida": "fontes/habilitacao/realmak/downloads.json",
+              "objetivo": "Disponibilizar os originais e textos extraídos dos candidatos da Realmak.",
+              "criterios": [
+                "Resolve refs na montagem somente leitura sem copiar binários do acervo."
+              ],
+              "resumo": [
+                "Localiza os originais na montagem somente leitura, extrai texto sem OCR e grava leitura.txt quando disponível."
+              ],
+              "restricoes": [
+                "A saída mantém o link de prova e distingue o caminho do original e o texto opcional.",
+                "Indisponibilidade do servidor de arquivos deixa a leitura pendente."
               ],
               "tolera_falha": false,
-              "cerebro_apoio": true
+              "cerebro_apoio": false
+            },
+            {
+              "id": "habilitacao-realmak",
+              "titulo": "Cruzamento documental · Realmak",
+              "skill": "analisar-habilitacao",
+              "skill_origem": "plugin",
+              "skill_caminho": "analisar-habilitacao/SKILL.md",
+              "skill_arquivos": [
+                "SKILL.md",
+                "agents/openai.yaml",
+                "references/delegacao.md",
+                "references/descoberta.md",
+                "references/dossie.md",
+                "references/leitura.md",
+                "scripts/conferir_dossie.py",
+                "scripts/controle_validacao.py",
+                "scripts/descobrir_atestados.py",
+                "scripts/fila_documental.py",
+                "scripts/guardar_original.py",
+                "scripts/ler_original.py",
+                "scripts/reconciliar_original.py"
+              ],
+              "tier": "T2",
+              "modelo": "claude-sonnet-5-5",
+              "depende_de": [
+                "baixar-habilitacao-realmak"
+              ],
+              "entrada": null,
+              "saida": "analise/habilitacao/realmak.json",
+              "objetivo": "Confrontar os originais baixados da Realmak contra cada exigência do edital.",
+              "criterios": [
+                "Confere titularidade/CNPJ, validade, escopo e quantitativo no original para exigências decisivas."
+              ],
+              "resumo": [
+                "Lê o texto extraído de cada candidato e confere titularidade, validade, escopo e quantitativo no original quando decisivos."
+              ],
+              "restricoes": [
+                "Abre o original se faltar texto e lê visualmente páginas relevantes de documento digitalizado.",
+                "Sem prova suficiente, mantém verificar e registra a causa."
+              ],
+              "tolera_falha": true,
+              "cerebro_apoio": false
+            },
+            {
+              "id": "pesquisa-habilitacao-una",
+              "titulo": "Pesquisar habilitação · UNA",
+              "skill": "analisar-habilitacao",
+              "skill_origem": "plugin",
+              "skill_caminho": "analisar-habilitacao/SKILL.md",
+              "skill_arquivos": [
+                "SKILL.md",
+                "agents/openai.yaml",
+                "references/delegacao.md",
+                "references/descoberta.md",
+                "references/dossie.md",
+                "references/leitura.md",
+                "scripts/conferir_dossie.py",
+                "scripts/controle_validacao.py",
+                "scripts/descobrir_atestados.py",
+                "scripts/fila_documental.py",
+                "scripts/guardar_original.py",
+                "scripts/ler_original.py",
+                "scripts/reconciliar_original.py"
+              ],
+              "tier": "T1",
+              "modelo": "claude-haiku-5-5",
+              "depende_de": [],
+              "entrada": null,
+              "saida": "fontes/habilitacao/una/candidatos.json",
+              "objetivo": "Localizar candidatos de habilitação da UNA para cada exigência do edital.",
+              "criterios": [
+                "Verifica certidões emitíveis na hora em 1 consulta SQL (reg_certidao) sem busca semântica.",
+                "Aprofunda buscas e pistas de triagem_cerebro.json para exigências eliminatórias."
+              ],
+              "resumo": [
+                "Pesquisa as exigências de una no Cérebro e na pasta local com base em analise/edital.json e fontes/triagem_cerebro.json."
+              ],
+              "restricoes": [
+                "Usa a pauta comum do edital e cita achados do Cérebro pela ref emitida pelo daemon.",
+                "Grava a pauta antes da busca e preserva achados e tentativas a cada consulta."
+              ],
+              "tolera_falha": true,
+              "cerebro_apoio": false
+            },
+            {
+              "id": "baixar-habilitacao-una",
+              "titulo": "Baixar candidatos · UNA",
+              "skill": null,
+              "skill_origem": null,
+              "skill_caminho": null,
+              "skill_arquivos": [],
+              "tier": "T0",
+              "modelo": null,
+              "depende_de": [
+                "pesquisa-habilitacao-una"
+              ],
+              "entrada": "fontes/habilitacao/una/candidatos.json",
+              "saida": "fontes/habilitacao/una/downloads.json",
+              "objetivo": "Disponibilizar os originais e textos extraídos dos candidatos da UNA.",
+              "criterios": [
+                "Resolve refs na montagem somente leitura sem copiar binários do acervo."
+              ],
+              "resumo": [
+                "Localiza os originais na montagem somente leitura, extrai texto sem OCR e grava leitura.txt quando disponível."
+              ],
+              "restricoes": [
+                "A saída mantém o link de prova e distingue o caminho do original e o texto opcional.",
+                "Indisponibilidade do servidor de arquivos deixa a leitura pendente."
+              ],
+              "tolera_falha": false,
+              "cerebro_apoio": false
+            },
+            {
+              "id": "habilitacao-una",
+              "titulo": "Cruzamento documental · UNA",
+              "skill": "analisar-habilitacao",
+              "skill_origem": "plugin",
+              "skill_caminho": "analisar-habilitacao/SKILL.md",
+              "skill_arquivos": [
+                "SKILL.md",
+                "agents/openai.yaml",
+                "references/delegacao.md",
+                "references/descoberta.md",
+                "references/dossie.md",
+                "references/leitura.md",
+                "scripts/conferir_dossie.py",
+                "scripts/controle_validacao.py",
+                "scripts/descobrir_atestados.py",
+                "scripts/fila_documental.py",
+                "scripts/guardar_original.py",
+                "scripts/ler_original.py",
+                "scripts/reconciliar_original.py"
+              ],
+              "tier": "T2",
+              "modelo": "claude-sonnet-5-5",
+              "depende_de": [
+                "baixar-habilitacao-una"
+              ],
+              "entrada": null,
+              "saida": "analise/habilitacao/una.json",
+              "objetivo": "Confrontar os originais baixados da UNA contra cada exigência do edital.",
+              "criterios": [
+                "Confere titularidade/CNPJ, validade, escopo e quantitativo no original para exigências decisivas."
+              ],
+              "resumo": [
+                "Lê o texto extraído de cada candidato e confere titularidade, validade, escopo e quantitativo no original quando decisivos."
+              ],
+              "restricoes": [
+                "Abre o original se faltar texto e lê visualmente páginas relevantes de documento digitalizado.",
+                "Sem prova suficiente, mantém verificar e registra a causa."
+              ],
+              "tolera_falha": true,
+              "cerebro_apoio": false
+            },
+            {
+              "id": "pesquisa-habilitacao-nortfort",
+              "titulo": "Pesquisar habilitação · Nortfort",
+              "skill": "analisar-habilitacao",
+              "skill_origem": "plugin",
+              "skill_caminho": "analisar-habilitacao/SKILL.md",
+              "skill_arquivos": [
+                "SKILL.md",
+                "agents/openai.yaml",
+                "references/delegacao.md",
+                "references/descoberta.md",
+                "references/dossie.md",
+                "references/leitura.md",
+                "scripts/conferir_dossie.py",
+                "scripts/controle_validacao.py",
+                "scripts/descobrir_atestados.py",
+                "scripts/fila_documental.py",
+                "scripts/guardar_original.py",
+                "scripts/ler_original.py",
+                "scripts/reconciliar_original.py"
+              ],
+              "tier": "T1",
+              "modelo": "claude-haiku-5-5",
+              "depende_de": [],
+              "entrada": null,
+              "saida": "fontes/habilitacao/nortfort/candidatos.json",
+              "objetivo": "Localizar candidatos de habilitação da Nortfort para cada exigência do edital.",
+              "criterios": [
+                "Verifica certidões emitíveis na hora em 1 consulta SQL (reg_certidao) sem busca semântica.",
+                "Aprofunda buscas e pistas de triagem_cerebro.json para exigências eliminatórias."
+              ],
+              "resumo": [
+                "Pesquisa as exigências de nortfort no Cérebro e na pasta local com base em analise/edital.json e fontes/triagem_cerebro.json."
+              ],
+              "restricoes": [
+                "Usa a pauta comum do edital e cita achados do Cérebro pela ref emitida pelo daemon.",
+                "Grava a pauta antes da busca e preserva achados e tentativas a cada consulta."
+              ],
+              "tolera_falha": true,
+              "cerebro_apoio": false
+            },
+            {
+              "id": "baixar-habilitacao-nortfort",
+              "titulo": "Baixar candidatos · Nortfort",
+              "skill": null,
+              "skill_origem": null,
+              "skill_caminho": null,
+              "skill_arquivos": [],
+              "tier": "T0",
+              "modelo": null,
+              "depende_de": [
+                "pesquisa-habilitacao-nortfort"
+              ],
+              "entrada": "fontes/habilitacao/nortfort/candidatos.json",
+              "saida": "fontes/habilitacao/nortfort/downloads.json",
+              "objetivo": "Disponibilizar os originais e textos extraídos dos candidatos da Nortfort.",
+              "criterios": [
+                "Resolve refs na montagem somente leitura sem copiar binários do acervo."
+              ],
+              "resumo": [
+                "Localiza os originais na montagem somente leitura, extrai texto sem OCR e grava leitura.txt quando disponível."
+              ],
+              "restricoes": [
+                "A saída mantém o link de prova e distingue o caminho do original e o texto opcional.",
+                "Indisponibilidade do servidor de arquivos deixa a leitura pendente."
+              ],
+              "tolera_falha": false,
+              "cerebro_apoio": false
+            },
+            {
+              "id": "habilitacao-nortfort",
+              "titulo": "Cruzamento documental · Nortfort",
+              "skill": "analisar-habilitacao",
+              "skill_origem": "plugin",
+              "skill_caminho": "analisar-habilitacao/SKILL.md",
+              "skill_arquivos": [
+                "SKILL.md",
+                "agents/openai.yaml",
+                "references/delegacao.md",
+                "references/descoberta.md",
+                "references/dossie.md",
+                "references/leitura.md",
+                "scripts/conferir_dossie.py",
+                "scripts/controle_validacao.py",
+                "scripts/descobrir_atestados.py",
+                "scripts/fila_documental.py",
+                "scripts/guardar_original.py",
+                "scripts/ler_original.py",
+                "scripts/reconciliar_original.py"
+              ],
+              "tier": "T2",
+              "modelo": "claude-sonnet-5-5",
+              "depende_de": [
+                "baixar-habilitacao-nortfort"
+              ],
+              "entrada": null,
+              "saida": "analise/habilitacao/nortfort.json",
+              "objetivo": "Confrontar os originais baixados da Nortfort contra cada exigência do edital.",
+              "criterios": [
+                "Confere titularidade/CNPJ, validade, escopo e quantitativo no original para exigências decisivas."
+              ],
+              "resumo": [
+                "Lê o texto extraído de cada candidato e confere titularidade, validade, escopo e quantitativo no original quando decisivos."
+              ],
+              "restricoes": [
+                "Abre o original se faltar texto e lê visualmente páginas relevantes de documento digitalizado.",
+                "Sem prova suficiente, mantém verificar e registra a causa."
+              ],
+              "tolera_falha": true,
+              "cerebro_apoio": false
+            }
+          ]
+        },
+        {
+          "tipo": "paralelo",
+          "rotulo": "Consolidação e peças",
+          "itens": [
+            {
+              "id": "habilitacao",
+              "titulo": "Consolidar habilitação",
+              "skill": "analisar-habilitacao",
+              "skill_origem": "plugin",
+              "skill_caminho": "analisar-habilitacao/SKILL.md",
+              "skill_arquivos": [
+                "SKILL.md",
+                "agents/openai.yaml",
+                "references/delegacao.md",
+                "references/descoberta.md",
+                "references/dossie.md",
+                "references/leitura.md",
+                "scripts/conferir_dossie.py",
+                "scripts/controle_validacao.py",
+                "scripts/descobrir_atestados.py",
+                "scripts/fila_documental.py",
+                "scripts/guardar_original.py",
+                "scripts/ler_original.py",
+                "scripts/reconciliar_original.py"
+              ],
+              "tier": "T2",
+              "modelo": "claude-sonnet-5-5",
+              "depende_de": [
+                "habilitacao-aforca",
+                "habilitacao-realmak",
+                "habilitacao-una",
+                "habilitacao-nortfort"
+              ],
+              "entrada": null,
+              "saida": "analise/habilitacao.json",
+              "objetivo": "Consolidar as empresas aprofundadas e resumir as puladas na triagem para escolha em G2.",
+              "criterios": [
+                "Nunca elege preferida entre duas empresas indeterminadas com base apenas em certidões secundárias.",
+                "Preserva provas das aprofundadas e inclui resumo curto da triagem para empresas puladas."
+              ],
+              "resumo": [
+                "Consolida as avaliações das empresas aprofundadas, inclui resumo curto das puladas e aponta mais_aderente só com diferença material decisiva."
+              ],
+              "restricoes": [
+                "Usa parcial válido com rodada_anterior na ordenação e só recria como verificar quando não há avaliação válida.",
+                "Preserva provas, ações, cobertura e lacunas."
+              ],
+              "tolera_falha": true,
+              "cerebro_apoio": false
             },
             {
               "id": "pecas",
               "titulo": "Pesquisar preço de peças e materiais",
               "skill": "cotar-pecas-materiais-licitacoes",
+              "skill_origem": "plugin",
+              "skill_caminho": "cotar-pecas-materiais-licitacoes/SKILL.md",
+              "skill_arquivos": [
+                "SKILL.md",
+                "agents/openai.yaml"
+              ],
               "tier": "T1",
               "modelo": "claude-haiku-5-5",
               "depende_de": [],
               "entrada": null,
               "saida": "fontes/pecas.json",
+              "objetivo": "Levantar preços online e estimativas de peças e materiais em paralelo com a habilitação.",
+              "criterios": [
+                "Registra ofertas verificáveis com link individual ou declara não aplicável quando não há peças."
+              ],
               "resumo": [
                 "Pesquisa histórico e ofertas atuais e registra estimativas, pendências e cobertura."
               ],
@@ -205,341 +733,119 @@
           ]
         },
         {
-          "tipo": "leque",
-          "rotulo": "Habilitação por empresa",
-          "itens": [
-            {
-              "id": "pesquisa-habilitacao-aforca",
-              "titulo": "Pesquisar habilitação · AForça",
-              "skill": "analisar-habilitacao",
-              "tier": "T1",
-              "modelo": "claude-haiku-5-5",
-              "depende_de": [
-                "cerebro"
-              ],
-              "entrada": null,
-              "saida": "fontes/habilitacao/aforca/candidatos.json",
-              "resumo": [
-                "Pesquisa as exigências de aforca no Cérebro e na pasta local e procura cada pista pela identificação disponível."
-              ],
-              "restricoes": [
-                "Usa a pauta comum do edital, uma busca por documento, e cita achados do Cérebro pela ref emitida pelo daemon. Para cópia local sem ref, registra o hash calculado, título e motivo.",
-                "Grava a pauta antes da busca e acrescenta achados plausíveis e tentativas a cada consulta. O cruzamento julga conflitos, titularidade e quantitativos."
-              ],
-              "tolera_falha": true,
-              "cerebro_apoio": false
-            },
-            {
-              "id": "baixar-habilitacao-aforca",
-              "titulo": "Baixar candidatos · AForça",
-              "skill": null,
-              "tier": "T0",
-              "modelo": null,
-              "depende_de": [
-                "pesquisa-habilitacao-aforca"
-              ],
-              "entrada": "fontes/habilitacao/aforca/candidatos.json",
-              "saida": "fontes/habilitacao/aforca/downloads.json",
-              "resumo": [
-                "Localiza os originais na montagem somente leitura, extrai texto sem OCR e grava leitura.txt quando disponível. O binário permanece no acervo."
-              ],
-              "restricoes": [
-                "A saída mantém o link de prova e distingue o caminho do original e o texto opcional.",
-                "Indisponibilidade do servidor de arquivos deixa a leitura pendente."
-              ],
-              "tolera_falha": false,
-              "cerebro_apoio": false
-            },
-            {
-              "id": "habilitacao-aforca",
-              "titulo": "Cruzamento documental · AForça",
-              "skill": "analisar-habilitacao",
-              "tier": "T2",
-              "modelo": "claude-sonnet-5-5",
-              "depende_de": [
-                "baixar-habilitacao-aforca"
-              ],
-              "entrada": null,
-              "saida": "analise/habilitacao/aforca.json",
-              "resumo": [
-                "Lê o texto extraído de cada candidato e confere titularidade, validade, escopo e quantitativo no original quando decisivos."
-              ],
-              "restricoes": [
-                "Abre o original se faltar texto e lê visualmente as páginas relevantes de documento digitalizado. Usa o link de prova fornecido pelo daemon.",
-                "Sem prova suficiente, mantém verificar e registra a causa."
-              ],
-              "tolera_falha": true,
-              "cerebro_apoio": false
-            },
-            {
-              "id": "pesquisa-habilitacao-realmak",
-              "titulo": "Pesquisar habilitação · Realmak",
-              "skill": "analisar-habilitacao",
-              "tier": "T1",
-              "modelo": "claude-haiku-5-5",
-              "depende_de": [
-                "cerebro"
-              ],
-              "entrada": null,
-              "saida": "fontes/habilitacao/realmak/candidatos.json",
-              "resumo": [
-                "Pesquisa as exigências de realmak no Cérebro e na pasta local e procura cada pista pela identificação disponível."
-              ],
-              "restricoes": [
-                "Usa a pauta comum do edital, uma busca por documento, e cita achados do Cérebro pela ref emitida pelo daemon. Para cópia local sem ref, registra o hash calculado, título e motivo.",
-                "Grava a pauta antes da busca e acrescenta achados plausíveis e tentativas a cada consulta. O cruzamento julga conflitos, titularidade e quantitativos."
-              ],
-              "tolera_falha": true,
-              "cerebro_apoio": false
-            },
-            {
-              "id": "baixar-habilitacao-realmak",
-              "titulo": "Baixar candidatos · Realmak",
-              "skill": null,
-              "tier": "T0",
-              "modelo": null,
-              "depende_de": [
-                "pesquisa-habilitacao-realmak"
-              ],
-              "entrada": "fontes/habilitacao/realmak/candidatos.json",
-              "saida": "fontes/habilitacao/realmak/downloads.json",
-              "resumo": [
-                "Localiza os originais na montagem somente leitura, extrai texto sem OCR e grava leitura.txt quando disponível. O binário permanece no acervo."
-              ],
-              "restricoes": [
-                "A saída mantém o link de prova e distingue o caminho do original e o texto opcional.",
-                "Indisponibilidade do servidor de arquivos deixa a leitura pendente."
-              ],
-              "tolera_falha": false,
-              "cerebro_apoio": false
-            },
-            {
-              "id": "habilitacao-realmak",
-              "titulo": "Cruzamento documental · Realmak",
-              "skill": "analisar-habilitacao",
-              "tier": "T2",
-              "modelo": "claude-sonnet-5-5",
-              "depende_de": [
-                "baixar-habilitacao-realmak"
-              ],
-              "entrada": null,
-              "saida": "analise/habilitacao/realmak.json",
-              "resumo": [
-                "Lê o texto extraído de cada candidato e confere titularidade, validade, escopo e quantitativo no original quando decisivos."
-              ],
-              "restricoes": [
-                "Abre o original se faltar texto e lê visualmente as páginas relevantes de documento digitalizado. Usa o link de prova fornecido pelo daemon.",
-                "Sem prova suficiente, mantém verificar e registra a causa."
-              ],
-              "tolera_falha": true,
-              "cerebro_apoio": false
-            },
-            {
-              "id": "pesquisa-habilitacao-una",
-              "titulo": "Pesquisar habilitação · UNA",
-              "skill": "analisar-habilitacao",
-              "tier": "T1",
-              "modelo": "claude-haiku-5-5",
-              "depende_de": [
-                "cerebro"
-              ],
-              "entrada": null,
-              "saida": "fontes/habilitacao/una/candidatos.json",
-              "resumo": [
-                "Pesquisa as exigências de una no Cérebro e na pasta local e procura cada pista pela identificação disponível."
-              ],
-              "restricoes": [
-                "Usa a pauta comum do edital, uma busca por documento, e cita achados do Cérebro pela ref emitida pelo daemon. Para cópia local sem ref, registra o hash calculado, título e motivo.",
-                "Grava a pauta antes da busca e acrescenta achados plausíveis e tentativas a cada consulta. O cruzamento julga conflitos, titularidade e quantitativos."
-              ],
-              "tolera_falha": true,
-              "cerebro_apoio": false
-            },
-            {
-              "id": "baixar-habilitacao-una",
-              "titulo": "Baixar candidatos · UNA",
-              "skill": null,
-              "tier": "T0",
-              "modelo": null,
-              "depende_de": [
-                "pesquisa-habilitacao-una"
-              ],
-              "entrada": "fontes/habilitacao/una/candidatos.json",
-              "saida": "fontes/habilitacao/una/downloads.json",
-              "resumo": [
-                "Localiza os originais na montagem somente leitura, extrai texto sem OCR e grava leitura.txt quando disponível. O binário permanece no acervo."
-              ],
-              "restricoes": [
-                "A saída mantém o link de prova e distingue o caminho do original e o texto opcional.",
-                "Indisponibilidade do servidor de arquivos deixa a leitura pendente."
-              ],
-              "tolera_falha": false,
-              "cerebro_apoio": false
-            },
-            {
-              "id": "habilitacao-una",
-              "titulo": "Cruzamento documental · UNA",
-              "skill": "analisar-habilitacao",
-              "tier": "T2",
-              "modelo": "claude-sonnet-5-5",
-              "depende_de": [
-                "baixar-habilitacao-una"
-              ],
-              "entrada": null,
-              "saida": "analise/habilitacao/una.json",
-              "resumo": [
-                "Lê o texto extraído de cada candidato e confere titularidade, validade, escopo e quantitativo no original quando decisivos."
-              ],
-              "restricoes": [
-                "Abre o original se faltar texto e lê visualmente as páginas relevantes de documento digitalizado. Usa o link de prova fornecido pelo daemon.",
-                "Sem prova suficiente, mantém verificar e registra a causa."
-              ],
-              "tolera_falha": true,
-              "cerebro_apoio": false
-            },
-            {
-              "id": "pesquisa-habilitacao-nortfort",
-              "titulo": "Pesquisar habilitação · Nortfort",
-              "skill": "analisar-habilitacao",
-              "tier": "T1",
-              "modelo": "claude-haiku-5-5",
-              "depende_de": [
-                "cerebro"
-              ],
-              "entrada": null,
-              "saida": "fontes/habilitacao/nortfort/candidatos.json",
-              "resumo": [
-                "Pesquisa as exigências de nortfort no Cérebro e na pasta local e procura cada pista pela identificação disponível."
-              ],
-              "restricoes": [
-                "Usa a pauta comum do edital, uma busca por documento, e cita achados do Cérebro pela ref emitida pelo daemon. Para cópia local sem ref, registra o hash calculado, título e motivo.",
-                "Grava a pauta antes da busca e acrescenta achados plausíveis e tentativas a cada consulta. O cruzamento julga conflitos, titularidade e quantitativos."
-              ],
-              "tolera_falha": true,
-              "cerebro_apoio": false
-            },
-            {
-              "id": "baixar-habilitacao-nortfort",
-              "titulo": "Baixar candidatos · Nortfort",
-              "skill": null,
-              "tier": "T0",
-              "modelo": null,
-              "depende_de": [
-                "pesquisa-habilitacao-nortfort"
-              ],
-              "entrada": "fontes/habilitacao/nortfort/candidatos.json",
-              "saida": "fontes/habilitacao/nortfort/downloads.json",
-              "resumo": [
-                "Localiza os originais na montagem somente leitura, extrai texto sem OCR e grava leitura.txt quando disponível. O binário permanece no acervo."
-              ],
-              "restricoes": [
-                "A saída mantém o link de prova e distingue o caminho do original e o texto opcional.",
-                "Indisponibilidade do servidor de arquivos deixa a leitura pendente."
-              ],
-              "tolera_falha": false,
-              "cerebro_apoio": false
-            },
-            {
-              "id": "habilitacao-nortfort",
-              "titulo": "Cruzamento documental · Nortfort",
-              "skill": "analisar-habilitacao",
-              "tier": "T2",
-              "modelo": "claude-sonnet-5-5",
-              "depende_de": [
-                "baixar-habilitacao-nortfort"
-              ],
-              "entrada": null,
-              "saida": "analise/habilitacao/nortfort.json",
-              "resumo": [
-                "Lê o texto extraído de cada candidato e confere titularidade, validade, escopo e quantitativo no original quando decisivos."
-              ],
-              "restricoes": [
-                "Abre o original se faltar texto e lê visualmente as páginas relevantes de documento digitalizado. Usa o link de prova fornecido pelo daemon.",
-                "Sem prova suficiente, mantém verificar e registra a causa."
-              ],
-              "tolera_falha": true,
-              "cerebro_apoio": false
-            }
-          ]
-        },
-        {
           "tipo": "sequencia",
-          "rotulo": "Consolidar habilitação",
+          "rotulo": "Análise técnica coerente",
           "itens": [
             {
-              "id": "habilitacao",
-              "titulo": "Consolidar habilitação",
-              "skill": "analisar-habilitacao",
+              "id": "tecnica",
+              "titulo": "Análise técnica",
+              "skill": "analise-tecnica",
+              "skill_origem": "agente",
+              "skill_caminho": "analisador-edital/skills/analise-tecnica/SKILL.md",
+              "skill_arquivos": [
+                "SKILL.md",
+                "referencias/DECISOES.md"
+              ],
               "tier": "T2",
               "modelo": "claude-sonnet-5-5",
               "depende_de": [
-                "habilitacao-aforca",
-                "habilitacao-realmak",
-                "habilitacao-una",
-                "habilitacao-nortfort"
+                "habilitacao"
               ],
               "entrada": null,
-              "saida": "analise/habilitacao.json",
+              "saida": "analise/tecnica.json",
+              "objetivo": "Avaliar escopo, dimensionamento e viabilidade técnica herdando as provas validadas da habilitação.",
+              "criterios": [
+                "Depende de analise/habilitacao.json e nunca contradiz atestados ou CATs já validados.",
+                "Usa o dimensionamento do órgão no cenário-base e isola premissas decisivas em cenário alternativo."
+              ],
               "resumo": [
-                "Consolida as quatro avaliações e aponta a empresa mais aderente quando houver diferença material de cobertura."
+                "Roteia para manutenção ou fornecimento, herda os atestados/CATs de habilitacao.json e registra escopo, requisitos e viabilidade."
               ],
               "restricoes": [
-                "Usa parcial válido com rodada_anterior na ordenação e identifica sua origem no resultado. Só recria como verificar quando não há avaliação válida.",
-                "Preserva provas, ações, cobertura e lacunas."
+                "O cenário-base usa o dimensionamento do órgão quando disponível.",
+                "Premissa que altera equipe ou recomendação fica em cenário alternativo."
               ],
-              "tolera_falha": true,
-              "cerebro_apoio": false
+              "tolera_falha": false,
+              "cerebro_apoio": true
             }
           ]
         }
       ],
       "portao": {
         "id": "G2",
-        "titulo": "Vale precificar?",
+        "titulo": "Cobertura e escolha",
+        "objetivo": "Validar cobertura eliminatória após E2 e definir a empresa_escolhida para precificação.",
         "criterios": [
-          "Confere cobertura de cada exigência eliminatória nos quatro parciais, consolidação e conclusão técnica.",
-          "Falha de acesso ou falta de prova mantém a lacuna; não demonstra impedimento."
+          "Confere habilitacao.json, parciais aprofundados e tecnica.json.",
+          "Informa empresa_escolhida ao seguir; não manda precificar sem cobertura eliminatória."
         ],
         "decisoes": [
           {
             "valor": "seguir",
-            "quando": "Demais casos ou lacuna persistente após nova rodada. Precifica sob condição quando faltar prova."
+            "quando": "Há empresa coberta para precificar. Informa empresa_escolhida.",
+            "destino": "proxima"
           },
           {
             "valor": "parar",
-            "quando": "Impedimento comprovado para todas as empresas a tempo, inviabilidade técnica documentada ou fornecimento muito acima do estimado sem alternativa."
+            "quando": "Nenhuma empresa habilitável a tempo, ausência de cobertura eliminatória sem saída ou inviabilidade técnica documentada.",
+            "destino": "parar"
           },
           {
             "valor": "humano",
-            "quando": "Exigência incomum e eliminatória, busca esgotada e resposta capaz de mudar a decisão ou o lote. Também cabe exceção estratégica."
+            "quando": "Nenhuma empresa comprovou exigência eliminatória após E2 mas há diligência viável, ou exceção estratégica.",
+            "destino": "humano"
           },
           {
             "valor": "rerodar",
-            "quando": "Primeira rodada com exigência eliminatória sem prova lida e pesquisa falha ou incompleta. Repete a fase afetada e suas dependências posteriores."
+            "quando": "Somente diante de erro real de busca/download (pesquisa_incompleta/falha técnica) ou pista concreta não lida capaz de mudar o veredito.",
+            "destino": "rerodar"
           }
         ]
       }
     },
     {
       "id": "E3",
-      "titulo": "Preço",
-      "descricao": "Calcula preço e exequibilidade após a decisão do G2.",
+      "titulo": "Precificação e Score",
+      "objetivo": "Precificar a empresa escolhida em G2 e calcular o score final do card.",
+      "criterios": [
+        "Precifica estritamente a empresa_escolhida de G2 gravando empresa_precificada.",
+        "Score determinístico consolida habilitação, técnica e margem para o fechamento."
+      ],
+      "descricao": "Calcula preço, exequibilidade e score após a escolha da empresa em G2.",
       "grupos": [
         {
           "tipo": "sequencia",
-          "rotulo": "Custos e preço",
+          "rotulo": "Preço e score",
           "itens": [
             {
               "id": "precificacao",
               "titulo": "Precificação e exequibilidade",
               "skill": "precificar-proposta-exequibilidade",
+              "skill_origem": "plugin",
+              "skill_caminho": "precificar-proposta-exequibilidade/SKILL.md",
+              "skill_arquivos": [
+                "SKILL.md",
+                "agents/openai.yaml",
+                "assets/base-custos-exemplo.json",
+                "references/base-custos.md",
+                "references/planilha.md",
+                "scripts/consultar_base.py",
+                "scripts/ingerir_custos.py",
+                "scripts/preencher_planilha.py"
+              ],
               "tier": "T2",
               "modelo": "claude-sonnet-5-5",
               "depende_de": [],
               "entrada": null,
               "saida": "analise/precificacao.json",
+              "objetivo": "Formar preço e exequibilidade exclusivamente para a empresa_escolhida em G2.",
+              "criterios": [
+                "Grava empresa_precificada idêntica à empresa_escolhida de G2.",
+                "Bloqueia planilha de manutenção em obra/reforma sem planilha orçamentária válida.",
+                "Não reaplica encargos sobre custo-hora cheio e explicita faixa/ressalva tributária quando alíquota ausente ou n=1."
+              ],
               "resumo": [
-                "Calcula custos, preço, tributos, margem e cenários. Em manutenção, preenche a planilha pelo script da skill."
+                "Calcula custos, preço, tributos, margem e cenários para a empresa_escolhida. Em manutenção, preenche a planilha pelo script da skill."
               ],
               "restricoes": [
                 "Mantém subtotais fundamentados e reserva para lacunas sem duplicar custos.",
@@ -547,29 +853,29 @@
               ],
               "tolera_falha": false,
               "cerebro_apoio": false
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "E4",
-      "titulo": "Score",
-      "descricao": "Calcula o score antes do fechamento.",
-      "grupos": [
-        {
-          "tipo": "sequencia",
-          "rotulo": "Score e trava",
-          "itens": [
+            },
             {
               "id": "score",
               "titulo": "Score e nota",
               "skill": "score",
+              "skill_origem": "agente",
+              "skill_caminho": "analisador-edital/skills/score/SKILL.md",
+              "skill_arquivos": [
+                "SKILL.md",
+                "referencias/DECISOES.md",
+                "scripts/score.py"
+              ],
               "tier": "T0",
               "modelo": null,
-              "depende_de": [],
+              "depende_de": [
+                "precificacao"
+              ],
               "entrada": null,
               "saida": "relatorio/topo.json",
+              "objetivo": "Calcular score 0–100 e nota 1–5 determinísticos a partir das saídas consolidadas.",
+              "criterios": [
+                "Combina participação (30), execução (30) e margem (40) após precificacao."
+              ],
               "resumo": [
                 "Calcula a régua de participação, execução e lucro e publica nota, trava e avisos."
               ],
@@ -585,22 +891,26 @@
       "portao": {
         "id": "G3",
         "titulo": "Fechamento",
+        "objetivo": "Conferir coerência final entre empresa, técnica, precificação e score antes de publicar.",
         "criterios": [
-          "Confronta recomendação e trava com a origem das horas, equipe, custos e margem.",
-          "A orientação acompanha a nota do score. Premissa decisiva isolada não impõe nota 1."
+          "Exige precificacao.empresa_precificada igual a G2.empresa_escolhida e ausência de arquivos desatualizados.",
+          "Confere ressalvas tributárias/técnicas explícitas e premissas decisivas."
         ],
         "decisoes": [
           {
             "valor": "seguir",
-            "quando": "Relatório coerente e fundamento conferido, ou conclusão condicionada com lacuna explícita."
+            "quando": "Relatório coerente, empresa consistente e ressalvas tributárias/técnicas explícitas.",
+            "destino": "proxima"
           },
           {
             "valor": "humano",
-            "quando": "Exigência incomum e eliminatória, busca esgotada e resposta capaz de mudar a decisão ou o lote. Também cabe exceção estratégica."
+            "quando": "Exigência eliminatória em aberto com busca esgotada ou exceção estratégica comercial.",
+            "destino": "humano"
           },
           {
             "valor": "rerodar",
-            "quando": "Uma vez quando premissa decisiva sustenta a recomendação ou a trava, ou quando as saídas se contradizem. Indica os itens afetados."
+            "quando": "Uma vez se houver divergência de empresa, contradição entre saídas ou premissa decisiva sustentando trava.",
+            "destino": "rerodar"
           }
         ]
       }
