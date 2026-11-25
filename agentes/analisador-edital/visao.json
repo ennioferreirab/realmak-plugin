@@ -4,7 +4,7 @@
   "titulo": "Analisador de Edital",
   "gerado_de": {
     "plugin_versao": "0.15.0",
-    "fluxo_sha256": "de37ccd994fd2890f5cd0caa4dc3dc0022d912ec8368066cd21d4cc0b3894283"
+    "fluxo_sha256": "8e3f4e5266bc20343825bdc36c231844d9f2be3d901c1fd6d807c5d39c736ffb"
   },
   "resumo": "Analisa o edital, tria as 4 empresas ativas no Cérebro, aprofunda somente as elegíveis e calcula execução, preço e score para revisão humana.",
   "etapas": [
@@ -243,7 +243,7 @@
                 "Usa a pauta comum do edital e cita achados do Cérebro pela ref emitida pelo daemon.",
                 "Grava a pauta antes da busca e preserva achados e tentativas a cada consulta."
               ],
-              "tolera_falha": true,
+              "tolera_falha": false,
               "cerebro_apoio": false
             },
             {
@@ -354,7 +354,7 @@
                 "Usa a pauta comum do edital e cita achados do Cérebro pela ref emitida pelo daemon.",
                 "Grava a pauta antes da busca e preserva achados e tentativas a cada consulta."
               ],
-              "tolera_falha": true,
+              "tolera_falha": false,
               "cerebro_apoio": false
             },
             {
@@ -465,7 +465,7 @@
                 "Usa a pauta comum do edital e cita achados do Cérebro pela ref emitida pelo daemon.",
                 "Grava a pauta antes da busca e preserva achados e tentativas a cada consulta."
               ],
-              "tolera_falha": true,
+              "tolera_falha": false,
               "cerebro_apoio": false
             },
             {
@@ -576,7 +576,7 @@
                 "Usa a pauta comum do edital e cita achados do Cérebro pela ref emitida pelo daemon.",
                 "Grava a pauta antes da busca e preserva achados e tentativas a cada consulta."
               ],
-              "tolera_falha": true,
+              "tolera_falha": false,
               "cerebro_apoio": false
             },
             {

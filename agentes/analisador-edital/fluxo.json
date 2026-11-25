@@ -77,8 +77,7 @@
           "empresa": "aforca",
           "skill": "analisar-habilitacao",
           "passos": "pesquisa e localização somente para aforca com base em analise/edital.json e fontes/triagem_cerebro.json; certidões emitíveis em 1 SQL",
-          "saida": "fontes/habilitacao/aforca/candidatos.json",
-          "tolera_falha": true
+          "saida": "fontes/habilitacao/aforca/candidatos.json"
         },
         {
           "id": "baixar-habilitacao-aforca",
@@ -114,8 +113,7 @@
           "empresa": "realmak",
           "skill": "analisar-habilitacao",
           "passos": "pesquisa e localização somente para realmak com base em analise/edital.json e fontes/triagem_cerebro.json; certidões emitíveis em 1 SQL",
-          "saida": "fontes/habilitacao/realmak/candidatos.json",
-          "tolera_falha": true
+          "saida": "fontes/habilitacao/realmak/candidatos.json"
         },
         {
           "id": "baixar-habilitacao-realmak",
@@ -151,8 +149,7 @@
           "empresa": "una",
           "skill": "analisar-habilitacao",
           "passos": "pesquisa e localização somente para una com base em analise/edital.json e fontes/triagem_cerebro.json; certidões emitíveis em 1 SQL",
-          "saida": "fontes/habilitacao/una/candidatos.json",
-          "tolera_falha": true
+          "saida": "fontes/habilitacao/una/candidatos.json"
         },
         {
           "id": "baixar-habilitacao-una",
@@ -188,8 +185,7 @@
           "empresa": "nortfort",
           "skill": "analisar-habilitacao",
           "passos": "pesquisa e localização somente para nortfort com base em analise/edital.json e fontes/triagem_cerebro.json; certidões emitíveis em 1 SQL",
-          "saida": "fontes/habilitacao/nortfort/candidatos.json",
-          "tolera_falha": true
+          "saida": "fontes/habilitacao/nortfort/candidatos.json"
         },
         {
           "id": "baixar-habilitacao-nortfort",
