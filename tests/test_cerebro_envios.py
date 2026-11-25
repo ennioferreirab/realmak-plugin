@@ -214,6 +214,7 @@ def test_instrucoes_servidor_refletem_cerebro_enviar():
     assert "historico_omitido.aviso" in SERVER_INSTRUCOES
     assert "há versão posterior" in SERVER_INSTRUCOES
     assert "substitui_sha256` e `substitui_caminho` do MESMO documento antigo" in SERVER_INSTRUCOES
+    assert "comprovante de inscrição e de situação cadastral" in SERVER_INSTRUCOES
 
 
 async def test_cerebro_buscar_incluir_historico_e_estado_documento(monkeypatch, tmp_path):
