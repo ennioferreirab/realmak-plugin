@@ -124,7 +124,7 @@ async def licitacao_criar(
     uf_local: Annotated[str | None, Field(description="UF do local de execução, se diferente da UF do órgão.")] = None,
     valor_estimado: Annotated[float | None, Field(ge=0, allow_inf_nan=False, description="Valor estimado em reais.")] = None,
 ) -> str:
-    """Localiza ou cria um card no Acervo. Leia só o necessário (órgão, objeto, datas, valor e identificadores; não pagine itens) e deixe `empresa` em branco salvo se o usuário nomear. Procura primeiro no ConLicitação, depois PNCP e Compras.gov. Em PNCP ou ConLicitação, não baixe nem anexe arquivos: a plataforma baixa ao mover o card para Análise IA. Só em link de portal ou Compras sem documentos, oriente enviar o edital pelo card. Devolve `link_card`, `chave`, `fonte` e `proximos_passos`."""
+    """Localiza ou cria um card no Acervo (o card permanece no Acervo; nunca mude nem sugira mudar de etapa sem pedido explícito do usuário). Leia só o necessário (órgão, objeto, datas, valor e identificadores; não pagine itens) e deixe `empresa` em branco salvo se o usuário nomear. Procura primeiro no ConLicitação, depois PNCP e Compras.gov. Em PNCP ou ConLicitação, não baixe nem anexe arquivos: quando o usuário mover para Análise IA, a plataforma baixa automaticamente. Só em link de portal ou Compras sem documentos, oriente enviar o edital pelo card. Devolve `link_card`, `chave`, `fonte` e `proximos_passos`."""
     dados: dict[str, Any] = {k: v.strip() for k, v in (
         ("orgao", orgao), ("uasg", uasg), ("edital", numero_edital), ("processo", processo),
         ("titulo", titulo), ("objeto", objeto), ("cidade", cidade), ("uf", uf), ("situacao", situacao),
@@ -350,9 +350,9 @@ INSTRUCOES = (
     "- Comece por licitacao_pasta (ou licitacao_buscar para achar a licitação). O JSON traz ids de documentos.\n"
     "- Para acompanhar pendências e prazos de Análise humana e Disputa, use visao_geral_pendencias; para o detalhe "
     "calculado de um card na Visão geral, use visao_geral_licitacao (ambas somente leitura).\n"
-    "- Para adicionar licitação, use licitacao_criar (padrão: criar no Acervo, sem perguntar empresa disputante e sem paginar itens). "
-    "Em PNCP ou ConLicitação, não baixe nem anexe documentos: a plataforma baixa automaticamente ao mover para Análise IA. "
-    "Só em portal externo ou Compras sem documentos, oriente enviar o edital pelo card. Devolve link_card e o próximo passo (mover para Análise IA).\n"
+    "- Para adicionar licitação, use licitacao_criar (padrão: criar no Acervo, sem perguntar empresa disputante e sem paginar itens; nunca mude nem sugira mudar de etapa sem pedido explícito do usuário). "
+    "Em PNCP ou ConLicitação, não baixe nem anexe documentos: quando o usuário mover para Análise IA, a plataforma baixa automaticamente. "
+    "Só em portal externo ou Compras sem documentos, oriente enviar o edital pelo card. Devolve link_card e a situação da etapa atual.\n"
     "- Ao começar a trabalhar numa licitação, chame licitacao_status com estado trabalhando; ao terminar, "
     "concluido; se precisar do analista, aguardando.\n"
     "- Localize e cite passagens do card com licitacao_buscar_fontes. Leia o edital com licitacao_ler_texto; edital prevalece sobre manifesto e resumo do ConLicitação. "

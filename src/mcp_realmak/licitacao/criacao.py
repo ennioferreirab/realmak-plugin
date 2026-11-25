@@ -27,25 +27,36 @@ def _link_card(card: dict) -> str:
     return f"{base}{caminho}" if base else caminho
 
 
-def _proximos_passos(fonte: str, *, somente_conferir: bool = False) -> list[str]:
-    if fonte in ("pncp", "conlicitacao"):
-        if somente_conferir:
+def _proximos_passos(
+    fonte: str,
+    *,
+    etapa: str | None = None,
+    criado: bool = False,
+    somente_conferir: bool = False,
+) -> list[str]:
+    if somente_conferir:
+        if fonte in ("pncp", "conlicitacao"):
             return [
                 "Use somente_conferir=false para criar o card no Acervo. "
-                "Não baixe nem anexe documentos: a plataforma baixa automaticamente ao mover o card para Análise IA."
+                "Não baixe nem anexe documentos: quando o usuário mover para Análise IA, a plataforma baixa automaticamente."
             ]
         return [
-            "Mova o card para Análise IA para disparar a análise; "
-            "a plataforma baixa os documentos automaticamente."
-        ]
-    if somente_conferir:
-        return [
             "Use somente_conferir=false para criar o card no Acervo; "
-            "depois envie o edital pelo card e mova para Análise IA."
+            "depois o usuário envia o edital pelo card antes de mover para Análise IA."
+        ]
+    etapa_texto = (etapa or "").strip()
+    em_acervo = not etapa_texto or etapa_texto.casefold() == "acervo"
+    if not em_acervo:
+        return [f"Card já está na etapa {etapa_texto}."]
+    prefixo = "Card criado no Acervo." if criado else "Card já está no Acervo."
+    if fonte in ("pncp", "conlicitacao"):
+        return [
+            f"{prefixo} Quando você mover para Análise IA, "
+            "a plataforma baixa os documentos e dispara a análise."
         ]
     return [
-        "Envie o edital e anexos pelo card (essa fonte não baixa documentos automaticamente) "
-        "e mova para Análise IA para disparar a análise."
+        f"{prefixo} Envie o edital e anexos pelo card (essa fonte não baixa documentos automaticamente); "
+        "quando você mover para Análise IA, a análise será disparada."
     ]
 
 
@@ -63,7 +74,7 @@ def resultado(card: dict, criado: bool, tentativas: list[str], **campos: Any) ->
         "licitacao": card, "chave": card["chave"], "fonte": card["fonte"],
         "link_card": _link_card(card),
         "criado": criado, "ja_existia": not criado, "tentativas": tentativas,
-        "proximos_passos": _proximos_passos(card["fonte"]),
+        "proximos_passos": _proximos_passos(card["fonte"], etapa=card.get("etapa"), criado=criado),
         **campos,
     }
 

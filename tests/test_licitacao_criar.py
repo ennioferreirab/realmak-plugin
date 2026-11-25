@@ -142,9 +142,12 @@ async def test_conlicitacao_importa_depois_de_conferir_sem_usar_outra_fonte(monk
 async def test_proximos_passos_e_link_card_por_fonte_e_numero_edital_preservado(monkeypatch):
     monkeypatch.setenv("MCP_REALMAK_PUBLIC_URL", "https://realmak.duckdns.org")
     controle = "02292266000180-1-000164/2026"
-    card_pncp = {"id": 6623, "chave": "pncp-02292266000180-1-000164-2026", "fonte": "pncp"}
+    card_em_analise = {
+        "id": 6623, "chave": "pncp-02292266000180-1-000164-2026",
+        "fonte": "pncp", "etapa": "Análise IA",
+    }
     crm = AsyncMock()
-    crm.chamar.return_value = {"chave": card_pncp["chave"], "licitacao": card_pncp, "existe": True}
+    crm.chamar.return_value = {"chave": card_em_analise["chave"], "licitacao": card_em_analise, "existe": True}
     monkeypatch.setattr(criacao, "localizar_conlicitacao", AsyncMock(return_value=None))
     monkeypatch.setattr(criacao, "consultar_pncp", AsyncMock(return_value={
         "numeroControlePNCP": controle, "numeroCompra": "124137", "anoCompra": 2026,
@@ -152,17 +155,32 @@ async def test_proximos_passos_e_link_card_por_fonte_e_numero_edital_preservado(
         "unidadeOrgao": {"codigoUnidade": "926415"},
     }))
 
-    res_pncp = await criacao.criar(
+    # Card já em Análise IA: informa a etapa atual sem instrução de mover.
+    res_analise = await criacao.criar(
         crm, "https://pncp.gov.br/app/editais/02292266000180/2026/164",
         None, None, {"edital": "47/2026"}, None, None, True,
     )
-    assert res_pncp["link_card"] == "https://realmak.duckdns.org/odoo/licitacoes/6623"
-    assert all("licitacao_enviar_arquivo" not in p for p in res_pncp["proximos_passos"])
-    assert any("Análise IA" in p and "automaticamente" in p for p in res_pncp["proximos_passos"])
+    assert res_analise["link_card"] == "https://realmak.duckdns.org/odoo/licitacoes/6623"
+    assert res_analise["proximos_passos"] == ["Card já está na etapa Análise IA."]
+    assert all("mover" not in p.casefold() and "mova" not in p.casefold() for p in res_analise["proximos_passos"])
     assert crm.chamar.await_args.args[1]["dados"]["edital"] == "47/2026"
 
-    card_portal = {"id": 7001, "chave": "url-0123456789abcdef", "fonte": "portal"}
+    # Card criado no Acervo (PNCP): texto informativo sem ordenar mover.
+    card_acervo = {
+        "id": 6624, "chave": "pncp-02292266000180-1-000165-2026",
+        "fonte": "pncp", "etapa": "Acervo",
+    }
+    res_acervo = criacao.resultado(card_acervo, True, ["ConLicitação", "PNCP"])
+    assert res_acervo["link_card"] == "https://realmak.duckdns.org/odoo/licitacoes/6624"
+    assert res_acervo["proximos_passos"] == [
+        "Card criado no Acervo. Quando você mover para Análise IA, "
+        "a plataforma baixa os documentos e dispara a análise."
+    ]
+    assert all("licitacao_enviar_arquivo" not in p for p in res_acervo["proximos_passos"])
+
+    # Card criado no Acervo (portal): orienta envio pelo card sem sugerir mover.
+    card_portal = {"id": 7001, "chave": "url-0123456789abcdef", "fonte": "portal", "etapa": "Acervo"}
     res_portal = criacao.resultado(card_portal, True, ["ConLicitação", "PNCP"])
     assert res_portal["link_card"] == "https://realmak.duckdns.org/odoo/licitacoes/7001"
-    assert all("licitacao_enviar_arquivo" not in p for p in res_portal["proximos_passos"])
-    assert any("pelo card" in p and "Análise IA" in p for p in res_portal["proximos_passos"])
+    assert all("licitacao_enviar_arquivo" not in p and "mova" not in p.casefold() for p in res_portal["proximos_passos"])
+    assert any("Card criado no Acervo." in p and "pelo card" in p for p in res_portal["proximos_passos"])
