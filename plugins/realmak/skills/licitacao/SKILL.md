@@ -80,9 +80,13 @@ Quando a tarefa autorizar atualização de status, marque `trabalhando` ao come�
 
 ## Adicionar uma licitação
 
-- Use `licitacao_criar` com o link, ID ConLicitação, controle PNCP ou os dados do certame (processo ou edital com órgão/UASG). A ferramenta confere se o card já existe e dá prioridade à fonte ConLicitação, depois às fontes oficiais.
-- Se a busca pedir o link oficial, localize o edital na internet ou no portal do órgão. Leia a página e o edital antes de chamar `licitacao_criar` com o link e os dados confirmados (órgão, edital, processo, objeto, local, datas e valor, quando disponíveis). A mesma chamada pode preencher campos vazios de um card externo existente.
-- Abra `licitacao_pasta` pela chave devolvida. Confira fonte, empresa disputante e pasta de trabalho. Baixe na fonte os originais que faltarem, envie edital e anexos com `licitacao_enviar_arquivo` e complete os dados do card.
+- **Padrão:** criar o card no Acervo via `licitacao_criar` (confirme antes em uma frase curta, ex.: "Crio no Acervo?").
+- **Empresa disputante:** não pergunte; deixe `empresa` em branco, salvo se o usuário nomear.
+- **Leitura mínima:** leia só órgão, objeto, datas, valor e identificadores para criar o card. Não pagine lista de itens.
+- **Número do edital:** preencha `numero_edital` com o número do próprio edital (cabeçalho) e cite o sequencial do PNCP apenas como referência.
+- **Documentos (PNCP ou ConLicitação):** não baixe nem anexe PDFs; informe que a plataforma baixa os documentos automaticamente ao mover o card para **Análise IA**.
+- **Documentos (link de portal ou Compras):** essa fonte não baixa arquivos automaticamente; oriente enviar o edital pelo próprio card (`licitacao_enviar_arquivo` grava na Saída IA e não alimenta a preparação documental).
+- **Resposta final:** entregue o link do card (`link_card`, ex.: `https://realmak.duckdns.org/odoo/licitacoes/<id>`) e o próximo passo: mover o card para **Análise IA** dispara a análise.
 
 
 ### Localizar e citar uma passagem do card

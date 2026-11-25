@@ -106,10 +106,10 @@ async def licitacao_criar(
     numero_controle_pncp: Annotated[str | None, Field(description="Controle PNCP no formato CNPJ-1-SEQUENCIAL/ANO.")] = None,
     orgao: Annotated[str | None, Field(description="Nome do órgão como consta no edital.")] = None,
     uasg: Annotated[str | None, Field(pattern=r"^\d{6}$", description="UASG do órgão com seis dígitos.")] = None,
-    numero_edital: Annotated[str | None, Field(description="Número do edital no formato número/ano.")] = None,
+    numero_edital: Annotated[str | None, Field(description="Número do edital conforme o cabeçalho do edital (número/ano); cite o sequencial PNCP só como referência.")] = None,
     processo: Annotated[str | None, Field(description="Número exato do processo administrativo.")] = None,
     data: Annotated[date | None, Field(description="Data oficial conhecida, em AAAA-MM-DD.")] = None,
-    empresa: Annotated[Literal["realmak", "aforca", "nortfort", "una", "sublime"] | None, Field(description="Empresa disputante escolhida manualmente para um card de fonte externa.")] = None,
+    empresa: Annotated[Literal["realmak", "aforca", "nortfort", "una", "sublime"] | None, Field(description="Empresa disputante; deixe em branco por padrão e só preencha se o usuário nomear.")] = None,
     somente_conferir: Annotated[bool, Field(description="Confere a fonte, a chave e a existência do card sem criar.")] = False,
     titulo: Annotated[str | None, Field(description="Título para o card.")] = None,
     objeto: Annotated[str | None, Field(description="Objeto conforme o portal ou edital.")] = None,
@@ -124,7 +124,7 @@ async def licitacao_criar(
     uf_local: Annotated[str | None, Field(description="UF do local de execução, se diferente da UF do órgão.")] = None,
     valor_estimado: Annotated[float | None, Field(ge=0, allow_inf_nan=False, description="Valor estimado em reais.")] = None,
 ) -> str:
-    """Localiza ou cria um card. Procura primeiro no ConLicitação, depois no PNCP e em Compras.gov/Dados Abertos quando houver identificadores suficientes. Para link de portal, leia a fonte e envie os metadados confirmados. Em cards externos existentes, preenche campos vazios. Devolve card, fonte, chave, duplicidade e próximos passos, inclusive anexar o edital com licitacao_enviar_arquivo."""
+    """Localiza ou cria um card no Acervo. Leia só o necessário (órgão, objeto, datas, valor e identificadores; não pagine itens) e deixe `empresa` em branco salvo se o usuário nomear. Procura primeiro no ConLicitação, depois PNCP e Compras.gov. Em PNCP ou ConLicitação, não baixe nem anexe arquivos: a plataforma baixa ao mover o card para Análise IA. Só em link de portal ou Compras sem documentos, oriente enviar o edital pelo card. Devolve `link_card`, `chave`, `fonte` e `proximos_passos`."""
     dados: dict[str, Any] = {k: v.strip() for k, v in (
         ("orgao", orgao), ("uasg", uasg), ("edital", numero_edital), ("processo", processo),
         ("titulo", titulo), ("objeto", objeto), ("cidade", cidade), ("uf", uf), ("situacao", situacao),
@@ -350,9 +350,9 @@ INSTRUCOES = (
     "- Comece por licitacao_pasta (ou licitacao_buscar para achar a licitação). O JSON traz ids de documentos.\n"
     "- Para acompanhar pendências e prazos de Análise humana e Disputa, use visao_geral_pendencias; para o detalhe "
     "calculado de um card na Visão geral, use visao_geral_licitacao (ambas somente leitura).\n"
-    "- Para adicionar licitação, use licitacao_criar, que importa do ConLicitação quando encontra o certame. "
-    "Se precisar buscar no portal oficial, leia a página e o edital, informe o link e os dados confirmados "
-    "e anexe os originais faltantes com licitacao_enviar_arquivo. Use chave para cards externos.\n"
+    "- Para adicionar licitação, use licitacao_criar (padrão: criar no Acervo, sem perguntar empresa disputante e sem paginar itens). "
+    "Em PNCP ou ConLicitação, não baixe nem anexe documentos: a plataforma baixa automaticamente ao mover para Análise IA. "
+    "Só em portal externo ou Compras sem documentos, oriente enviar o edital pelo card. Devolve link_card e o próximo passo (mover para Análise IA).\n"
     "- Ao começar a trabalhar numa licitação, chame licitacao_status com estado trabalhando; ao terminar, "
     "concluido; se precisar do analista, aguardando.\n"
     "- Localize e cite passagens do card com licitacao_buscar_fontes. Leia o edital com licitacao_ler_texto; edital prevalece sobre manifesto e resumo do ConLicitação. "

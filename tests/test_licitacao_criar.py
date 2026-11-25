@@ -136,3 +136,33 @@ async def test_conlicitacao_importa_depois_de_conferir_sem_usar_outra_fonte(monk
     repeticao = await criacao.criar(*args, False)
     assert repeticao["ja_existia"] and repeticao["licitacao"] == card
     consulta_pncp.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_proximos_passos_e_link_card_por_fonte_e_numero_edital_preservado(monkeypatch):
+    monkeypatch.setenv("MCP_REALMAK_PUBLIC_URL", "https://realmak.duckdns.org")
+    controle = "02292266000180-1-000164/2026"
+    card_pncp = {"id": 6623, "chave": "pncp-02292266000180-1-000164-2026", "fonte": "pncp"}
+    crm = AsyncMock()
+    crm.chamar.return_value = {"chave": card_pncp["chave"], "licitacao": card_pncp, "existe": True}
+    monkeypatch.setattr(criacao, "localizar_conlicitacao", AsyncMock(return_value=None))
+    monkeypatch.setattr(criacao, "consultar_pncp", AsyncMock(return_value={
+        "numeroControlePNCP": controle, "numeroCompra": "124137", "anoCompra": 2026,
+        "processo": "202600001", "orgaoEntidade": {"razaoSocial": "TJGO"},
+        "unidadeOrgao": {"codigoUnidade": "926415"},
+    }))
+
+    res_pncp = await criacao.criar(
+        crm, "https://pncp.gov.br/app/editais/02292266000180/2026/164",
+        None, None, {"edital": "47/2026"}, None, None, True,
+    )
+    assert res_pncp["link_card"] == "https://realmak.duckdns.org/odoo/licitacoes/6623"
+    assert all("licitacao_enviar_arquivo" not in p for p in res_pncp["proximos_passos"])
+    assert any("Análise IA" in p and "automaticamente" in p for p in res_pncp["proximos_passos"])
+    assert crm.chamar.await_args.args[1]["dados"]["edital"] == "47/2026"
+
+    card_portal = {"id": 7001, "chave": "url-0123456789abcdef", "fonte": "portal"}
+    res_portal = criacao.resultado(card_portal, True, ["ConLicitação", "PNCP"])
+    assert res_portal["link_card"] == "https://realmak.duckdns.org/odoo/licitacoes/7001"
+    assert all("licitacao_enviar_arquivo" not in p for p in res_portal["proximos_passos"])
+    assert any("pelo card" in p and "Análise IA" in p for p in res_portal["proximos_passos"])

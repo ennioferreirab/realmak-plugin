@@ -15,9 +15,38 @@ from ..compras.dadosabertos.constants import API_BASE as COMPRAS_API
 from ..compras.dadosabertos.schemas import Licitacao
 from ..compras.exceptions import HttpClientError
 from ..compras.pncp import client as pncp
+from ..config import load_settings
 from ..conlicitacao.format import link_licitacao
 from ..conlicitacao.tools import get_site_client
 from .client import OdooApiError, OdooClient
+
+
+def _link_card(card: dict) -> str:
+    base = load_settings().oauth_public_url.rstrip("/")
+    caminho = f"/odoo/licitacoes/{card['id']}"
+    return f"{base}{caminho}" if base else caminho
+
+
+def _proximos_passos(fonte: str, *, somente_conferir: bool = False) -> list[str]:
+    if fonte in ("pncp", "conlicitacao"):
+        if somente_conferir:
+            return [
+                "Use somente_conferir=false para criar o card no Acervo. "
+                "Não baixe nem anexe documentos: a plataforma baixa automaticamente ao mover o card para Análise IA."
+            ]
+        return [
+            "Mova o card para Análise IA para disparar a análise; "
+            "a plataforma baixa os documentos automaticamente."
+        ]
+    if somente_conferir:
+        return [
+            "Use somente_conferir=false para criar o card no Acervo; "
+            "depois envie o edital pelo card e mova para Análise IA."
+        ]
+    return [
+        "Envie o edital e anexos pelo card (essa fonte não baixa documentos automaticamente) "
+        "e mova para Análise IA para disparar a análise."
+    ]
 
 
 async def existente(odoo: OdooClient, **referencia: Any) -> dict | None:
@@ -32,11 +61,9 @@ async def existente(odoo: OdooClient, **referencia: Any) -> dict | None:
 def resultado(card: dict, criado: bool, tentativas: list[str], **campos: Any) -> dict:
     return {
         "licitacao": card, "chave": card["chave"], "fonte": card["fonte"],
+        "link_card": _link_card(card),
         "criado": criado, "ja_existia": not criado, "tentativas": tentativas,
-        "proximos_passos": [
-            "Abra licitacao_pasta pela chave. Se faltar edital ou anexo, obtenha o original "
-            "na fonte e use licitacao_enviar_arquivo. Complete os dados no card."
-        ],
+        "proximos_passos": _proximos_passos(card["fonte"]),
         **campos,
     }
 
@@ -207,7 +234,7 @@ async def criar(
     # Um controle oficial permite enriquecer a consulta ao ConLicitação antes da escolha da fonte.
     detalhe = await consultar_pncp(ref) if ref and not id_conlicitacao else None
     if detalhe:
-        dados = {**dados, **{k: v for k, v in dados_pncp(detalhe).items() if v not in (None, "")}}
+        dados = {**{k: v for k, v in dados_pncp(detalhe).items() if v not in (None, "")}, **dados}
     con_id = id_conlicitacao or await localizar_conlicitacao(dados, None if ref else data)
     if con_id:
         referencia = {"conlicitacao_id": con_id}
@@ -218,7 +245,7 @@ async def criar(
             return {
                 "criado": False, "ja_existia": False, "chave": str(con_id), "fonte": "conlicitacao",
                 "licitacao": None, "fonte_url": link_licitacao(con_id), "tentativas": tentativas,
-                "proximos_passos": ["Use somente_conferir=false para importar pelo ConLicitação."],
+                "proximos_passos": _proximos_passos("conlicitacao", somente_conferir=True),
             }
         gravado = await odoo.chamar("importar", referencia)
         return resultado(gravado["licitacao"], gravado["criado"], tentativas, preparacao=gravado["preparacao"])
@@ -306,7 +333,7 @@ async def criar(
         return {
             "licitacao": None, "chave": conferencia["chave"], "fonte": fonte,
             "criado": False, "ja_existia": False, "tentativas": tentativas,
-            "proximos_passos": ["Use somente_conferir=false para criar o card."],
+            "proximos_passos": _proximos_passos(fonte, somente_conferir=True),
         }
     gravado = await odoo.chamar("criar", parametros)
     return resultado(gravado["licitacao"], gravado["criado"], tentativas, atualizado=gravado.get("atualizado", False))
