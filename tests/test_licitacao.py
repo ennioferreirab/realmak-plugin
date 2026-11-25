@@ -259,3 +259,55 @@ async def test_fontes_longas_retornam_cursor_e_json_integro(ambiente):
             200, json={"resultado": {"resultados": linhas, "proximo_offset": None}}))
         r = corpo(await chamar(c, "licitacao_buscar_fontes", {"lead_id": 2, "offset": 4}, token_de(BIA)))
         assert r == {"resultados": linhas[:2], "proximo_offset": 6}
+
+
+async def test_visao_geral_pendencias_e_licitacao_respeitam_acesso_e_contrato(ambiente):
+    async with servidor() as c:
+        pendencias = c.mock.post(f"{API}/visao_geral_pendencias").mock(side_effect=[
+            httpx.Response(200, json={"resultado": {
+                "versao": 1, "referencia_hoje": "2026-11-25",
+                "resumo": {"total": 2}, "licitacoes": [{"id": 6563, "etapa": "disputa"}],
+            }}),
+            httpx.Response(403, json={"erro": "Pessoa sem as licitações liberadas no Odoo."}),
+        ])
+        detalhe = c.mock.post(f"{API}/visao_geral_licitacao").mock(side_effect=[
+            httpx.Response(200, json={"resultado": {
+                "versao": 1, "referencia_hoje": "2026-11-25",
+                "licitacao": {"id": 6563, "etapa": "disputa", "alertas": []},
+            }}),
+            httpx.Response(403, json={"erro": "Você não vê esta licitação."}),
+        ])
+
+        bia = await nomes(c, token_de(BIA))
+        assert {"visao_geral_pendencias", "visao_geral_licitacao"} <= bia
+        assert not ({"visao_geral_pendencias", "visao_geral_licitacao"} & await nomes(c, token_de(ANA)))
+        assert not ({"visao_geral_pendencias", "visao_geral_licitacao"} & await nomes(c, "gld_live_boa"))
+
+        res_pend = corpo(await chamar(
+            c, "visao_geral_pendencias",
+            {"escopo": "meus", "empresa": "realmak", "etapa": "disputa", "incluir_em_dia": False},
+            token_de(BIA),
+        ))
+        assert res_pend["versao"] == 1 and res_pend["licitacoes"][0]["id"] == 6563
+        req_pend = pendencias.calls.last.request
+        assert req_pend.headers["authorization"] == f"Bearer {SEGREDO_ODOO}"
+        assert req_pend.headers["x-realmak-act-as"] == BIA
+        assert json.loads(req_pend.content) == {
+            "escopo": "meus", "empresa": "realmak", "etapa": "disputa", "incluir_em_dia": False,
+        }
+
+        res_det = corpo(await chamar(c, "visao_geral_licitacao", {"licitacao_id": 6563}, token_de(BIA)))
+        assert res_det["licitacao"]["id"] == 6563
+        req_det = detalhe.calls.last.request
+        assert req_det.headers["authorization"] == f"Bearer {SEGREDO_ODOO}"
+        assert req_det.headers["x-realmak-act-as"] == BIA
+        assert json.loads(req_det.content) == {"licitacao_id": 6563}
+
+        # Bot não acessa; pessoa sem acesso recebe 403 do Odoo sem vazar segredo.
+        bot_negado = await chamar(c, "visao_geral_pendencias", {}, "gld_live_boa")
+        assert bot_negado["isError"] and "login de pessoa" in bot_negado["content"][0]["text"]
+        ana_negada = await chamar(c, "visao_geral_pendencias", {}, token_de(ANA))
+        assert ana_negada["isError"] and "sem permissão (403)" in ana_negada["content"][0]["text"]
+        assert SEGREDO_ODOO not in ana_negada["content"][0]["text"]
+        det_negado = await chamar(c, "visao_geral_licitacao", {"licitacao_id": 6563}, token_de(BIA))
+        assert det_negado["isError"] and "sem permissão (403)" in det_negado["content"][0]["text"]
