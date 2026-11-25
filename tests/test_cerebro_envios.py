@@ -63,9 +63,9 @@ async def test_client_enviar_e_envios():
     status2, body2 = await client.enviar("Cartão CNPJ 2026.pdf", b"%PDF-1.4 novo", contexto=ctx)
     assert status2 == 200 and body2["estado"] == "publicado"
 
-    res = await client.envios(limit=5, estado="publicado", sha256="abc123", envio_id="env-1")
+    res = await client.envios(limite=5, sha256="abc123", envio_id="env-1")
     assert res["envios"][0]["id"] == "env-1"
-    assert dict(get.calls[0].request.url.params) == {"limit": "5", "estado": "publicado", "sha256": "abc123", "id": "env-1"}
+    assert dict(get.calls[0].request.url.params) == {"limite": "5", "sha256": "abc123", "id": "env-1"}
 
 
 @respx.mock
@@ -192,7 +192,7 @@ async def test_cerebro_enviar_direto_substituir_link_pasta_e_andamento(monkeypat
                     assert resp_item.json()["nome"] == item["nome"]
 
                 # 5. Consulta de andamento via cerebro_envios
-                r_and = await call_tool(c, "cerebro_envios", {"empresa": "realmak", "limit": 10}, token)
+                r_and = await call_tool(c, "cerebro_envios", {"empresa": "realmak", "limite": 10}, token)
                 assert not r_and.get("isError"), r_and
                 d_and = json.loads(r_and["content"][0]["text"])
                 assert d_and["empresa"] == "realmak"

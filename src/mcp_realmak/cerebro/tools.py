@@ -333,10 +333,10 @@ async def cerebro_enviar(
     conteudo_base64: Annotated[str | None, Field(description="Conteúdo binário em base64 de um arquivo único, até 1 MB. Para arquivo maior que 1 MB, omita o conteúdo para receber o link assinado de envio (curl --upload-file).")] = None,
     comentario: Annotated[str | None, Field(max_length=2000, description="O que a pessoa disse sobre o arquivo ou pasta (finalidade, data, o que atualiza).")] = None,
     acao: Annotated[AcaoEnvio, Field(description="'enviar' para documento novo ou 'substituir' para atualizar documento existente no acervo (busque o antigo com cerebro_buscar e informe substitui_sha256 ou substitui_caminho).")] = "enviar",
-    substitui_sha256: Annotated[str | None, Field(description="SHA-256 do documento antigo a substituir (obtido com cerebro_buscar ou cerebro_provas).")] = None,
-    substitui_caminho: Annotated[str | None, Field(description="Caminho relativo (caminho_rel) do documento antigo a substituir, quando não houver SHA-256.")] = None,
+    substitui_sha256: Annotated[str | None, Field(description="SHA-256 do documento antigo a substituir (obtido com cerebro_buscar ou cerebro_provas). Em acao='substituir', envie junto com substitui_caminho sempre que possível.")] = None,
+    substitui_caminho: Annotated[str | None, Field(description="Caminho relativo do documento antigo no acervo (ex.: realmak\\habilitacao\\certidoes\\vigentes\\arquivo.pdf). Em acao='substituir', envie junto com substitui_sha256 para evitar ambiguidade se o mesmo SHA existir em mais de uma pasta.")] = None,
 ) -> str:
-    """Envia um arquivo ou uma pasta (vários arquivos) ao cérebro da empresa escolhida, com comentário e contexto. Nunca apaga nem move documentos existentes. Até 1 MB de arquivo único vai direto em conteudo_texto ou conteudo_base64; arquivo maior ou pasta (nomes) devolve links assinados de uso único (15 minutos) e comando curl --upload-file. Para atualizar um documento existente (ex.: cartão CNPJ novo, certidão renovada), busque o antigo com cerebro_buscar e envie com acao='substituir' e substitui_sha256. Depois, confirme o estado e destino final com cerebro_envios."""
+    """Envia um arquivo ou uma pasta (vários arquivos) ao cérebro da empresa escolhida, com comentário e contexto. Nunca apaga nem move documentos existentes. Até 1 MB de arquivo único vai direto em conteudo_texto ou conteudo_base64; arquivo maior (até 100 MB) ou pasta (nomes) devolve links assinados de uso único (15 minutos) e comando curl --upload-file. Para atualizar um documento existente (ex.: cartão CNPJ novo, certidão renovada), busque o antigo com cerebro_buscar e envie com acao='substituir', substitui_sha256 e substitui_caminho. Depois, confirme o estado (recebido -> na_caixa -> organizado/revisao/duplicado/recusado) e destino final com cerebro_envios."""
     if bool(nome) == bool(nomes):
         raise ToolError("Cérebro: informe 'nome' (arquivo único) ou 'nomes' (lista de arquivos de uma pasta), não os dois.")
     if conteudo_texto is not None and conteudo_base64 is not None:
@@ -368,7 +368,7 @@ async def cerebro_enviar(
             "envios": envios,
             "comando": " && ".join(comandos),
             "expira_em": envios[0]["expira_em"],
-            "limite_mb": settings.arquivo_max_bytes // (1024 * 1024),
+            "limite_mb": max(settings.arquivo_max_bytes, arquivos.CEREBRO_ENVIO_MAX_BYTES) // (1024 * 1024),
         })
 
     assert nome is not None
@@ -383,7 +383,7 @@ async def cerebro_enviar(
             "nome": nome_arquivo,
             **link_info,
             "comando": f"curl -fsS --upload-file {shlex.quote(nome)} {shlex.quote(link_info['url'])}",
-            "limite_mb": settings.arquivo_max_bytes // (1024 * 1024),
+            "limite_mb": max(settings.arquivo_max_bytes, arquivos.CEREBRO_ENVIO_MAX_BYTES) // (1024 * 1024),
         })
 
     if conteudo_texto is not None:
@@ -413,13 +413,12 @@ async def cerebro_enviar(
 
 async def cerebro_envios(
     empresa: Annotated[Empresa, Field(description=EMPRESA_DESC)] = "realmak",
-    limit: Annotated[int | None, Field(ge=1, le=100, description="Máximo de envios recentes a retornar.")] = None,
-    estado: Annotated[str | None, Field(description="Filtra pelo estado do envio (se suportado pelo gateway).")] = None,
-    sha256: Annotated[str | None, Field(description="Filtra pelo SHA-256 do arquivo enviado.")] = None,
-    envio_id: Annotated[str | None, Field(description="Filtra pelo identificador do envio devolvido por cerebro_enviar.")] = None,
+    limite: Annotated[int | None, Field(ge=1, le=200, description="Máximo de envios recentes a retornar (1–200, padrão 50).")] = None,
+    sha256: Annotated[str | None, Field(description="Filtra pelo SHA-256 (64 hex) do arquivo enviado.")] = None,
+    envio_id: Annotated[str | None, Field(description="Filtra pelo UUID do envio devolvido por cerebro_enviar.")] = None,
 ) -> str:
-    """Consulta o andamento dos envios ao cérebro da empresa (estado, destino final e eventual motivo de revisão). Use após cerebro_enviar para confirmar que o documento entrou na pasta correta."""
-    return await executar(empresa, "envios", limit=limit, estado=estado, sha256=sha256, envio_id=envio_id)
+    """Consulta o andamento dos envios ao cérebro da empresa (estados: recebido, na_caixa, organizado, revisao, duplicado, recusado; destino final e motivo de revisão). Use após cerebro_enviar para confirmar que o documento entrou na pasta correta."""
+    return await executar(empresa, "envios", limite=limite, sha256=sha256, envio_id=envio_id)
 
 
 INSTRUCOES = """Cérebros das empresas do grupo (Realmak, AForça, Nortfort, UNA, Sublime):

@@ -52,6 +52,7 @@ log = logging.getLogger("mcp_realmak.licitacao")
 VALIDADE_ENVIO_S = 15 * 60
 VALIDADE_DOWNLOAD_S = 30 * 60
 BASE_CUSTOS_MAX_BYTES = 20 * 1024 * 1024
+CEREBRO_ENVIO_MAX_BYTES = 100 * 1024 * 1024
 _NO_STORE = {"Cache-Control": "no-store"}
 _REPASSAR = ("content-type", "content-length")
 MODOS = {"v": "inline", "b": "attachment"}
@@ -464,14 +465,15 @@ def rotas(
         chave = settings.service_keys.get(empresa, "")
         if not chave:
             return _erro(503, f"O cérebro da empresa {NOMES_EMPRESAS.get(empresa, empresa)} não está configurado neste servidor.")
+        limite_bytes = max(settings.arquivo_max_bytes, CEREBRO_ENVIO_MAX_BYTES)
         tamanho = int(request.headers.get("content-length") or 0)
-        if tamanho > settings.arquivo_max_bytes:
-            return _erro(413, f"Arquivo acima de {settings.arquivo_max_bytes // (1024 * 1024)} MB.")
+        if tamanho > limite_bytes:
+            return _erro(413, f"Arquivo acima de {limite_bytes // (1024 * 1024)} MB.")
         partes, total = [], 0
         async for parte in request.stream():
             total += len(parte)
-            if total > settings.arquivo_max_bytes:
-                return _erro(413, f"Arquivo acima de {settings.arquivo_max_bytes // (1024 * 1024)} MB.")
+            if total > limite_bytes:
+                return _erro(413, f"Arquivo acima de {limite_bytes // (1024 * 1024)} MB.")
             partes.append(parte)
         if not total:
             return _erro(400, "Arquivo vazio: envie os bytes no corpo (curl --upload-file).")

@@ -36,7 +36,7 @@ As ferramentas `cerebro_*` vêm do conector MCP da Realmak. O nome completo pode
 | `cerebro_consulta` | `sql` obrigatório; `empresa`, `limite` (1–5000, em português) |
 | `cerebro_provas` | `ids` obrigatório (lista de até 200 strings); `empresa`, `os` |
 | `cerebro_enviar` | `empresa`; `nome` (arquivo único) ou `nomes` (pasta/lote); `conteudo_base64` ou `conteudo_texto` (até 1 MB); `comentario`, `acao` (`enviar` ou `substituir`), `substitui_sha256`, `substitui_caminho` |
-| `cerebro_envios` | `empresa`, `limit`, `estado`, `sha256`, `envio_id` |
+| `cerebro_envios` | `empresa`, `limite` (1–200), `sha256`, `envio_id` |
 
 Não envie `os` a empresas, esquema ou consulta. `area` filtra fatos; não concede acesso. `cursor` só continua a mesma consulta de fatos, na mesma empresa e com os mesmos filtros.
 

@@ -8,7 +8,7 @@ Rotas:
     POST /consulta/provas     {ids, os?}
     GET  /original            ?slug   bytes do arquivo original da página (em fluxo)
     POST /envios              corpo = arquivo cru, x-galeed-nome, x-galeed-contexto (201 novo / 200 repetido)
-    GET  /envios              ?limit&estado&sha256&id   andamento dos envios
+    GET  /envios              ?limite&id&sha256   andamento dos envios
 
 Regra de segurança: a chave nunca aparece em mensagem de erro, log ou exceção.
 """
@@ -136,16 +136,13 @@ class GaleedClient:
     async def envios(
         self,
         *,
-        limit: int | None = None,
-        estado: str | None = None,
+        limite: int | None = None,
         sha256: str | None = None,
         envio_id: str | None = None,
     ) -> Any:
         params: dict[str, Any] = {}
-        if limit is not None:
-            params["limit"] = limit
-        if estado:
-            params["estado"] = estado
+        if limite is not None:
+            params["limite"] = limite
         if sha256:
             params["sha256"] = sha256
         if envio_id:
