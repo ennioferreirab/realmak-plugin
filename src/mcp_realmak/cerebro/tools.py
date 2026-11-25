@@ -235,12 +235,13 @@ def explicar_erro_registros(exc: Exception, ferramenta: str, empresa: Empresa = 
 async def cerebro_buscar(
     query: Annotated[str, Field(description="A busca em linguagem natural. Use nomes, números e termos do documento.")],
     limit: Annotated[int | None, Field(ge=1, le=20, description="Máximo de trechos (padrão 8, teto 20).")] = None,
-    include_facts: Annotated[bool | None, Field(description="Se verdadeiro, anexa os fatos tipados relacionados à busca.")] = None,
+    include_facts: Annotated[bool | None, Field(description="Se verdadeiro, anexa os fatos tipados relacionados à busca (atenção: fatos ainda não filtram por estado do documento).")] = None,
     os: Annotated[Sistema | None, Field(description=OS_DESC)] = None,
     empresa: Annotated[Empresa, Field(description=EMPRESA_DESC)] = "realmak",
+    incluir_historico: Annotated[bool, Field(description="Padrão false (traz só documentos vigentes e devolve historico_omitido.aviso quando há versões anteriores/vencidas ocultas). Passe true só quando a pessoa pedir o histórico/versão antiga ou for preciso provar o que foi entregue numa licitação ou contrato.")] = False,
 ) -> str:
-    """Busca no cérebro da empresa escolhida (texto e semântica) e devolve trechos com fonte e o link curto do arquivo original (original.link, 30 minutos), sem redigir resposta. Use para qualquer pergunta sobre funcionários, responsáveis técnicos, atestados, CATs, ARTs, contratos, licitações e atas. Não gasta LLM. Monte a resposta a partir dos trechos e diga o que ficou sem confirmação."""
-    return await executar(empresa, "retrieve", query, limit, include_facts, os)
+    """Busca no cérebro da empresa escolhida (texto e semântica) e devolve trechos com fonte, estado_documento (vigente|substituido|vencido, rotulo e substituido_por) e o link curto do arquivo original (original.link, 30 minutos), sem redigir resposta. Por padrão (incluir_historico=false) retorna só os documentos vigentes e informa historico_omitido.aviso quando houver versões anteriores ou vencidas ocultas. Use para qualquer pergunta sobre funcionários, responsáveis técnicos, atestados, CATs, ARTs, contratos, licitações e atas. Não gasta LLM. Monte a resposta a partir dos trechos e diga o que ficou sem confirmação."""
+    return await executar(empresa, "retrieve", query, limit, include_facts, os, incluir_historico)
 
 
 async def cerebro_fatos(
@@ -436,6 +437,11 @@ INSTRUCOES = """Cérebros das empresas do grupo (Realmak, AForça, Nortfort, UNA
 - Sem acesso a uma empresa: diga isso. Não use outra empresa no lugar.
 - Pergunta sobre pessoa, assunto ou documento: cerebro_buscar (include_facts=true anexa os fatos) e
   cerebro_fatos. Monte a resposta a partir dos trechos.
+- Documentos vigentes x substituídos/vencidos em cerebro_buscar:
+  - Responda sempre com o documento vigente (incluir_historico=false é o padrão). Quando a resposta trouxer `historico_omitido.aviso`, mencione que versões anteriores/vencidas não foram mostradas.
+  - Só use `incluir_historico=true` e cite versões anteriores se a pessoa pedir ou se for preciso provar o que foi entregue numa licitação ou contrato.
+  - Cada trecho com `original.sha256` traz `estado_documento` (`vigente`, `substituido` ou `vencido`, `rotulo` e `substituido_por`). Ao citar um documento `substituido` (inclusive cópia em pasta de ata ou contrato), diga que há versão posterior — não diga que o documento estava vencido quando foi entregue.
+  - `cerebro_fatos` e `include_facts` ainda não filtram por estado do documento: confira o documento vigente em `cerebro_buscar` antes de afirmar vigência.
 - Pergunta que precisa de todos os casos (contar, somar, listar): confira registros=true para a empresa
   em cerebro_empresas; cerebro_esquema uma vez por empresa, depois cerebro_consulta e cerebro_provas.
   A presença das ferramentas não garante registros para todas as empresas. Sem registros, informe que
@@ -447,8 +453,8 @@ INSTRUCOES = """Cérebros das empresas do grupo (Realmak, AForça, Nortfort, UNA
 - Para enviar documento ou pasta ao acervo do cérebro, use sempre `cerebro_enviar` — nunca copie arquivos à mão para pastas ou compartilhamentos, e nunca apague nem mova documentos existentes.
   - Coloque em `comentario` o que a pessoa disse sobre o arquivo ou pasta.
   - Até 1 MB de arquivo único: envie direto (`conteudo_base64` ou `conteudo_texto`). Maior que 1 MB: chame sem conteúdo e execute o `comando` (`curl --upload-file`). Pasta / vários arquivos: passe a lista em `nomes` numa única chamada e rode o `comando` único devolvido.
-  - Para documento que atualiza outro (ex.: cartão CNPJ novo, certidão renovada): busque o antigo com `cerebro_buscar`, pegue o `sha256` (ou caminho relativo) e envie com `acao="substituir"` e `substitui_sha256`.
-  - Informe à pessoa o estado devolvido e confirme o destino final (ou motivo de revisão) com `cerebro_envios`.
+  - Para documento que atualiza outro (ex.: cartão CNPJ novo, certidão renovada): busque o antigo com `cerebro_buscar`, pegue `substitui_sha256` e `substitui_caminho` do MESMO documento antigo e envie com `acao="substituir"` (se sha256 e caminho apontarem para vínculos diferentes, o servidor não altera o antigo).
+  - Informe à pessoa o estado devolvido e confirme o destino final (ou motivo de revisão / resultado em `substituicao`) com `cerebro_envios`.
 - Resultado com 'original': termine a resposta com a seção Arquivos, um item por sha256, em markdown e sem URL
   por extenso: '**nome** · [Visualizar](original.link)' e, na linha de baixo, 'Caminho: original.file_path'.
   Use a URL curta exatamente como veio, sem reescrever nem repetir. O link vale 30 minutos, não pede login,

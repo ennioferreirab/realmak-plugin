@@ -210,3 +210,72 @@ def test_instrucoes_servidor_refletem_cerebro_enviar():
     assert "cerebro_enviar" in SERVER_INSTRUCOES
     assert "cerebro_envios" in SERVER_INSTRUCOES
     assert "nunca copie arquivos à mão" in SERVER_INSTRUCOES.casefold()
+    assert "incluir_historico=false" in SERVER_INSTRUCOES
+    assert "historico_omitido.aviso" in SERVER_INSTRUCOES
+    assert "há versão posterior" in SERVER_INSTRUCOES
+    assert "substitui_sha256` e `substitui_caminho` do MESMO documento antigo" in SERVER_INSTRUCOES
+
+
+async def test_cerebro_buscar_incluir_historico_e_estado_documento(monkeypatch, tmp_path):
+    token = _setup_env(monkeypatch, tmp_path)
+    app = build_app(load_settings())
+    with respx.mock(assert_all_called=False) as mock:
+        mock.get(f"{GALEED}/acesso").mock(
+            return_value=httpx.Response(200, json={"brain": "Realmak", "nivel": "total", "areas": ["*"], "registros": True})
+        )
+
+        def retrieve_handler(req: httpx.Request) -> httpx.Response:
+            body = json.loads(req.content)
+            vigente = {
+                "slug": "cnpj-novo",
+                "original": {"sha256": "sha_novo", "file_path": r"E:\acervo-2.0\realmak\empresa\cadastro\CNPJ_2026.pdf"},
+                "estado_documento": {"estado": "vigente", "desde": "2026-11-25T21:35:00Z"},
+            }
+            antigo = {
+                "slug": "cnpj-antigo",
+                "original": {"sha256": "sha_antigo", "file_path": r"E:\acervo-2.0\realmak\empresa\cadastro\anteriores\CNPJ_2025.pdf"},
+                "estado_documento": {
+                    "estado": "substituido",
+                    "rotulo": "versão anterior: há versão posterior deste documento",
+                    "substituido_por": "sha_novo",
+                    "desde": "2026-11-25T21:35:00Z",
+                },
+            }
+            if body.get("incluir_historico") is True:
+                return httpx.Response(200, json={"hits": [vigente, antigo]})
+            return httpx.Response(
+                200,
+                json={
+                    "hits": [vigente],
+                    "historico_omitido": {
+                        "total": 1,
+                        "substituidos": 1,
+                        "vencidos": 0,
+                        "aviso": "1 versão anterior não mostrado; use incluir_historico=true para ver.",
+                    },
+                },
+            )
+
+        ret = mock.post(f"{GALEED}/retrieve").mock(side_effect=retrieve_handler)
+        async with app.router.lifespan_context(app):
+            async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url=PUBLIC) as c:
+                r_padrao = await call_tool(c, "cerebro_buscar", {"empresa": "realmak", "query": "cartão CNPJ"}, token)
+                assert not r_padrao.get("isError"), r_padrao
+                d_padrao = json.loads(r_padrao["content"][0]["text"])
+                assert json.loads(ret.calls[0].request.content)["incluir_historico"] is False
+                assert len(d_padrao["hits"]) == 1
+                assert d_padrao["hits"][0]["estado_documento"]["estado"] == "vigente"
+                assert d_padrao["historico_omitido"]["total"] == 1
+                assert "versão anterior" in d_padrao["historico_omitido"]["aviso"]
+
+                r_hist = await call_tool(
+                    c, "cerebro_buscar", {"empresa": "realmak", "query": "cartão CNPJ", "incluir_historico": True}, token
+                )
+                assert not r_hist.get("isError"), r_hist
+                d_hist = json.loads(r_hist["content"][0]["text"])
+                assert json.loads(ret.calls[1].request.content)["incluir_historico"] is True
+                assert len(d_hist["hits"]) == 2
+                assert "historico_omitido" not in d_hist
+                assert d_hist["hits"][1]["estado_documento"]["estado"] == "substituido"
+                assert d_hist["hits"][1]["estado_documento"]["substituido_por"] == "sha_novo"
+

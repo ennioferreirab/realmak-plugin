@@ -25,6 +25,8 @@ async def test_rotas_e_corpos():
 
     await c.retrieve("q", 5, True, "windows")
     assert json.loads(ret.calls[0].request.content) == {"query": "q", "limit": 5, "include_facts": True, "os": "windows"}
+    await c.retrieve("q", incluir_historico=True)
+    assert json.loads(ret.calls[1].request.content) == {"query": "q", "incluir_historico": True}
     await c.facts(dim="decisions", limit=10, area=None, cursor="")
     assert dict(fac.calls[0].request.url.params) == {"dim": "decisions", "limit": "10"}
     await c.esquema()
