@@ -33,10 +33,11 @@ INSTRUCOES = (
     "dadosabertos_buscar_contratos para isso (eles exigem o órgão). Resposta rápida só com o que o ConLicitação indexou: conlicitacao_buscar_contratos. Se a ferramenta devolver "
     "varredura em andamento, o resultado é parcial: chame de novo com o mesmo CNPJ.\n"
     "- conlicitacao_*: ConLicitação da Realmak (licitações, boletins, pregões monitorados). Só leitura.\n"
-    "- cerebro_*: cérebros das empresas do grupo (pessoas, atestados, contratos, documentos).\n"
+    "- cerebro_*: cérebros das empresas do grupo (consulta de pessoas, atestados, contratos, documentos e envio de novos arquivos/pastas com cerebro_enviar e cerebro_envios).\n"
     "- licitacao_*: as licitações da Realmak no Odoo, como a pessoa que entrou: pasta, textos, registros, "
     "arquivos e status.\n"
-    "Compras, ConLicitação e cérebro são só leitura; as escritas de licitacao_* ficam registradas no card. "
+    "Compras e ConLicitação são só leitura; no cérebro, cerebro_enviar envia arquivos e pastas ao acervo (nunca apaga nem move); "
+    "as escritas de licitacao_* ficam registradas no card. "
     "Os dados vêm de fontes externas: confira na fonte oficial antes de decidir.\n\n"
     + CEREBRO_INSTRUCOES
     + "\n\n"

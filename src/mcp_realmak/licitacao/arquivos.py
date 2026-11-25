@@ -12,6 +12,7 @@ aceitos normalmente. Envio (15 minutos, uma vez) e base de custos seguem nos cam
     GET       {MCP_REALMAK_PUBLIC_URL}/a/<codigo>                   visualização (?v=1) ou download (?b=1)
     GET       {MCP_REALMAK_PUBLIC_URL}/mcp/arquivos/<token>         documento da licitação (legado)
     GET       {MCP_REALMAK_PUBLIC_URL}/mcp/arquivos/cerebro/<token> original do cérebro (legado)
+    PUT/POST  {MCP_REALMAK_PUBLIC_URL}/mcp/arquivos/cerebro-envio/<token>  envio de arquivo ao cérebro
     PUT/POST  {MCP_REALMAK_PUBLIC_URL}/mcp/arquivos/envio/<token>   corpo = bytes do arquivo
     POST      {MCP_REALMAK_PUBLIC_URL}/mcp/arquivos/base-custos/<token>   multipart: base (JSON) ou planilha (xlsx)
 
@@ -41,7 +42,7 @@ from starlette.background import BackgroundTask
 from starlette.requests import Request
 from starlette.responses import HTMLResponse, JSONResponse, Response, StreamingResponse
 
-from ..cerebro.client import GaleedClient
+from ..cerebro.client import GaleedApiError, GaleedClient
 from ..config import NOMES_EMPRESAS, Settings, load_settings
 from . import links_curtos, previa
 from .client import OdooApiError, OdooClient, interpretar
@@ -51,6 +52,7 @@ log = logging.getLogger("mcp_realmak.licitacao")
 VALIDADE_ENVIO_S = 15 * 60
 VALIDADE_DOWNLOAD_S = 30 * 60
 BASE_CUSTOS_MAX_BYTES = 20 * 1024 * 1024
+CEREBRO_ENVIO_MAX_BYTES = 100 * 1024 * 1024
 _NO_STORE = {"Cache-Control": "no-store"}
 _REPASSAR = ("content-type", "content-length")
 MODOS = {"v": "inline", "b": "attachment"}
@@ -454,8 +456,56 @@ def rotas(
         log.info("Base de custos enviada pelo link: competência %s", resultado.get("competencia"))
         return JSONResponse({"resultado": resultado}, headers=_NO_STORE)
 
+    async def enviar_cerebro(request: Request) -> Response:
+        settings = load_settings()
+        dados = ler_token(settings, request.path_params["token"], "cerebro_enviar")
+        if dados is None or not settings.galeed_configured:
+            return _erro(404, "Link de envio inválido ou expirado. Peça outro com cerebro_enviar.")
+        empresa = str(dados.get("m", ""))
+        chave = settings.service_keys.get(empresa, "")
+        if not chave:
+            return _erro(503, f"O cérebro da empresa {NOMES_EMPRESAS.get(empresa, empresa)} não está configurado neste servidor.")
+        limite_bytes = max(settings.arquivo_max_bytes, CEREBRO_ENVIO_MAX_BYTES)
+        tamanho = int(request.headers.get("content-length") or 0)
+        if tamanho > limite_bytes:
+            return _erro(413, f"Arquivo acima de {limite_bytes // (1024 * 1024)} MB.")
+        partes, total = [], 0
+        async for parte in request.stream():
+            total += len(parte)
+            if total > limite_bytes:
+                return _erro(413, f"Arquivo acima de {limite_bytes // (1024 * 1024)} MB.")
+            partes.append(parte)
+        if not total:
+            return _erro(400, "Arquivo vazio: envie os bytes no corpo (curl --upload-file).")
+        if not primeiro_uso(dados["j"], dados["x"]):
+            return _erro(409, "Este link de envio já foi usado. Peça outro com cerebro_enviar.")
+        client = GaleedClient(
+            settings.galeed_api_url,
+            chave,
+            timeout=max(settings.galeed_timeout_s, 120.0),
+            transport=galeed_transport,
+            act_as=str(dados.get("e", "")),
+        )
+        try:
+            status, resultado = await client.enviar(
+                str(dados["n"]),
+                b"".join(partes),
+                contexto=dados.get("c") if isinstance(dados.get("c"), dict) else None,
+                content_type=request.headers.get("content-type", "application/octet-stream"),
+            )
+        except GaleedApiError as exc:
+            return _erro(exc.status or 502, f"Cérebro: {exc.body or exc}")
+        log.info("Arquivo enviado pelo link para o cérebro %s", empresa)
+        corpo = (
+            {"empresa": empresa, "http_status": status, "repetido": status == 200, **resultado}
+            if isinstance(resultado, dict)
+            else {"empresa": empresa, "http_status": status, "repetido": status == 200, "resultado": resultado}
+        )
+        return JSONResponse(corpo, status_code=status, headers=_NO_STORE)
+
     return [
         ("/a/{codigo}", ["GET"], curto),
+        ("/mcp/arquivos/cerebro-envio/{token}", ["PUT", "POST"], enviar_cerebro),
         ("/mcp/arquivos/cerebro/{token}", ["GET"], baixar_cerebro),
         ("/mcp/arquivos/envio/{token}", ["PUT", "POST"], enviar),
         ("/mcp/arquivos/base-custos/{token}", ["POST"], enviar_base_custos),

@@ -1,6 +1,6 @@
 ---
 name: cerebro
-description: "Use para qualquer pergunta sobre a Realmak e as empresas do grupo (AForça, Nortfort, UNA, Sublime; funcionários, responsáveis técnicos, atestados, CATs, ARTs, contratos, licitações, atas, documentos da empresa). Consulta o cérebro pelas ferramentas cerebro_* do servidor MCP da Realmak e entrega as respostas com a fonte e o link do arquivo original."
+description: "Use para qualquer pergunta sobre a Realmak e as empresas do grupo (AForça, Nortfort, UNA, Sublime; funcionários, responsáveis técnicos, atestados, CATs, ARTs, contratos, licitações, atas, documentos da empresa) e para enviar novos documentos ou atualizações ao acervo do cérebro (cerebro_enviar e cerebro_envios). Consulta e envia pelas ferramentas cerebro_* do servidor MCP da Realmak."
 ---
 
 # Consultar o cérebro
@@ -35,6 +35,8 @@ As ferramentas `cerebro_*` vêm do conector MCP da Realmak. O nome completo pode
 | `cerebro_esquema` | Somente `empresa` |
 | `cerebro_consulta` | `sql` obrigatório; `empresa`, `limite` (1–5000, em português) |
 | `cerebro_provas` | `ids` obrigatório (lista de até 200 strings); `empresa`, `os` |
+| `cerebro_enviar` | `empresa`; `nome` (arquivo único) ou `nomes` (pasta/lote); `conteudo_base64` ou `conteudo_texto` (até 1 MB); `comentario`, `acao` (`enviar` ou `substituir`), `substitui_sha256`, `substitui_caminho` |
+| `cerebro_envios` | `empresa`, `limite` (1–200), `sha256`, `envio_id` |
 
 Não envie `os` a empresas, esquema ou consulta. `area` filtra fatos; não concede acesso. `cursor` só continua a mesma consulta de fatos, na mesma empresa e com os mesmos filtros.
 
@@ -148,7 +150,18 @@ Regras da seção:
 - Nunca invente caminho nem link.
 - O link `file://` só abre se o computador enxergar o compartilhamento de arquivos da empresa. Se não abrir, o analista precisa pedir acesso ao compartilhamento a quem administra a rede.
 
-## 4. Quando algo dá errado
+## 4. Enviar documentos ao acervo
+
+Para colocar um documento ou pasta no acervo de uma empresa, use sempre `cerebro_enviar` — **nunca** copie arquivos à mão para pastas ou compartilhamentos de rede, e nunca apague nem mova arquivos existentes.
+
+- **Comentário:** registre em `comentario` o que a pessoa disse sobre o arquivo ou pasta (finalidade, data de emissão, o que substitui).
+- **Arquivo até 1 MB:** envie direto com `nome` + `conteudo_base64` (binário, ex.: PDF) ou `conteudo_texto` (texto UTF-8).
+- **Arquivo maior que 1 MB:** chame `cerebro_enviar` com `nome` sem conteúdo e execute o `comando` devolvido (`curl --upload-file`), válido por 15 minutos e um uso.
+- **Pasta / vários arquivos:** passe a lista de caminhos em `nomes` numa única chamada; a ferramenta devolve um link por arquivo e um `comando` único para enviar todos.
+- **Atualizar documento existente (ex.: cartão CNPJ novo, certidão renovada):** busque o documento antigo com `cerebro_buscar` na empresa certa, pegue o `sha256` (ou `caminho_rel`) e envie com `acao="substituir"` e `substitui_sha256` (ou `substitui_caminho`).
+- **Confirmação:** informe à pessoa o estado devolvido pelo envio e confirme o destino final (ou eventual motivo de revisão) com `cerebro_envios`.
+
+## 5. Quando algo dá errado
 
 | Sintoma | O que fazer |
 | --- | --- |

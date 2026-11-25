@@ -7,6 +7,8 @@ Rotas:
     POST /consulta            {sql, limite?}
     POST /consulta/provas     {ids, os?}
     GET  /original            ?slug   bytes do arquivo original da página (em fluxo)
+    POST /envios              corpo = arquivo cru, x-galeed-nome, x-galeed-contexto (201 novo / 200 repetido)
+    GET  /envios              ?limite&id&sha256   andamento dos envios
 
 Regra de segurança: a chave nunca aparece em mensagem de erro, log ou exceção.
 """
@@ -15,10 +17,12 @@ from __future__ import annotations
 
 import json
 from typing import Any
+from urllib.parse import quote
 
 import httpx
 
 SISTEMAS = ("macos", "linux", "windows")
+CONTEXTO_ENVIO_MAX_BYTES = 8 * 1024
 
 
 class GaleedApiError(Exception):
@@ -95,8 +99,83 @@ class GaleedClient:
         return cliente, cliente.build_request("GET", f"{self._base}/original", params={"slug": slug},
                                               headers=self._headers())
 
+    async def enviar(
+        self,
+        nome: str,
+        conteudo: bytes,
+        *,
+        contexto: dict[str, Any] | None = None,
+        content_type: str = "application/octet-stream",
+    ) -> tuple[int, Any]:
+        headers = {
+            **self._headers(),
+            "Content-Type": content_type or "application/octet-stream",
+            "x-galeed-nome": quote(nome, safe=""),
+        }
+        if contexto:
+            codificado = quote(json.dumps(contexto, ensure_ascii=False, separators=(",", ":")), safe="")
+            if len(codificado.encode("ascii")) > CONTEXTO_ENVIO_MAX_BYTES:
+                raise GaleedApiError(400, "x-galeed-contexto excede o limite de 8 KB", "contexto acima de 8 KB")
+            headers["x-galeed-contexto"] = codificado
+        url = f"{self._base}/envios"
+        try:
+            async with httpx.AsyncClient(
+                timeout=self._timeout, transport=self._transport, follow_redirects=False
+            ) as client:
+                resp = await client.post(url, content=conteudo, headers=headers)
+        except httpx.TimeoutException:
+            raise GaleedApiError(
+                0, f"tempo esgotado após {int(self._timeout * 1000)}ms ao chamar POST /envios"
+            ) from None
+        except httpx.HTTPError as exc:
+            raise GaleedApiError(
+                0, f"falha de rede ao chamar POST /envios: {type(exc).__name__}"
+            ) from None
+        return resp.status_code, self._parse_response("POST", "/envios", resp)
+
+    async def envios(
+        self,
+        *,
+        limite: int | None = None,
+        sha256: str | None = None,
+        envio_id: str | None = None,
+    ) -> Any:
+        params: dict[str, Any] = {}
+        if limite is not None:
+            params["limite"] = limite
+        if sha256:
+            params["sha256"] = sha256
+        if envio_id:
+            params["id"] = envio_id
+        return await self._request("GET", "/envios", params=params or None)
+
     def _headers(self) -> dict[str, str]:
         return {"Authorization": f"Bearer {self._token}", **({"X-Galeed-Act-As": self._act_as} if self._act_as else {})}
+
+    def _parse_response(
+        self, method: str, path: str, resp: httpx.Response, expected_status: int | None = None
+    ) -> Any:
+        text = resp.text
+        if resp.status_code >= 300 or (expected_status is not None and resp.status_code != expected_status):
+            server_msg = text
+            try:
+                parsed = json.loads(text)
+                if isinstance(parsed, dict) and isinstance(parsed.get("error"), str):
+                    server_msg = parsed["error"]
+            except ValueError:
+                pass
+            server_msg = server_msg.replace(self._token, "***")[:500]
+            raise GaleedApiError(
+                resp.status_code if resp.status_code >= 300 else 502,
+                f"{method} {path} -> HTTP {resp.status_code}: {server_msg}",
+                server_msg,
+            )
+        if not text:
+            return None
+        try:
+            return resp.json()
+        except ValueError:
+            raise GaleedApiError(502, f"{method} {path} -> resposta não é JSON válido") from None
 
     async def _request(
         self,
@@ -127,23 +206,4 @@ class GaleedClient:
             raise GaleedApiError(
                 0, f"falha de rede ao chamar {method} {path}: {type(exc).__name__}"
             ) from None
-
-        text = resp.text
-        if resp.status_code >= 300 or (expected_status is not None and resp.status_code != expected_status):
-            server_msg = text
-            try:
-                parsed = json.loads(text)
-                if isinstance(parsed, dict) and isinstance(parsed.get("error"), str):
-                    server_msg = parsed["error"]
-            except ValueError:
-                pass
-            server_msg = server_msg.replace(self._token, "***")[:500]
-            raise GaleedApiError(
-                resp.status_code if resp.status_code >= 300 else 502, f"{method} {path} -> HTTP {resp.status_code}: {server_msg}", server_msg
-            )
-        if not text:
-            return None
-        try:
-            return resp.json()
-        except ValueError:
-            raise GaleedApiError(502, f"{method} {path} -> resposta não é JSON válido") from None
+        return self._parse_response(method, path, resp, expected_status)
