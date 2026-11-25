@@ -113,6 +113,7 @@ precificacao:
 12. **Pesquise antes de pedir.** Acervo, cérebro, ConLicitação e online vêm antes de qualquer pendência ou pergunta. Pendência é só o que a empresa precisa fazer, decidir ou aprovar. Falta de pesquisa do agente não vira tarefa da analista.
 13. **Cada coisa num lugar.** Exigências, prazos e regras do edital em `edital.json`; quem atende à habilitação em `habilitacao.json`; execução, itens e preço online dos itens de fornecimento em `tecnica.json`; preço, cenários e preço online de peças de manutenção em `precificacao.json`. Os outros arquivos citam o lugar.
 14. **Escreva só o que decide.** Sem descrever o que não se aplica, busca vazia sem efeito ou falha de ferramenta sem impacto. Cobertura incompleta: uma frase, com o efeito.
+15. **Problemas sistêmicos na hora.** Qualquer etapa ou portão deve chamar `registrar_nota_urgente` assim que identificar um problema sistêmico do grupo (sem esperar a precificação), usando `chave` estável conforme `../contexto/prompt_sistema.md`.
 
 ## 4. Saídas e relatório
 

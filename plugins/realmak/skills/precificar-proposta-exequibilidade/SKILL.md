@@ -87,17 +87,8 @@ Regras da consulta:
   - Grave obrigatoriamente em `analise/precificacao.json`:
     - `"tributos_pendente": true`
     - `"tributos_pendente_motivo": "<motivo objetivo e curto, ex.: Alíquota tributária da UNA ausente na base de custos; confirmar com a contabilidade>"`
-    - Item em `"notas_urgentes"` (array) para exibição automática na Visão Geral do CRM:
-      ```json
-      {
-        "chave": "tributos:<alias>",
-        "empresa": "<alias>",
-        "titulo": "Alíquota tributária da <Empresa> pendente",
-        "detalhe": "<motivo objetivo + competência da base + ação: confirmar com a contabilidade e atualizar em Cadastros → Custos>"
-      }
-      ```
   - Quando a alíquota estiver confirmada (`tributos.aliquota != null` e (`tributos.notas > 1` ou `tributos.confirmada == true`)), grave `"tributos_pendente": false`.
-  - Outras pendências transversais urgentes descobertas na precificação (como base de custos com mais de 12 meses sem atualização, `chave: "base_custos:defasada:<competencia>"`) também podem ser registradas em `notas_urgentes[]` com `chave` estável para deduplicação.
+  - **Na plataforma (quando a ferramenta `registrar_nota_urgente` estiver disponível):** chame diretamente `registrar_nota_urgente` ao encontrar alíquota ausente/não confirmada (`n=1`) ou base de custos defasada (> 12 meses), usando `chave` estável (ex.: `chave: "tributos:una"` ou `chave: "base_custos:defasada:<competencia>"`), `empresa`, `titulo`, `detalhe` (motivo + competência + ação de confirmar com a contabilidade e atualizar em Cadastros → Custos) e `link_destino: "/odoo/action-261"`.
 - **Administração central.** O custo mensal da empresa é a base do rateio; o percentual em Premissas B18 sai desse custo dividido pelo faturamento ou pelo número de contratos que o analista informar. Sem esse dado, use premissa identificada.
 - **Markup por segmento.** O lucro e os impostos de cada segmento mostram como a empresa costuma formar preço. Servem de comparação, não substituem a conta de tributos pela alíquota da empresa.
 
