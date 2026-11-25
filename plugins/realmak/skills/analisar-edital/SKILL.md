@@ -152,6 +152,17 @@ Procure especialmente o que costuma tirar a empresa de disputas:
 - **Garantia:** de proposta ou de contrato, com o percentual.
 - **Exigências de órgão:** Judiciário (parentesco no quadro societário), governos estaduais e distrital (declarações de decretos próprios), Forças Armadas (documentos próprios).
 
+## Portal da sessão pública
+
+Identifique o portal onde ocorre a sessão pública (disputa eletrônica), distinguindo-o do PNCP quando este for apenas o portal de divulgação.
+
+- **Nomes canônicos comuns:** `Compras.gov.br`, `SISLOG`, `BLL`, `Licitações-e`, `BNC`, `Portal de Compras Públicas` ou o nome curto do portal próprio do órgão/ente.
+- **Link (`url`):** informe o endereço mais direto à sessão pública que o edital ou a fonte oficial sustentar (página específica do certame no portal, quando disponível; caso contrário, a página inicial do portal indicado no edital). Aceite apenas `http://` ou `https://`, ou `null` se não houver URL confirmada. Nunca invente link.
+- **Padrão seguro para Compras.gov.br:** quando o identificador completo da compra no sistema (17 dígitos: UASG 6 + modalidade 2 + número 5 + ano 4) estiver confirmado por consulta oficial ou metadados do PNCP, use `https://cnetmobile.estaleiro.serpro.gov.br/comprasnet-web/public/compras/acompanhamento-compra?compra=<17_digitos>`. Sem certeza do código de 17 dígitos, use `https://www.gov.br/compras/` (ou a URL expressa no edital) e registre UASG e número/ano em `id_no_portal`.
+- **Identificador (`id_no_portal`):** número ou código da licitação no portal da sessão (ex.: número SISLOG, identificador no Licitações-e, `idCompra` ou `UASG + número/ano` no Compras.gov.br), ou `null` quando não constar.
+- **Fonte (`fonte`):** item ou página do edital/aviso (ex.: `Edital 2.3`, `Edital 1.1`), ou `"PNCP"` quando vier dos metadados da contratação.
+- **Portal não identificado:** se nem o edital nem os metadados oficiais identificarem o portal da sessão com segurança, use `portal_sessao: null` e registre um aviso em `avisos` explicando a ausência — nunca invente portal nem URL.
+
 ## Regras
 
 - Escreva em português, com frases curtas. Separe o que o edital diz do que você conclui ("o TR exige…" × "isso pode inabilitar porque…").
@@ -178,5 +189,7 @@ Classifique por lote conforme parcelas, finalidade, regime de execução e crit�
 ## Campos opcionais do card
 
 Para cada `atencao[]`, escreva `titulo` de até 80 caracteres. Na pauta `habilitacao[]`, atribua `id` pela ordem dos documentos (`hab-001`, `hab-002`, etc.) e `rotulo` de até 40 caracteres. Preserve o identificador de requisito inalterado quando revisar a mesma pauta.
+
+No cabeçalho (`cabecalho`), mantenha o campo texto livre `portal` e preencha também o objeto estruturado `portal_sessao` (`{nome, url, id_no_portal, fonte}` ou `null` com aviso em `avisos` quando não identificado), seguindo as regras de [Portal da sessão pública](#portal-da-sessão-pública).
 
 Quando o executor disponibilizar `licitacao_buscar_fontes`, use o `lead_id` do card para localizar cláusulas por peça, item, página física ou texto. Cite o trecho e o link estável retornados; confira todas as ocorrências antes de atribuir a fonte.

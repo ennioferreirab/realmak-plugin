@@ -12,7 +12,13 @@
   "criterio": "menor preço por item",
   "modo_disputa": "aberto",
   "portal": "Compras.gov.br",
-  "link": "https://www.gov.br/compras/"
+  "link": "https://www.gov.br/compras/",
+  "portal_sessao": {
+   "nome": "Compras.gov.br",
+   "url": "https://www.gov.br/compras/",
+   "id_no_portal": "UASG 999999 / PE 90012/2026",
+   "fonte": "Edital 1.1"
+  }
  },
  "atencao": [
   {
