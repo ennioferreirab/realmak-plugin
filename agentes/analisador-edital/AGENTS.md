@@ -51,7 +51,6 @@ grupo:                             # não são concorrentes; só uma empresa do 
   - {nome: SUBLIME, cnpj: a_confirmar}
 nome_agente: analisador-edital          # saída em <licitacao>/agents/<nome_agente>/
 pasta_licitacoes: "/data/conlicitacao/licitacoes/"   # no daemon; fora dele, a pasta montada do acervo (scripts: PASTA_LICITACOES)
-dias_minimos_preparo: 3            # dias CORRIDOS até a sessão pública
 valor_minimo_disputa: 100000       # R$, sobre a parte que a empresa disputaria
 regioes_atuacao: [DF, GO, MG, PA]  # fora delas: ponto de atenção; pode ser oportunidade
 categorias: referencias/categorias.yaml   # foco | adjacente | fora vem da categoria; sem categoria = adjacente

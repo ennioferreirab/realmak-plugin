@@ -47,7 +47,7 @@ Leia `analise/edital.json` e `fontes/triagem_cerebro.json` (que cruza as 4 empre
 
 | Decisão | Quando |
 |---|---|
-| `parar` | Trava factual sem solução a tempo (sessão < `dias_minimos_preparo` dias, valor < `valor_minimo_disputa`, exigência comprovadamente incompatível sem alternativa) ou objeto fora do foco **e** da região sem oportunidade financeira. `orientacao: 1`. |
+| `parar` | Trava factual sem solução a tempo (prazo de envio de propostas/sessão já encerrado/vencido, valor < `valor_minimo_disputa`, exigência comprovadamente incompatível sem alternativa) ou objeto fora do foco **e** da região sem oportunidade financeira. Prazo curto mas ainda aberto (inclusive sessão hoje ou amanhã) **não** dispara `parar` por prazo — registre apenas como alerta de prazo apertado e siga normalmente para E2 se houver empresa elegível ou pista concreta. `orientacao: 1`. |
 | `humano` | Três condições (inclusive ausência clara de prova própria em exigência técnica eliminatória pesada, trazendo as melhores pistas para diligência). |
 | `seguir` | Há ao menos 1 empresa elegível ou pista concreta que justifique aprofundamento. Informe `empresas_selecionadas` (e `empresas_por_lote` quando aplicável). |
 
