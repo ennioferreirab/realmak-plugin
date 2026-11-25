@@ -1,4 +1,4 @@
-"""Ferramentas do cérebro (Galeed), só leitura.
+"""Ferramentas do cérebro (Galeed): consulta e envio de documentos ao acervo.
 
 A chave usada em cada chamada é a do próprio usuário, tirada do token Bearer
 verificado na requisição. Cada chave está presa a exatamente um cérebro. Para quem
@@ -8,7 +8,12 @@ e-mail da pessoa no header X-Galeed-Act-As, e vale o grant dela.
 
 from __future__ import annotations
 
+import base64
+import binascii
+import json
+import shlex
 from typing import Annotated, Any, Literal
+from urllib.parse import quote
 
 import httpx
 from fastmcp import FastMCP
@@ -20,10 +25,13 @@ from pydantic import Field
 from ..capping import dumps
 from ..config import NOMES_EMPRESAS, Settings, load_settings
 from ..licitacao import arquivos
-from .client import GaleedApiError, GaleedClient
+from .client import CONTEXTO_ENVIO_MAX_BYTES, GaleedApiError, GaleedClient
 from .empresas import EMPRESA_DESC, Empresa, EmpresaLiberada, get_empresas
 
 Sistema = Literal["macos", "linux", "windows"]
+AcaoEnvio = Literal["enviar", "substituir"]
+LIMITE_DIRETO = 1024 * 1024  # 1 MB direto; acima disso, link assinado de upload
+LIMITE_ARQUIVOS_PASTA = 100
 
 OS_DESC = (
     "Sistema do computador onde o analista vai abrir os arquivos originais: macos, linux ou "
@@ -181,6 +189,10 @@ def explicar_erro(exc: Exception) -> str:
                 return f"Cérebro: requisição inválida (400): {corpo}. Ajuste os argumentos e tente de novo."
             case 404:
                 return f"Cérebro: não encontrado (404): {corpo}."
+            case 413:
+                return f"Cérebro: arquivo acima do limite permitido (413): {corpo}."
+            case 415:
+                return f"Cérebro: tipo de arquivo não suportado (415): {corpo}."
             case 0:
                 return f"Cérebro: falha de conexão com o gateway: {exc}. Tente de novo em instantes."
             case _:
@@ -272,13 +284,151 @@ async def cerebro_provas(
     return await executar(empresa, "provas", list(ids), os)
 
 
+def _nome_base(caminho: str) -> str:
+    limpo = caminho.replace("\\", "/").rsplit("/", 1)[-1].strip()
+    if not limpo or limpo in (".", ".."):
+        raise ToolError(f"Cérebro: nome de arquivo inválido: {caminho!r}.")
+    return limpo
+
+
+def _montar_contexto(
+    acao: AcaoEnvio,
+    comentario: str | None,
+    email: str,
+    substitui_sha256: str | None,
+    substitui_caminho: str | None,
+) -> dict[str, Any]:
+    sha = (substitui_sha256 or "").strip()
+    caminho = (substitui_caminho or "").strip()
+    if acao == "substituir" and not (sha or caminho):
+        raise ToolError(
+            "Cérebro: para acao='substituir', informe substitui_sha256 ou substitui_caminho "
+            "(busque o documento antigo com cerebro_buscar)."
+        )
+    if sha or caminho:
+        acao = "substituir"
+    contexto: dict[str, Any] = {"origem": "mcp", "acao": acao}
+    if comentario and comentario.strip():
+        contexto["comentario"] = comentario.strip()
+    if email:
+        contexto["quem"] = email
+    if sha or caminho:
+        substitui: dict[str, str] = {}
+        if sha:
+            substitui["sha256"] = sha
+        if caminho:
+            substitui["caminho_rel"] = caminho
+        contexto["substitui"] = substitui
+    codificado = quote(json.dumps(contexto, ensure_ascii=False, separators=(",", ":")), safe="")
+    if len(codificado.encode("ascii")) > CONTEXTO_ENVIO_MAX_BYTES:
+        raise ToolError("Cérebro: contexto do envio excede o limite de 8 KB. Encurte o comentario.")
+    return contexto
+
+
+async def cerebro_enviar(
+    empresa: Annotated[Empresa, Field(description=EMPRESA_DESC)] = "realmak",
+    nome: Annotated[str | None, Field(description="Nome de um arquivo único com extensão (ex.: Realmak-Sublime_03496338000174_2026-11-25.pdf). Para enviar vários arquivos de uma pasta numa chamada, use 'nomes'.")] = None,
+    nomes: Annotated[list[str] | None, Field(min_length=1, max_length=LIMITE_ARQUIVOS_PASTA, description="Lista de arquivos (ou caminhos locais de uma pasta) para enviar em lote numa chamada. Devolve um link assinado por arquivo e um comando único de envio.")] = None,
+    conteudo_texto: Annotated[str | None, Field(description="Conteúdo de texto UTF-8 de um arquivo único, até 1 MB. Não use com 'nomes'.")] = None,
+    conteudo_base64: Annotated[str | None, Field(description="Conteúdo binário em base64 de um arquivo único, até 1 MB. Para arquivo maior que 1 MB, omita o conteúdo para receber o link assinado de envio (curl --upload-file).")] = None,
+    comentario: Annotated[str | None, Field(max_length=2000, description="O que a pessoa disse sobre o arquivo ou pasta (finalidade, data, o que atualiza).")] = None,
+    acao: Annotated[AcaoEnvio, Field(description="'enviar' para documento novo ou 'substituir' para atualizar documento existente no acervo (busque o antigo com cerebro_buscar e informe substitui_sha256 ou substitui_caminho).")] = "enviar",
+    substitui_sha256: Annotated[str | None, Field(description="SHA-256 do documento antigo a substituir (obtido com cerebro_buscar ou cerebro_provas).")] = None,
+    substitui_caminho: Annotated[str | None, Field(description="Caminho relativo (caminho_rel) do documento antigo a substituir, quando não houver SHA-256.")] = None,
+) -> str:
+    """Envia um arquivo ou uma pasta (vários arquivos) ao cérebro da empresa escolhida, com comentário e contexto. Nunca apaga nem move documentos existentes. Até 1 MB de arquivo único vai direto em conteudo_texto ou conteudo_base64; arquivo maior ou pasta (nomes) devolve links assinados de uso único (15 minutos) e comando curl --upload-file. Para atualizar um documento existente (ex.: cartão CNPJ novo, certidão renovada), busque o antigo com cerebro_buscar e envie com acao='substituir' e substitui_sha256. Depois, confirme o estado e destino final com cerebro_envios."""
+    if bool(nome) == bool(nomes):
+        raise ToolError("Cérebro: informe 'nome' (arquivo único) ou 'nomes' (lista de arquivos de uma pasta), não os dois.")
+    if conteudo_texto is not None and conteudo_base64 is not None:
+        raise ToolError("Cérebro: informe conteudo_texto ou conteudo_base64, não os dois.")
+    if nomes and (conteudo_texto is not None or conteudo_base64 is not None):
+        raise ToolError("Cérebro: para enviar vários arquivos ('nomes'), não envie conteúdo direto; use os links assinados devolvidos.")
+
+    client, _ = await client_for_request(empresa)
+    access = request_access()
+    email = str((access.claims or {}).get("email") or "")
+    settings = load_settings()
+    contexto = _montar_contexto(acao, comentario, email, substitui_sha256, substitui_caminho)
+
+    if nomes:
+        if not email or not arquivos.links_disponiveis(settings):
+            raise ToolError("Cérebro: envio por link exige login de pessoa (OAuth) e URL pública configurada neste servidor.")
+        envios: list[dict[str, Any]] = []
+        comandos: list[str] = []
+        for caminho_local in nomes:
+            nome_arquivo = _nome_base(caminho_local)
+            dados = {"t": "cerebro_enviar", "e": email, "m": empresa, "n": nome_arquivo, "c": contexto}
+            link_info = arquivos.link(settings, "cerebro-envio/", dados)
+            cmd = f"curl -fsS --upload-file {shlex.quote(caminho_local)} {shlex.quote(link_info['url'])}"
+            envios.append({"caminho": caminho_local, "nome": nome_arquivo, **link_info, "comando": cmd})
+            comandos.append(cmd)
+        return dumps({
+            "empresa": empresa,
+            "total": len(envios),
+            "envios": envios,
+            "comando": " && ".join(comandos),
+            "expira_em": envios[0]["expira_em"],
+            "limite_mb": settings.arquivo_max_bytes // (1024 * 1024),
+        })
+
+    assert nome is not None
+    nome_arquivo = _nome_base(nome)
+    if conteudo_texto is None and conteudo_base64 is None:
+        if not email or not arquivos.links_disponiveis(settings):
+            raise ToolError("Cérebro: envio por link exige login de pessoa (OAuth) e URL pública configurada neste servidor.")
+        dados = {"t": "cerebro_enviar", "e": email, "m": empresa, "n": nome_arquivo, "c": contexto}
+        link_info = arquivos.link(settings, "cerebro-envio/", dados)
+        return dumps({
+            "empresa": empresa,
+            "nome": nome_arquivo,
+            **link_info,
+            "comando": f"curl -fsS --upload-file {shlex.quote(nome)} {shlex.quote(link_info['url'])}",
+            "limite_mb": settings.arquivo_max_bytes // (1024 * 1024),
+        })
+
+    if conteudo_texto is not None:
+        conteudo = conteudo_texto.encode("utf-8")
+        content_type = "text/plain; charset=utf-8"
+    else:
+        try:
+            conteudo = base64.b64decode(conteudo_base64 or "", validate=True)
+        except (binascii.Error, ValueError):
+            raise ToolError("Cérebro: conteudo_base64 inválido.") from None
+        content_type = "application/octet-stream"
+    if not conteudo:
+        raise ToolError("Cérebro: arquivo vazio.")
+    if len(conteudo) > LIMITE_DIRETO:
+        raise ToolError("Cérebro: acima de 1 MB direto na chamada. Chame sem conteúdo para receber o link de envio.")
+    try:
+        status, resp = await client.enviar(nome_arquivo, conteudo, contexto=contexto, content_type=content_type)
+    except GaleedApiError as exc:
+        raise ToolError(explicar_erro(exc)) from None
+    corpo = (
+        {"empresa": empresa, "http_status": status, "repetido": status == 200, **resp}
+        if isinstance(resp, dict)
+        else {"empresa": empresa, "http_status": status, "repetido": status == 200, "resultado": resp}
+    )
+    return dumps(corpo)
+
+
+async def cerebro_envios(
+    empresa: Annotated[Empresa, Field(description=EMPRESA_DESC)] = "realmak",
+    limit: Annotated[int | None, Field(ge=1, le=100, description="Máximo de envios recentes a retornar.")] = None,
+    estado: Annotated[str | None, Field(description="Filtra pelo estado do envio (se suportado pelo gateway).")] = None,
+    sha256: Annotated[str | None, Field(description="Filtra pelo SHA-256 do arquivo enviado.")] = None,
+    envio_id: Annotated[str | None, Field(description="Filtra pelo identificador do envio devolvido por cerebro_enviar.")] = None,
+) -> str:
+    """Consulta o andamento dos envios ao cérebro da empresa (estado, destino final e eventual motivo de revisão). Use após cerebro_enviar para confirmar que o documento entrou na pasta correta."""
+    return await executar(empresa, "envios", limit=limit, estado=estado, sha256=sha256, envio_id=envio_id)
+
+
 INSTRUCOES = """Cérebros das empresas do grupo (Realmak, AForça, Nortfort, UNA, Sublime):
 - Comece com cerebro_empresas sem argumentos ({}) uma vez por conversa: diz quais empresas você pode consultar, o nível
   de acesso (total ou parcial) e quais têm o dataset de registros.
-- Nas outras cinco ferramentas cerebro_*, passe `empresa` explicitamente: realmak, aforca, nortfort,
+- Nas demais ferramentas cerebro_*, passe `empresa` explicitamente: realmak, aforca, nortfort,
   una ou sublime (aliases minúsculos, nunca `brain`). Se a pergunta não diz a empresa e o contexto não deixa
   dúvida, use realmak e diga na resposta que ela se refere à Realmak. Se o contexto deixar dúvida
-  sobre a empresa, pergunte antes de consultar.
+  sobre a empresa, pergunte antes de consultar ou enviar.
 - Pergunta sobre "o grupo" ou "todas as empresas": consulte cada empresa liberada e separe a resposta
   por empresa.
 - Diga sempre de que empresa veio cada resultado. Os ids de cerebro_consulta valem só para
@@ -295,6 +445,11 @@ INSTRUCOES = """Cérebros das empresas do grupo (Realmak, AForça, Nortfort, UNA
 - Passe os='windows' somente em cerebro_buscar, cerebro_fatos e cerebro_provas, salvo outro sistema
   informado pelo analista. cerebro_esquema recebe só empresa; cerebro_consulta recebe sql, limite e empresa.
   cerebro_provas recebe ids como lista de strings reais da consulta, sempre na mesma empresa.
+- Para enviar documento ou pasta ao acervo do cérebro, use sempre `cerebro_enviar` — nunca copie arquivos à mão para pastas ou compartilhamentos, e nunca apague nem mova documentos existentes.
+  - Coloque em `comentario` o que a pessoa disse sobre o arquivo ou pasta.
+  - Até 1 MB de arquivo único: envie direto (`conteudo_base64` ou `conteudo_texto`). Maior que 1 MB: chame sem conteúdo e execute o `comando` (`curl --upload-file`). Pasta / vários arquivos: passe a lista em `nomes` numa única chamada e rode o `comando` único devolvido.
+  - Para documento que atualiza outro (ex.: cartão CNPJ novo, certidão renovada): busque o antigo com `cerebro_buscar`, pegue o `sha256` (ou caminho relativo) e envie com `acao="substituir"` e `substitui_sha256`.
+  - Informe à pessoa o estado devolvido e confirme o destino final (ou motivo de revisão) com `cerebro_envios`.
 - Resultado com 'original': termine a resposta com a seção Arquivos, um item por sha256, em markdown e sem URL
   por extenso: '**nome** · [Visualizar](original.link)' e, na linha de baixo, 'Caminho: original.file_path'.
   Use a URL curta exatamente como veio, sem reescrever nem repetir. O link vale 30 minutos, não pede login,
@@ -311,10 +466,18 @@ INSTRUCOES = """Cérebros das empresas do grupo (Realmak, AForça, Nortfort, UNA
 def build_cerebro_server() -> FastMCP:
     mcp = FastMCP("cerebro")
     ro: dict[str, Any] = {"readOnlyHint": True, "openWorldHint": False}
+    escrita: dict[str, Any] = {
+        "readOnlyHint": False,
+        "destructiveHint": False,
+        "idempotentHint": False,
+        "openWorldHint": False,
+    }
     mcp.tool(cerebro_empresas, tags={"cerebro"}, annotations=ro)
     mcp.tool(cerebro_buscar, tags={"cerebro"}, annotations=ro)
     mcp.tool(cerebro_fatos, tags={"cerebro"}, annotations=ro)
     mcp.tool(cerebro_esquema, tags={"cerebro", REGISTROS_TAG}, annotations=ro)
     mcp.tool(cerebro_consulta, tags={"cerebro", REGISTROS_TAG}, annotations=ro)
     mcp.tool(cerebro_provas, tags={"cerebro", REGISTROS_TAG}, annotations=ro)
+    mcp.tool(cerebro_enviar, tags={"cerebro"}, annotations=escrita)
+    mcp.tool(cerebro_envios, tags={"cerebro"}, annotations=ro)
     return mcp
