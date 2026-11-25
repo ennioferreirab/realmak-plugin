@@ -317,9 +317,39 @@ async def precificacao_enviar_base_custos() -> str:
                   "comando_planilha": f"curl -fsS -F planilha=@<planilha>.xlsx -F 'motivo=<motivo>' '{resultado['url']}'"})
 
 
+async def visao_geral_pendencias(
+    escopo: Annotated[Literal["todos", "meus"] | None, Field(description="Escopo da visão geral: 'todos' (padrão) ou 'meus'.")] = None,
+    empresa: Annotated[Literal["realmak", "aforca", "nortfort", "una", "sublime"] | None, Field(description="Filtra por empresa disputante.")] = None,
+    etapa: Annotated[Literal["todas", "disputa", "analise_humana"] | None, Field(description="Filtra por etapa: 'todas' (padrão), 'disputa' ou 'analise_humana'.")] = None,
+    incluir_em_dia: Annotated[bool | None, Field(description="Inclui licitações em dia sem pendências críticas (padrão true).")] = None,
+) -> str:
+    """Lê a Visão geral de Licitações no Odoo (somente leitura, nas permissões da pessoa autenticada): resumo, calendário, pendências, prazos, agentes aguardando e equipe para as etapas Análise humana e Disputa."""
+    return await _chamar("visao_geral_pendencias", {
+        "escopo": escopo,
+        "empresa": empresa,
+        "etapa": etapa,
+        "incluir_em_dia": incluir_em_dia,
+    })
+
+
+async def visao_geral_licitacao(
+    licitacao_id: Annotated[int | None, LICITACAO_ID] = None,
+    conlicitacao_id: Annotated[int | None, Field(description="ID da licitação no ConLicitação, quando não tiver o id do Odoo.")] = None,
+    chave: Annotated[str | None, CHAVE] = None,
+) -> str:
+    """Lê o detalhe calculado de uma licitação na Visão geral do Odoo (somente leitura, nas permissões da pessoa autenticada): documentos, prazos, alertas, janela de decisão, agentes aguardando e status de conferência de habilitação."""
+    return await _chamar("visao_geral_licitacao", {
+        "licitacao_id": licitacao_id,
+        "conlicitacao_id": conlicitacao_id,
+        "chave": chave,
+    })
+
+
 INSTRUCOES = (
     "Licitações da Realmak no Odoo (licitacao_*), como a pessoa que entrou:\n"
     "- Comece por licitacao_pasta (ou licitacao_buscar para achar a licitação). O JSON traz ids de documentos.\n"
+    "- Para acompanhar pendências e prazos de Análise humana e Disputa, use visao_geral_pendencias; para o detalhe "
+    "calculado de um card na Visão geral, use visao_geral_licitacao (ambas somente leitura).\n"
     "- Para adicionar licitação, use licitacao_criar, que importa do ConLicitação quando encontra o certame. "
     "Se precisar buscar no portal oficial, leia a página e o edital, informe o link e os dados confirmados "
     "e anexe os originais faltantes com licitacao_enviar_arquivo. Use chave para cards externos.\n"
@@ -353,4 +383,6 @@ def build_licitacao_server() -> FastMCP:
     mcp.tool(licitacao_status, tags={LICITACAO_TAG}, annotations={**escrita, "idempotentHint": True})
     mcp.tool(precificacao_base_custos, tags={LICITACAO_TAG}, annotations={**ro, "idempotentHint": True})
     mcp.tool(precificacao_enviar_base_custos, tags={LICITACAO_TAG}, annotations=escrita)
+    mcp.tool(visao_geral_pendencias, tags={LICITACAO_TAG}, annotations={**ro, "idempotentHint": True})
+    mcp.tool(visao_geral_licitacao, tags={LICITACAO_TAG}, annotations={**ro, "idempotentHint": True})
     return mcp
