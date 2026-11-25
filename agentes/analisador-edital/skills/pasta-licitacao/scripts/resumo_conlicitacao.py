@@ -9,6 +9,7 @@ externa, frequentemente parcial, e não evidência documental.
 """
 import json
 import os
+import re
 import subprocess
 import sys
 from datetime import UTC, datetime
@@ -19,9 +20,14 @@ from typing import Any
 PASTA_LICITACOES = Path(os.environ.get("PASTA_LICITACOES", "/data/conlicitacao/licitacoes"))
 NOME_AGENTE = os.environ.get("NOME_AGENTE", "analisador-edital")
 CRM_DB_CONTAINER = "realmak-crm-postgres-1"
+CHAVE_SEGURA = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 AVISO = ("Leitura por IA do ConLicitação, sem conhecimento estratégico da Realmak. "
          "Costuma vir incompleta: campo vazio significa não informado pelo resumo, "
          "não ausência no edital. Usar como sugestão e conferir no edital.")
+
+
+def chave_segura(valor: str) -> bool:
+    return bool(CHAVE_SEGURA.fullmatch(valor)) and ".." not in valor
 
 
 def da_pasta(pasta: Path):
@@ -96,13 +102,26 @@ def do_site(pasta: Path, licitacao_id: int):
 
 
 def main():
-    if len(sys.argv) < 2 or not sys.argv[1].isdigit():
+    if len(sys.argv) < 2 or not chave_segura(sys.argv[1]):
         raise SystemExit("uso: resumo_conlicitacao.py <licitacao_id>")
-    lid = int(sys.argv[1])
-    pasta = PASTA_LICITACOES / str(lid)
+    chave = sys.argv[1]
+    pasta = PASTA_LICITACOES / chave
     if not (pasta / "manifesto.json").exists():
-        raise SystemExit(f"licitação {lid} sem manifesto")
+        raise SystemExit(f"licitação {chave} sem manifesto")
 
+    if not chave.isdigit():
+        print(json.dumps({
+            "licitacao_id": chave,
+            "arquivo": None,
+            "origem": "fonte externa (sem ConLicitação)",
+            "situacao": "sem_resumo",
+            "natureza": "sugestao_externa",
+            "consultado_em": None,
+            "campos": 0,
+        }, ensure_ascii=False))
+        return
+
+    lid = int(chave)
     achado = (da_pasta(pasta) or do_banco_transitorio(pasta, lid)
               or baixado_antes(pasta) or do_site(pasta, lid))
     if achado is None:

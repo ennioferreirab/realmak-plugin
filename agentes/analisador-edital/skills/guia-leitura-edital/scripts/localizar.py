@@ -24,7 +24,12 @@ REF = AQUI.parent / "referencias"
 PASTA_LICITACOES = Path(os.environ.get("PASTA_LICITACOES", "/data/conlicitacao/licitacoes"))
 NOME_AGENTE = os.environ.get("NOME_AGENTE", "analisador-edital")
 CRM_DB_CONTAINER = "realmak-crm-postgres-1"                                         # AGENTS.md: crm_resumo.container
+CHAVE_SEGURA = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 PAGINA = re.compile(r"^--- Página (\d+) ---$")
+
+
+def chave_segura(valor):
+    return bool(CHAVE_SEGURA.fullmatch(str(valor or ""))) and ".." not in str(valor or "")
 TR_EMBUTIDO = re.compile(r"^\s*(ANEXO\s+[IVXLC0-9]+\s*[-–—:.]?\s*)?(DO EDITAL\s*[-–—:]?\s*)?TERMO DE REFER[EÊ]NCIA\b", re.I)
 NOME = [("edital", r"edital|aviso de (licita|contrata)"),
         ("termo_referencia", r"termo[ _-]*de[ _-]*refer|\bTR\b|caderno[ _-]*de[ _-]*especifica|projeto[ _-]*b[aá]sico"),
@@ -38,6 +43,8 @@ def catalogo():
 
 
 def tipos_crm(lid):
+    if not str(lid).isdigit():
+        return {}
     sql = ("select distinct on (caminho_documento) caminho_documento, resultado::jsonb->>'tipo_documento', "
            "resultado::jsonb->'resposta'->>'confidence' from modelos_decisores.julgamentos "
            f"where licitacao_id = '{int(lid)}' order by caminho_documento, criado_em desc")
@@ -77,38 +84,71 @@ def paginas(texto):
     return res
 
 
+def _entradas_disco(base):
+    """Fallback para cards fora do ConLicitação (PNCP, Compras, link) cujo manifesto não lista anexos[]."""
+    raiz_extraidos = base / "extraidos"
+    entradas, vistos, avisos = [], set(), []
+    if raiz_extraidos.is_dir():
+        for txt_path in sorted(raiz_extraidos.rglob("*.txt")):
+            if not txt_path.is_file():
+                continue
+            rel_txt = txt_path.relative_to(raiz_extraidos).as_posix()
+            cam = rel_txt[:-4] if rel_txt.endswith(".txt") else rel_txt
+            entradas.append({"caminho_documento": cam, "caminho": rel_txt})
+            vistos.add(cam)
+    raiz_anexos = base / "anexos"
+    if raiz_anexos.is_dir():
+        for orig in sorted(raiz_anexos.rglob("*")):
+            if not orig.is_file():
+                continue
+            rel_orig = orig.relative_to(base).as_posix()
+            if rel_orig not in vistos:
+                avisos.append(f"{orig.name}: sem texto extraído")
+    return entradas, avisos
+
+
 def mapa(lid):
     cat = catalogo()
     base = PASTA_LICITACOES / str(lid)
     man = json.loads((base / "manifesto.json").read_text(encoding="utf-8"))
     crm = tipos_crm(lid)
     docs, avisos = [], []
-    for anexo in man.get("anexos", []):
-        for e in anexo.get("extraidos") or []:
-            cam, txt = e.get("caminho_documento"), e.get("caminho")
-            if not cam or not txt:
-                continue
-            if e.get("tipo_documento"):
-                tipo, conf, origem = e["tipo_documento"], e.get("tipo_confianca"), "manifesto"
-            elif cam in crm:
-                (tipo, conf), origem = crm[cam], "crm"
-            else:
-                tipo, conf, origem = tipo_por_nome(cam), None, "nome do arquivo"
-            try:
-                linhas = paginas((base / "extraidos" / txt).read_text(encoding="utf-8", errors="ignore"))
-            except Exception as err:
-                avisos.append(f"{Path(cam).name}: texto ilegível ({err})")
-                linhas = []
-            embutidos = []
-            if tipo == "edital":
-                for pag, linha in linhas:
-                    if pag >= 3 and TR_EMBUTIDO.match(linha):
-                        embutidos.append({"tipo": "termo_referencia", "pagina": pag})
-                        break
-            docs.append({"arquivo": Path(cam).name, "tipo": tipo, "confianca": conf, "origem_tipo": origem,
-                         "original": str(base / cam), "texto": str(base / "extraidos" / txt),
-                         "paginas": e.get("paginas"), "paginas_nao_extraidas": e.get("paginas_nao_extraidas") or [],
-                         "embutidos": embutidos, "_linhas": linhas})
+    entradas = [
+        e for anexo in man.get("anexos", []) for e in (anexo.get("extraidos") or [])
+    ]
+    if not entradas:
+        entradas, avisos_disco = _entradas_disco(base)
+        avisos.extend(avisos_disco)
+    for e in entradas:
+        cam, txt = e.get("caminho_documento"), e.get("caminho")
+        if not cam or not txt:
+            continue
+        txt_rel = txt[len("extraidos/"):] if txt.startswith("extraidos/") else txt
+        txt_path = base / "extraidos" / txt_rel
+        if e.get("tipo_documento"):
+            tipo, conf, origem = e["tipo_documento"], e.get("tipo_confianca"), "manifesto"
+        elif cam in crm:
+            (tipo, conf), origem = crm[cam], "crm"
+        else:
+            tipo, conf, origem = tipo_por_nome(cam), None, "nome do arquivo"
+        try:
+            linhas = paginas(txt_path.read_text(encoding="utf-8", errors="ignore"))
+        except Exception as err:
+            avisos.append(f"{Path(cam).name}: texto ilegível ({err})")
+            linhas = []
+        embutidos = []
+        if tipo == "edital":
+            for pag, linha in linhas:
+                if pag >= 3 and TR_EMBUTIDO.match(linha):
+                    embutidos.append({"tipo": "termo_referencia", "pagina": pag})
+                    break
+        n_paginas = e.get("paginas")
+        if n_paginas is None and linhas:
+            n_paginas = max(p for p, _ in linhas)
+        docs.append({"arquivo": Path(cam).name, "tipo": tipo, "confianca": conf, "origem_tipo": origem,
+                     "original": str(base / cam), "texto": str(txt_path),
+                     "paginas": n_paginas, "paginas_nao_extraidas": e.get("paginas_nao_extraidas") or [],
+                     "embutidos": embutidos, "_linhas": linhas})
     infos = {}
     for inf in cat["informacoes"]:
         rx = re.compile(inf["termos"], re.I)
@@ -167,7 +207,7 @@ def main(argv):
     if "--guia" in argv:
         guia()
         return 0
-    if len(argv) < 2 or not argv[1].isdigit():
+    if len(argv) < 2 or not chave_segura(argv[1]):
         print(__doc__)
         return 1
     lid = argv[1]
