@@ -89,6 +89,8 @@ def test_fluxo_e_referencias():
             ids.add(item["id"])
             assert 0 < len(item["titulo"]) <= 120
             assert len(item.get("passos", "")) <= 200
+            if item.get("tolera_falha"):
+                assert item.get("depende_de"), f"{item['id']}: tolera_falha exige depende_de"
             if "saida" in item:
                 saida = item["saida"]
                 assert not Path(saida).is_absolute() and ".." not in Path(saida).parts
@@ -123,7 +125,7 @@ def test_fluxo_e_referencias():
         pesquisa = e2[f"pesquisa-habilitacao-{empresa}"]
         assert (pesquisa["skill"], pesquisa["tier"], pesquisa["empresa"]) == ("analisar-habilitacao", "T1", empresa)
         assert empresa in pesquisa["passos"] and not pesquisa.get("depende_de")
-        assert pesquisa["tolera_falha"] is True
+        assert not pesquisa.get("tolera_falha")
         assert pesquisa["saida"] == f"fontes/habilitacao/{empresa}/candidatos.json"
         baixar = e2[f"baixar-habilitacao-{empresa}"]
         assert (baixar["modo"], baixar["tier"], baixar["empresa"]) == ("baixar", "T0", empresa)
