@@ -82,7 +82,22 @@ Regras da consulta:
 - **Prestador de serviço.** Use `--prestador`; o honorário vai inteiro na coluna C, sem encargos.
 - **Avisos.** Leia `avisos` em toda consulta. Custo com mais de 25% fora da composição legal (horas extras, gratificações) só entra se o contrato tiver esses itens.
 - **Encargos sobre custo-hora já carregado:** nunca reaplique encargos sociais ou benefícios sobre o custo-hora ou custo mensal cheio já carregado na `base-custos.json` (use sempre a decomposição `C_salario_base`, `D_encargos_adicionais` e `E_beneficios` de `consultar_base.py`, ou o valor cheio sem multiplicar encargos de novo).
-- **Alíquota de tributos ausente ou frágil (`n=1`):** quando a alíquota efetiva da empresa escolhida estiver ausente na base (ex.: `una`) ou apoiada em apenas 1 nota fiscal (ex.: `nortfort` 6% `n=1`, `aforca` 12,68% `n=1`), **não apresente uma margem única como definitiva**. Deixe a margem definitiva em aberto (`null` ou condicionada) ou simule explicitamente uma faixa tributária (ex.: cenário com a alíquota observada e cenário com alíquota conservadora), sinalizando pendência de confirmação contábil.
+- **Alíquota de tributos pendente (ausente ou frágil `n=1`):** quando a empresa precificada (`empresa_precificada`) estiver na `base-custos.json` com `tributos.aliquota == null`, `tributos.pendente` preenchido, ou `tributos.notas == 1` sem `tributos.confirmada == true` (ex.: `una` ausente, `aforca` 12,68% `n=1`, `nortfort` 6% `n=1`):
+  - **Não apresente uma margem única como definitiva:** deixe a margem definitiva em aberto (`null` ou condicionada) ou simule explicitamente uma faixa tributária (cenário com a alíquota observada e cenário conservador), sinalizando pendência de confirmação contábil.
+  - Grave obrigatoriamente em `analise/precificacao.json`:
+    - `"tributos_pendente": true`
+    - `"tributos_pendente_motivo": "<motivo objetivo e curto, ex.: Alíquota tributária da UNA ausente na base de custos; confirmar com a contabilidade>"`
+    - Item em `"notas_urgentes"` (array) para exibição automática na Visão Geral do CRM:
+      ```json
+      {
+        "chave": "tributos:<alias>",
+        "empresa": "<alias>",
+        "titulo": "Alíquota tributária da <Empresa> pendente",
+        "detalhe": "<motivo objetivo + competência da base + ação: confirmar com a contabilidade e atualizar em Cadastros → Custos>"
+      }
+      ```
+  - Quando a alíquota estiver confirmada (`tributos.aliquota != null` e (`tributos.notas > 1` ou `tributos.confirmada == true`)), grave `"tributos_pendente": false`.
+  - Outras pendências transversais urgentes descobertas na precificação (como base de custos com mais de 12 meses sem atualização, `chave: "base_custos:defasada:<competencia>"`) também podem ser registradas em `notas_urgentes[]` com `chave` estável para deduplicação.
 - **Administração central.** O custo mensal da empresa é a base do rateio; o percentual em Premissas B18 sai desse custo dividido pelo faturamento ou pelo número de contratos que o analista informar. Sem esse dado, use premissa identificada.
 - **Markup por segmento.** O lucro e os impostos de cada segmento mostram como a empresa costuma formar preço. Servem de comparação, não substituem a conta de tributos pela alíquota da empresa.
 

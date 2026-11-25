@@ -12,7 +12,7 @@ SCORE = runpy.run_path(str(
 
 def calcular(tmp_path, **arquivos):
     analise = tmp_path / "analise"
-    analise.mkdir()
+    analise.mkdir(parents=True)
     for nome, dados in arquivos.items():
         (analise / f"{nome}.json").write_text(json.dumps(dados), encoding="utf-8")
     return SCORE["calcular"](tmp_path, SCORE["PADRAO"], hoje=date(2026, 10, 15))
@@ -67,3 +67,38 @@ def test_saida_antiga_deriva_tributos_do_componente_mensal(tmp_path):
 def test_score_preserva_aliquota_zero_e_coloca_fallback_como_hipotese(tmp_path):
     result = calcular(tmp_path, precificacao={"tributos_pct": 0, "margem_minima_pct": True})
     assert result["hipotese_precificacao"] == "tributos 0%, hipótese: margem mínima 10%"
+
+
+def test_score_sinaliza_tributos_pendente_com_motivo_e_padrao(tmp_path):
+    com_motivo = calcular(tmp_path / "m1", precificacao={
+        "tributos_pct": 12.68,
+        "margem_pct": 8.5,
+        "tributos_pendente": True,
+        "tributos_pendente_motivo": "Alíquota da AForça baseada em apenas 1 NF; confirmar com contabilidade",
+    })
+    assert "Alíquota da AForça baseada em apenas 1 NF; confirmar com contabilidade" in com_motivo["avisos"]
+    assert "alíquota pendente" in com_motivo["hipotese_precificacao"]
+
+    sem_motivo = calcular(tmp_path / "m2", precificacao={
+        "margem_pct": 8.5,
+        "tributos_pendente": True,
+    })
+    assert "Alíquota tributária pendente de confirmação contábil" in sem_motivo["avisos"]
+    assert "alíquota pendente" in sem_motivo["hipotese_precificacao"]
+
+
+def test_score_nao_sinaliza_tributos_pendente_quando_falso_ou_ausente(tmp_path):
+    falso = calcular(tmp_path / "f1", precificacao={
+        "tributos_pct": 19.29,
+        "margem_pct": 12.0,
+        "tributos_pendente": False,
+    })
+    assert not any("pendente" in a.lower() for a in falso["avisos"])
+    assert "alíquota pendente" not in falso["hipotese_precificacao"]
+
+    ausente = calcular(tmp_path / "f2", precificacao={
+        "tributos_pct": 19.29,
+        "margem_pct": 12.0,
+    })
+    assert not any("pendente" in a.lower() for a in ausente["avisos"])
+    assert "alíquota pendente" not in ausente["hipotese_precificacao"]
