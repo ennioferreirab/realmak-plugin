@@ -1,7 +1,7 @@
 """Cliente HTTP fino do gateway público /v1 do Galeed (porte do client.ts).
 
 Rotas:
-    POST /retrieve            {query, limit?, include_facts?, os?}
+    POST /retrieve            {query, limit?, include_facts?, os?, incluir_historico?}
     GET  /facts               ?dim&area&status&as_of&min_confidence&limit&cursor&os
     GET  /consulta/esquema
     POST /consulta            {sql, limite?}
@@ -55,6 +55,7 @@ class GaleedClient:
         limit: int | None = None,
         include_facts: bool | None = None,
         os: str | None = None,
+        incluir_historico: bool | None = None,
     ) -> Any:
         body: dict[str, Any] = {"query": query}
         if limit is not None:
@@ -63,6 +64,8 @@ class GaleedClient:
             body["include_facts"] = include_facts
         if os:
             body["os"] = os
+        if incluir_historico is not None:
+            body["incluir_historico"] = bool(incluir_historico)
         return await self._request("POST", "/retrieve", json_body=body)
 
     async def facts(self, **params: Any) -> Any:

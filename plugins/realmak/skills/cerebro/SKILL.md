@@ -30,7 +30,7 @@ As ferramentas `cerebro_*` vêm do conector MCP da Realmak. O nome completo pode
 | Ferramenta | Argumentos aceitos |
 | --- | --- |
 | `cerebro_empresas` | Nenhum: `{}` |
-| `cerebro_buscar` | `query` obrigatório; `empresa`, `limit` (1–20), `include_facts`, `os` |
+| `cerebro_buscar` | `query` obrigatório; `empresa`, `limit` (1–20), `include_facts`, `os`, `incluir_historico` (boolean, padrão `false`) |
 | `cerebro_fatos` | `empresa`, `dim`, `area`, `status` (`fact` ou `archived`), `as_of` (ISO 8601), `min_confidence` (0–1), `limit` (1–200), `cursor`, `os` |
 | `cerebro_esquema` | Somente `empresa` |
 | `cerebro_consulta` | `sql` obrigatório; `empresa`, `limite` (1–5000, em português) |
@@ -68,7 +68,8 @@ Para obter provas, faça uma consulta que devolva os ids reais dos registros e e
 
 ## 1. Como consultar
 
-- Use `cerebro_buscar` com os termos da pergunta. Peça `include_facts=true` quando quiser os fatos consolidados junto dos trechos. Use `cerebro_fatos` para listar fatos por dimensão, área ou data.
+- Use `cerebro_buscar` com os termos da pergunta. Peça `include_facts=true` quando quiser os fatos consolidados junto dos trechos (lembre que fatos e `cerebro_fatos` ainda não filtram por estado do documento). Use `cerebro_fatos` para listar fatos por dimensão, área ou data.
+- **Vigentes x histórico:** `cerebro_buscar` usa `incluir_historico=false` por padrão e devolve apenas documentos vigentes; quando houver versões anteriores ou vencidas omitidas, traz `historico_omitido.aviso` — mencione esse aviso na resposta. Responda com o documento vigente e só passe `incluir_historico=true` (ou cite versões anteriores) se a pessoa pedir ou se for preciso provar o que foi entregue numa licitação ou contrato. Cada resultado com `original.sha256` traz `estado_documento` (`estado`: `vigente` | `substituido` | `vencido`, `rotulo`, `substituido_por`). Uma cópia em pasta de ata ou contrato marcada como "há versão posterior" não significa que estava vencida quando foi entregue.
 - Em `cerebro_buscar`, `cerebro_fatos` e `cerebro_provas`, passe `os="windows"`: os analistas usam Windows, e o servidor exige o parâmetro. Se o analista informar outro sistema, use `macos` ou `linux`.
 - Monte a resposta você mesmo, a partir dos trechos.
 - Se a busca vier fraca, tente de novo com variações do nome (nome completo, sobrenome, apelido) antes de dizer que não há resultado.
@@ -158,7 +159,7 @@ Para colocar um documento ou pasta no acervo de uma empresa, use sempre `cerebro
 - **Arquivo até 1 MB:** envie direto com `nome` + `conteudo_base64` (binário, ex.: PDF) ou `conteudo_texto` (texto UTF-8).
 - **Arquivo maior que 1 MB:** chame `cerebro_enviar` com `nome` sem conteúdo e execute o `comando` devolvido (`curl --upload-file`), válido por 15 minutos e um uso.
 - **Pasta / vários arquivos:** passe a lista de caminhos em `nomes` numa única chamada; a ferramenta devolve um link por arquivo e um `comando` único para enviar todos.
-- **Atualizar documento existente (ex.: cartão CNPJ novo, certidão renovada):** busque o documento antigo com `cerebro_buscar` na empresa certa, pegue o `sha256` (ou `caminho_rel`) e envie com `acao="substituir"` e `substitui_sha256` (ou `substitui_caminho`).
+- **Atualizar documento existente (ex.: cartão CNPJ novo, certidão renovada):** busque o documento antigo com `cerebro_buscar` na empresa certa, pegue `substitui_sha256` e `substitui_caminho` do **mesmo** documento antigo e envie com `acao="substituir"` (se sha256 e caminho apontarem para vínculos diferentes, o servidor não altera o antigo).
 - **Confirmação:** informe à pessoa o estado devolvido pelo envio e confirme o destino final (ou eventual motivo de revisão) com `cerebro_envios`.
 
 ## 5. Quando algo dá errado
