@@ -11,7 +11,7 @@ description: Item `tecnica` (E2). Lê `cabecalho.tipo_objeto` de `analise/edital
 - Pasta da licitação ([pasta-licitacao](../pasta-licitacao/SKILL.md)).
 
 ## Passos
-1. Leia `analise/habilitacao.json` (e os parciais aplicáveis) para herdar explicitamente os atestados e CATs validados da(s) empresa(s) avaliada(s). Nunca contradiga a habilitação (por exemplo, não afirme limite inferior de capacidade/TR quando uma CAT ou atestado validado em `habilitacao.json` comprovar capacidade superior).
+1. Leia `analise/habilitacao.json` (e os parciais aplicáveis). Defina explicitamente como empresa principal avaliada (`empresa_avaliada` em `analise/tecnica.json`) o alias de **`habilitacao.json.mais_aderente`** (use a empresa padrão do cartão apenas como fallback se `habilitacao.json` estiver ausente ou sem `mais_aderente`). Herde explicitamente os atestados e CATs validados dessa empresa e nunca contradiga a habilitação (por exemplo, não afirme limite inferior de capacidade/TR quando uma CAT ou atestado validado em `habilitacao.json` comprovar capacidade superior).
 2. Leia `cabecalho.tipo_objeto` e escolha:
 
    | `tipo_objeto` | Siga |

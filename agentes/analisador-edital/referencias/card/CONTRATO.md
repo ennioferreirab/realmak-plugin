@@ -74,7 +74,7 @@ Somente para empresas cujo item não concluiu e que não têm avaliação válid
 `tecnica.json` (`analisar-edital-manutencao` ou `analisar-edital-fornecimento`):
 
 ```json
-{"versao": 1, "gerado_em": "", "tipo": "manutencao|fornecimento",
+{"versao": 1, "gerado_em": "", "tipo": "manutencao|fornecimento", "empresa_avaliada": "realmak|nortfort|aforca|una",
  "conclusao": {"viavel": "sim|com_ressalvas|nao", "resumo": "", "ressalvas": [""]},
  "itens": [{"item": "", "descricao": "", "quantidade": 0, "unidade": "", "exigencias": [""], "atende": "sim|nao|verificar", "fonte": ""}],
  "cotacoes_online": [{"item": "", "preco_unit": 0, "unidade": "", "fornecedor": "", "link": "", "data": "", "observacao": ""}],
@@ -86,7 +86,7 @@ Somente para empresas cujo item não concluiu e que não têm avaliação válid
  "arquivos": [{"rotulo": "", "caminho": ""}]}
 ```
 
-`itens` vale para fornecimento e para peças da manutenção; `escopo`, `equipe` e `sla` só para manutenção. `cotacoes_online` é a pesquisa de preço por item na internet (preço real, link individual da oferta, data), que vinha do relatório antigo e passa a ser parte de `analisar-edital-fornecimento`.
+`itens` vale para fornecimento e para peças da manutenção; `escopo`, `equipe` e `sla` só para manutenção. `empresa_avaliada` (opcional aditivo) identifica o alias da empresa avaliada pela análise técnica, alinhado a `habilitacao.mais_aderente`. `cotacoes_online` é a pesquisa de preço por item na internet (preço real, link individual da oferta, data), que vinha do relatório antigo e passa a ser parte de `analisar-edital-fornecimento`.
 
 `precificacao.json` (`precificar-proposta-exequibilidade`; preços de peças por `cotar-pecas-materiais-licitacoes`):
 
@@ -122,4 +122,4 @@ Todos são opcionais para leitura de análises antigas. O analisador preenche qu
 - `relatorio/topo.json.sintese`: frase curta de decisão, até 200 caracteres, em linguagem direta, sem nomes de arquivos. O score fornece a síntese inicial pela habilitação, técnica e preço. No G3, atualize a frase para refletir a decisão final e as condições relevantes.
 - `edital.json.atencao[].titulo`: até 80 caracteres. `habilitacao[]` traz `id` estável por requisito e `rotulo` de até 40 caracteres.
 - `empresas[].exigencias[]`: conserve os mesmos `id` e `rotulo` do edital em todas as empresas. Para pauta antiga sem IDs, use a posição original (`hab-001`; em subitens, `hab-001-01`). Traga a pauta inteira, com `situacao: "verificar"` e motivo nas linhas não avaliadas. Só marque `risco_principal: true` quando a lacuna puder impedir a disputa e não for emitível. `acao.tipo` e `acao.onde` acrescentam categoria e órgão/portal à ação existente. Prefira ações a `emitiveis` nas saídas novas; mantenha a leitura do campo legado.
-- `precificacao.json`: `piso_sugerido` é mensal em reais; `sensibilidade[]` leva `rotulo` e `margem_pct` em pontos percentuais; `condicoes[]` leva `id` e `texto`; `pecas_grupos[]` leva `rotulo`, `itens` (contagem), `valor_anual` em reais (opcional sem base) e `situacao` (texto curto).
+- `precificacao.json`: `piso_sugerido` é mensal em reais; `sensibilidade[]` leva `rotulo` e `margem_pct` em pontos percentuais; `condicoes[]` leva `id` e `texto`; `pecas_grupos[]` leva `rotulo`, `itens` (contagem), `valor_anual` em reais (opcional sem base) e `situacao` (texto curto); `tributos_pendente` (`boolean`), `tributos_pendente_motivo` (`string`) e `notas_urgentes[]` (`[{"chave": "", "empresa": "", "titulo": "", "detalhe": ""}]`) sinalizam alíquota tributária pendente ou pendências transversais urgentes para a Visão Geral do CRM.

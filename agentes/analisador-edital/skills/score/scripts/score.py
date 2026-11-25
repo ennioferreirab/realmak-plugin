@@ -182,9 +182,10 @@ def margem_minima(prec, params):
 def resumo_precificacao(prec, params):
     tributos = tributos_da_precificacao(prec)
     minimo = margem_minima(prec, params)
+    sufixo_tributos = " (alíquota pendente)" if prec.get("tributos_pendente") is True else ""
     partes = [
-        f"tributos {pct(tributos)}" if tributos is not None
-        else f"hipótese: tributos {pct(params['precificacao']['tributos_pct'])}",
+        (f"tributos {pct(tributos)}" if tributos is not None
+         else f"hipótese: tributos {pct(params['precificacao']['tributos_pct'])}") + sufixo_tributos,
         f"margem mínima {pct(minimo)}" if percentual_valido(prec.get("margem_minima_pct"))
         else f"hipótese: margem mínima {pct(minimo)}",
     ]
@@ -248,6 +249,9 @@ def calcular(pasta, params, fallbacks=(), hoje=None):
     depende_premissa = tecnica_condicionada or preco_condicionado
     if depende_premissa:
         avisos.append("Equipe ou preço depende de premissa decisiva ainda sem confirmação")
+    if (prec or {}).get("tributos_pendente") is True:
+        motivo_trib = (prec.get("tributos_pendente_motivo") or "").strip() if isinstance(prec.get("tributos_pendente_motivo"), str) else ""
+        avisos.append(motivo_trib or "Alíquota tributária pendente de confirmação contábil")
     if travas:
         score = min(score, 20)
         nota = 1
