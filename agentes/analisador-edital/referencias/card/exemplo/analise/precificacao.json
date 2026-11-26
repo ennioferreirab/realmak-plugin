@@ -17,10 +17,10 @@
   "indice_ou_cct": "IPCA",
   "data_base": "2026-10-15",
   "clausula": "TR 5.1 (p. 14)",
-  "defasagem_reais": 0.0,
-  "defasagem_pp": 0.0,
-  "base_fechamento": "vigência inicial de 12 meses",
-  "recomendacao": "Preço sustenta a vigência inicial de 12 meses; reajuste anual pelo IPCA a partir da data-base do orçamento estimado."
+  "defasagem_reais": 635.0,
+  "defasagem_pp": 1.2,
+  "base_fechamento": "vigência inicial de 12 meses, valor global",
+  "recomendacao": "Preço sustenta a vigência inicial de 12 meses; defasagem total estimada na vigência inicial de R$ 635,00 (perda de 1,20 pp de margem); reajuste anual pelo IPCA a partir da data-base do orçamento estimado."
  },
  "cenarios": [
   {

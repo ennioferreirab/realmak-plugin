@@ -159,7 +159,7 @@ def test_fluxo_e_referencias():
 def test_visao_fluxo_contrato_canvas():
     visao = ler_json(ANALISADOR / "visao.json")
     assert visao["versao"] == 1
-    assert visao["gerado_de"]["plugin_versao"] == "0.16.10"
+    assert visao["gerado_de"]["plugin_versao"] == "0.16.11"
     destinos_validos = {"proxima", "parar", "humano", "rerodar", "precos"}
     itens_por_id = {}
     for etapa in visao["etapas"]:
@@ -472,6 +472,8 @@ def _validar_vigencia_precificacao(vp):
     for campo_num in ("defasagem_reais", "defasagem_pp"):
         valor = vp[campo_num]
         assert valor is None or (isinstance(valor, (int, float)) and type(valor) is not bool)
+    if vp["defasagem_reais"] is not None and vp["defasagem_pp"] is not None:
+        assert vp["defasagem_reais"] * vp["defasagem_pp"] >= 0
     for campo_str in ("indice_ou_cct", "data_base", "clausula", "base_fechamento", "recomendacao"):
         valor = vp[campo_str]
         assert valor is None or isinstance(valor, str)
@@ -495,6 +497,8 @@ def test_contrato_vigencia_precificacao():
         "percentual_esperado",
         "data_base_mes",
         "dissidio:<empresa>",
+        "mesmo sinal",
+        "total da vigência inicial",
     ):
         assert termo in skill
 
@@ -510,7 +514,33 @@ def test_contrato_vigencia_precificacao():
         "base_fechamento": "vigência inicial de 30 meses",
         "recomendacao": "Incluir defasagem na vigência inicial; não embutir prorrogação.",
     })
+    _validar_vigencia_precificacao({
+        "meses_iniciais": 12,
+        "prorrogavel_ate_meses": 60,
+        "mecanismo": "reajuste_indice",
+        "indice_ou_cct": "IPCA",
+        "data_base": "2026-05-01",
+        "clausula": "TR 5.1",
+        "defasagem_reais": -3024.15,
+        "defasagem_pp": -0.13,
+        "base_fechamento": "vigência inicial de 12 meses, valor mensal",
+        "recomendacao": "Índice cobre o dissídio (favorável).",
+    })
     _validar_vigencia_precificacao(None)
+
+    with pytest.raises(AssertionError):
+        _validar_vigencia_precificacao({
+            "meses_iniciais": 12,
+            "prorrogavel_ate_meses": 60,
+            "mecanismo": "reajuste_indice",
+            "indice_ou_cct": "IPCA",
+            "data_base": "2026-10-15",
+            "clausula": "TR 5.1",
+            "defasagem_reais": 33566.64,
+            "defasagem_pp": -1.18,
+            "base_fechamento": "vigência inicial de 12 meses",
+            "recomendacao": "sinais trocados devem falhar",
+        })
 
     with pytest.raises(AssertionError):
         _validar_vigencia_precificacao({
