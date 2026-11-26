@@ -3,56 +3,20 @@
   "agente": "analisador-edital",
   "titulo": "Analisador de Edital",
   "gerado_de": {
-    "plugin_versao": "0.16.12",
-    "fluxo_sha256": "3ee4cd97dc648ea4426b452f8fbdbe2837196bb841cae416a3100012d9398556"
+    "plugin_versao": "0.16.13",
+    "fluxo_sha256": "8e3f4e5266bc20343825bdc36c231844d9f2be3d901c1fd6d807c5d39c736ffb"
   },
   "resumo": "Analisa o edital, tria as 4 empresas ativas no Cérebro, aprofunda somente as elegíveis e calcula execução, preço e score para revisão humana.",
   "etapas": [
     {
       "id": "E0",
       "titulo": "Preparação",
-      "objetivo": "Garantir documentos e dados mínimos do certame e preparar os insumos de leitura.",
+      "objetivo": "Preparar os insumos determinísticos de leitura sem custo de modelo.",
       "criterios": [
-        "Coleta documentos e campos vazios no link oficial quando a preparação automática não bastar; dispensa navegação se já estiver completo.",
         "Garante resumo do ConLicitação e mapa de localização de cláusulas antes de ler o edital."
       ],
-      "descricao": "Coleta documentos/dados faltantes e prepara os insumos da leitura e da triagem.",
+      "descricao": "Prepara os insumos da leitura e da triagem.",
       "grupos": [
-        {
-          "tipo": "sequencia",
-          "rotulo": "Coleta de documentos e dados",
-          "itens": [
-            {
-              "id": "coleta",
-              "titulo": "Coleta de documentos e dados",
-              "skill": "coletar-edital",
-              "skill_origem": "agente",
-              "skill_caminho": "analisador-edital/skills/coletar-edital/SKILL.md",
-              "skill_arquivos": [
-                "SKILL.md"
-              ],
-              "tier": "T2",
-              "modelo": "claude-sonnet-5-5",
-              "depende_de": [],
-              "entrada": null,
-              "saida": "fontes/coleta.json",
-              "objetivo": "Garantir documentos extraídos e campos mínimos do card antes da análise do edital.",
-              "criterios": [
-                "Lê fontes/coleta-auto.json e grava estado dispensado sem navegar quando documentos e campos mínimos já estão completos.",
-                "Navega no link oficial, baixa documentos com baixar_documento e preenche campos vazios com preencher_card; só bloqueia com registrar_pendencia_coleta quando impossível."
-              ],
-              "resumo": [
-                "Verifica se faltam documentos ou campos mínimos e coleta direto no link oficial da licitação antes do mapa e da leitura do edital."
-              ],
-              "restricoes": [
-                "Nunca inventa campos ausentes nem sobrescreve campos já preenchidos.",
-                "Bloqueia apenas por ausência de link, login/captcha ou arquivos ilegíveis, sempre registrando a pendência no card."
-              ],
-              "tolera_falha": false,
-              "cerebro_apoio": false
-            }
-          ]
-        },
         {
           "tipo": "paralelo",
           "rotulo": "Preparar insumos",
@@ -70,9 +34,7 @@
               ],
               "tier": "T0",
               "modelo": null,
-              "depende_de": [
-                "coleta"
-              ],
+              "depende_de": [],
               "entrada": null,
               "saida": "resumo_conlicitacao.json",
               "objetivo": "Garantir o resumo IA do ConLicitação disponível na pasta da análise.",
@@ -104,9 +66,7 @@
               ],
               "tier": "T0",
               "modelo": null,
-              "depende_de": [
-                "coleta"
-              ],
+              "depende_de": [],
               "entrada": null,
               "saida": "fontes/mapa_leitura.json",
               "objetivo": "Indexar os documentos do certame para orientar a leitura do edital.",

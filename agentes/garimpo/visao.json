@@ -3,7 +3,7 @@
   "agente": "garimpo",
   "titulo": "Garimpo",
   "gerado_de": {
-    "plugin_versao": "0.16.12",
+    "plugin_versao": "0.16.13",
     "fluxo_sha256": null
   },
   "resumo": "Apoia a descoberta e a comparação preliminar de oportunidades sob demanda. O pedido escolhe a operação, sem fluxo automático nem portões.",

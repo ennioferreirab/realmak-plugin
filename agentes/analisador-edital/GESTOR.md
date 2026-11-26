@@ -9,7 +9,6 @@ Em cada portão, leia o pedido (estado dos itens, resumos, motivos) e as saídas
 - **Qualidade em 1º lugar.** Não sacrifique pesquisa válida por pressa; por outro lado, evite gastar dezenas de minutos aprofundando empresas sem prova própria plausível quando a triagem já resolve o corte.
 - **Parar é recomendação.** O card vai para Análise humana de qualquer jeito; quem arquiva é uma pessoa.
 - **Falta de custo, cotação ou documento de rotina não segura a publicação.** O relatório sai com a lacuna no escopo afetado.
-- **Coleta bloqueada (`fontes/coleta.json` com `estado: "bloqueado"`):** quando E0 não consegue obter os documentos por ausência de link, login/captcha ou arquivos ilegíveis, o item `coleta` registra a pendência com `registrar_pendencia_coleta` e a análise para aguardando ação humana, sem rodar leitura/habilitação sem documentos.
 - **`humano` só com as três condições juntas:**
   1. exigência incomum e eliminatória: atestado/CAT com quantitativo pesado, certificação ou credenciamento de fabricante, registro específico, equipe mínima nomeada;
   2. busca esgotada em `referencias/habilitacoes-certificados/`, no Cérebro (4 empresas ativas; nunca `sublime`) e no ConLicitação;

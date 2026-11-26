@@ -8,10 +8,6 @@
   "funil": true,
   "ferramentas": [
     "buscar_web",
-    "abrir_pagina",
-    "baixar_documento",
-    "preencher_card",
-    "registrar_pendencia_coleta",
     "cerebro_empresas",
     "cerebro_buscar",
     "cerebro_fatos",
