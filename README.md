@@ -80,7 +80,7 @@ Uma pessoa com acesso de leitura só a algumas áreas recebe 403 em `cerebro_esq
 
 ## Instalar o plugin
 
-O plugin `realmak` traz 11 skills e declara o conector do servidor (`https://realmak.duckdns.org/mcp`). O plugin não pede chave: cada pessoa entra pelo login, e precisa ter acesso concedido no Galeed ou no Odoo.
+O plugin `realmak` traz 11 skills e declara o conector do servidor (`https://app.realmakservicos.com.br/mcp`). O plugin não pede chave: cada pessoa entra pelo login, e precisa ter acesso concedido no Galeed ou no Odoo.
 
 | Skill | Para quê |
 | --- | --- |
@@ -136,7 +136,7 @@ O último comando abre o navegador para o login do conector. Confira com `codex 
 Instale com o app no **modo Chat** (ícone de balão, não o `</>`). O modo importa: no Chat o plugin vai para a conta e aparece como "from realmak-plugin"; no modo Code ele é instalado só localmente, aparece como "from realmak" e o Connect liga apenas as sessões do Code. Nesse caso a tela do plugin continua em "Not added" mesmo com o login feito, e o Chat e o Cowork ficam sem as ferramentas.
 
 1. Abra Customize, Plugins, Add, Add marketplace, Add from a repository, e informe `ennioferreirab/realmak-plugin`. Instale o plugin `realmak`.
-2. Na aba Connectors do plugin, clique em Connect (Vincular), confirme o conector que vem preenchido e entre com Google, conta do Galeed ou código por e-mail. A tela deve mostrar "Connected · Custom". Se preferir, o conector também pode ser adicionado à mão: Customize, Connectors, `+`, Add custom connector, com a URL `https://realmak.duckdns.org/mcp`.
+2. Na aba Connectors do plugin, clique em Connect (Vincular), confirme o conector que vem preenchido e entre com Google, conta do Galeed ou código por e-mail. A tela deve mostrar "Connected · Custom". Se preferir, o conector também pode ser adicionado à mão: Customize, Connectors, `+`, Add custom connector, com a URL `https://app.realmakservicos.com.br/mcp`.
 
    Não coloque `headers` com `${user_config...}` no `.mcp.json` do plugin: o Desktop não resolve esse valor e o botão Vincular fica travado.
 

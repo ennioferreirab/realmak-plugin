@@ -137,7 +137,7 @@ Quando houver `original`, termine a resposta com a seção **Arquivos**, no form
 
 Exemplo:
 
-- **LUIZ - CAT RECEITA FEDERAL MG.pdf** (AForça, CAT do CREA-MG) · [Visualizar](https://realmak.duckdns.org/a/Ab3xK9mPq)
+- **LUIZ - CAT RECEITA FEDERAL MG.pdf** (AForça, CAT do CREA-MG) · [Visualizar](https://app.realmakservicos.com.br/a/Ab3xK9mPq)
   - Caminho: `E:\acervo-2.0\aforca\habilitacao\atestados\registrado_cat\LUIZ - CAT RECEITA FEDERAL MG.pdf`
 
 Se listar links temporários, informe que eles valem 30 minutos e que a visualização já traz o botão para baixar o arquivo. Para links legados, informe que exigem login do Odoo.

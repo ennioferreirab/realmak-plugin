@@ -6,6 +6,8 @@ services:
     networks: [default, mcp-realmak, realmak-previa]
     # Licitações do Odoo: segredo criado pelo realmak-crm no volume compartilhado; rotas internas pela rede.
     environment:
+      # Endereço público (links /a/, OAuth, link_card); fixo aqui para o .env antigo não manter o duckdns.
+      MCP_REALMAK_PUBLIC_URL: https://app.realmakservicos.com.br
       ODOO_MCP_URL: http://web:8069
       ODOO_MCP_SECRET_FILE: /run/realmak-mcp/secret
       MCP_REALMAK_VISUALIZADOR_URL: http://realmak-visualizador:8080

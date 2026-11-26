@@ -2,7 +2,7 @@
   "mcpServers": {
     "realmak": {
       "type": "http",
-      "url": "https://realmak.duckdns.org/mcp"
+      "url": "https://app.realmakservicos.com.br/mcp"
     }
   }
 }

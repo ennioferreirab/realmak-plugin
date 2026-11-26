@@ -87,7 +87,7 @@ Quando a tarefa autorizar atualização de status, marque `trabalhando` ao come�
 - **Número do edital:** preencha `numero_edital` com o número do próprio edital (cabeçalho) e cite o sequencial do PNCP apenas como referência.
 - **Documentos (PNCP ou ConLicitação):** não baixe nem anexe PDFs; informe apenas que, quando o usuário mover para **Análise IA**, a plataforma baixa os documentos automaticamente.
 - **Documentos (link de portal ou Compras):** essa fonte não baixa arquivos automaticamente; oriente enviar o edital pelo próprio card (`licitacao_enviar_arquivo` grava na Saída IA e não alimenta a preparação documental).
-- **Resposta final:** entregue o link do card (`link_card`, ex.: `https://realmak.duckdns.org/odoo/licitacoes/<id>`) e informe a etapa atual (sem instruir nem sugerir mover o card).
+- **Resposta final:** entregue o link do card (`link_card`, ex.: `https://app.realmakservicos.com.br/odoo/licitacoes/<id>`) e informe a etapa atual (sem instruir nem sugerir mover o card).
 
 
 ### Localizar e citar uma passagem do card
