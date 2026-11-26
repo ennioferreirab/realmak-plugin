@@ -31,10 +31,10 @@ As ferramentas `cerebro_*` vêm do conector MCP da Realmak. O nome completo pode
 | --- | --- |
 | `cerebro_empresas` | Nenhum: `{}` |
 | `cerebro_buscar` | `query` obrigatório; `empresa`, `limit` (1–20), `include_facts`, `os`, `incluir_historico` (boolean, padrão `false`) |
-| `cerebro_fatos` | `empresa`, `dim`, `area`, `status` (`fact` ou `archived`), `as_of` (ISO 8601), `min_confidence` (0–1), `limit` (1–200), `cursor`, `os` |
+| `cerebro_fatos` | `empresa`, `dim`, `area`, `status` (`fact` ou `archived`), `as_of` (ISO 8601), `min_confidence` (0–1), `limit` (1–200), `cursor`, `os`, `incluir_historico` (boolean, padrão `false`) |
 | `cerebro_esquema` | Somente `empresa` |
 | `cerebro_consulta` | `sql` obrigatório; `empresa`, `limite` (1–5000, em português) |
-| `cerebro_provas` | `ids` obrigatório (lista de até 200 strings); `empresa`, `os` |
+| `cerebro_provas` | `ids` obrigatório (lista de até 200 strings); `empresa`, `os`, `incluir_historico` (boolean, padrão `false`) |
 | `cerebro_enviar` | `empresa`; `nome` (arquivo único) ou `nomes` (pasta/lote); `conteudo_base64` ou `conteudo_texto` (até 1 MB); `comentario`, `acao` (`enviar` ou `substituir`), `substitui_sha256`, `substitui_caminho` |
 | `cerebro_envios` | `empresa`, `limite` (1–200), `sha256`, `envio_id` |
 
@@ -68,8 +68,8 @@ Para obter provas, faça uma consulta que devolva os ids reais dos registros e e
 
 ## 1. Como consultar
 
-- Use `cerebro_buscar` com os termos da pergunta. Peça `include_facts=true` quando quiser os fatos consolidados junto dos trechos (lembre que fatos e `cerebro_fatos` ainda não filtram por estado do documento). Use `cerebro_fatos` para listar fatos por dimensão, área ou data.
-- **Vigentes x histórico:** `cerebro_buscar` usa `incluir_historico=false` por padrão e devolve apenas documentos vigentes; quando houver versões anteriores ou vencidas omitidas, traz `historico_omitido.aviso` — mencione esse aviso na resposta. Responda com o documento vigente e só passe `incluir_historico=true` (ou cite versões anteriores) se a pessoa pedir ou se for preciso provar o que foi entregue numa licitação ou contrato. Cada resultado com `original.sha256` traz `estado_documento` (`estado`: `vigente` | `substituido` | `vencido`, `rotulo`, `substituido_por`). Uma cópia em pasta de ata ou contrato marcada como "há versão posterior" não significa que estava vencida quando foi entregue.
+- Use `cerebro_buscar` com os termos da pergunta. Peça `include_facts=true` quando quiser os fatos consolidados junto dos trechos (eles seguem o mesmo filtro `incluir_historico` e informam omitidos em `historico_omitido.fatos`). Use `cerebro_fatos` para listar fatos por dimensão, área ou data.
+- **Vigentes x histórico:** `cerebro_buscar`, `cerebro_fatos` e `cerebro_provas` usam `incluir_historico=false` por padrão e devolvem apenas documentos vigentes; quando houver versões anteriores ou vencidas omitidas, trazem `historico_omitido.aviso` — mencione esse aviso na resposta. Responda com o documento vigente e só passe `incluir_historico=true` (ou cite versões anteriores) se a pessoa pedir ou se for preciso provar o que foi entregue numa licitação ou contrato. Cada item com `original.sha256` traz `estado_documento` (`estado`: `vigente` | `substituido` | `vencido`, `rotulo`, `substituido_por`). Uma cópia em pasta de ata ou contrato marcada como "há versão posterior" não significa que estava vencida quando foi entregue. (`cerebro_consulta` em SQL não filtra por estado; só `cerebro_provas` aplica a regra.)
 - Em `cerebro_buscar`, `cerebro_fatos` e `cerebro_provas`, passe `os="windows"`: os analistas usam Windows, e o servidor exige o parâmetro. Se o analista informar outro sistema, use `macos` ou `linux`.
 - Monte a resposta você mesmo, a partir dos trechos.
 - Se a busca vier fraca, tente de novo com variações do nome (nome completo, sobrenome, apelido) antes de dizer que não há resultado. Para documentos cujo apelido não aparece no texto oficial, busque também pelo título oficial: cartão CNPJ → `"comprovante de inscrição e de situação cadastral"`; CND federal/conjunta → `"certidão negativa de débitos relativos aos tributos federais"`; CRF/FGTS → `"certificado de regularidade do fgts"`; CNDT/trabalhista → `"certidão negativa de débitos trabalhistas"`.

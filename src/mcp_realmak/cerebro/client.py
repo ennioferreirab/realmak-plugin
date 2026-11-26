@@ -2,10 +2,10 @@
 
 Rotas:
     POST /retrieve            {query, limit?, include_facts?, os?, incluir_historico?}
-    GET  /facts               ?dim&area&status&as_of&min_confidence&limit&cursor&os
+    GET  /facts               ?dim&area&status&as_of&min_confidence&limit&cursor&os&incluir_historico
     GET  /consulta/esquema
     POST /consulta            {sql, limite?}
-    POST /consulta/provas     {ids, os?}
+    POST /consulta/provas     {ids, os?, incluir_historico?}
     GET  /original            ?slug   bytes do arquivo original da página (em fluxo)
     POST /envios              corpo = arquivo cru, x-galeed-nome, x-galeed-contexto (201 novo / 200 repetido)
     GET  /envios              ?limite&id&sha256   andamento dos envios
@@ -69,7 +69,15 @@ class GaleedClient:
         return await self._request("POST", "/retrieve", json_body=body)
 
     async def facts(self, **params: Any) -> Any:
-        query = {k: v for k, v in params.items() if v is not None and v != ""}
+        query: dict[str, Any] = {}
+        for k, v in params.items():
+            if v is None or v == "":
+                continue
+            if k == "incluir_historico":
+                if v:
+                    query[k] = "true"
+                continue
+            query[k] = v
         return await self._request("GET", "/facts", params=query)
 
     async def acesso(self) -> Any:
@@ -84,10 +92,17 @@ class GaleedClient:
             body["limite"] = limite
         return await self._request("POST", "/consulta", json_body=body)
 
-    async def provas(self, ids: list[str], os: str | None = None) -> Any:
+    async def provas(
+        self,
+        ids: list[str],
+        os: str | None = None,
+        incluir_historico: bool | None = None,
+    ) -> Any:
         body: dict[str, Any] = {"ids": ids}
         if os:
             body["os"] = os
+        if incluir_historico is not None:
+            body["incluir_historico"] = bool(incluir_historico)
         return await self._request("POST", "/consulta/provas", json_body=body)
 
     async def corpos(self, shas: list[str], brain: str | None = None) -> Any:
