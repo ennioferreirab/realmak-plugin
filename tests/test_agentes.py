@@ -159,7 +159,7 @@ def test_fluxo_e_referencias():
 def test_visao_fluxo_contrato_canvas():
     visao = ler_json(ANALISADOR / "visao.json")
     assert visao["versao"] == 1
-    assert visao["gerado_de"]["plugin_versao"] == "0.16.5"
+    assert visao["gerado_de"]["plugin_versao"] == "0.16.6"
     destinos_validos = {"proxima", "parar", "humano", "rerodar", "precos"}
     itens_por_id = {}
     for etapa in visao["etapas"]:
@@ -252,6 +252,9 @@ def test_contrato_do_card(arquivo, objetos, listas):
         _validar_portal_sessao(exemplo["cabecalho"]["portal_sessao"])
         assert "vigencia" in exemplo
         _validar_vigencia(exemplo["vigencia"])
+    if arquivo == "precificacao":
+        assert "vigencia_precificacao" in exemplo
+        _validar_vigencia_precificacao(exemplo["vigencia_precificacao"])
     if arquivo == "habilitacao":
         assert exemplo["mais_aderente"] in (*EMPRESAS, None)
         assert {e["empresa"] for e in exemplo["empresas"]} == set(EMPRESAS)
@@ -351,7 +354,9 @@ def _validar_vigencia(vigencia):
     if vigencia is None:
         return
     assert isinstance(vigencia, dict)
-    assert set(vigencia) == {"tipo", "meses", "prorrogavel_ate_meses", "conta_a_partir_de", "texto", "fonte"}
+    obrigatorios = {"tipo", "meses", "prorrogavel_ate_meses", "conta_a_partir_de", "texto", "fonte"}
+    opcionais = {"mecanismo_correcao", "indice", "data_base_orcamento"}
+    assert obrigatorios <= set(vigencia) <= (obrigatorios | opcionais)
     assert vigencia["tipo"] in {"contrato", "ata"}
     for campo_int in ("meses", "prorrogavel_ate_meses"):
         valor = vigencia[campo_int]
@@ -360,11 +365,25 @@ def _validar_vigencia(vigencia):
     assert conta is None or isinstance(conta, str)
     assert isinstance(vigencia["texto"], str) and vigencia["texto"].strip()
     assert isinstance(vigencia["fonte"], str) and vigencia["fonte"].strip()
+    if "mecanismo_correcao" in vigencia:
+        assert vigencia["mecanismo_correcao"] in {"reajuste_indice", "repactuacao", "ambos", "omisso", "vedado", None}
+    for campo_texto_opt in ("indice", "data_base_orcamento"):
+        if campo_texto_opt in vigencia:
+            valor = vigencia[campo_texto_opt]
+            assert valor is None or (isinstance(valor, str) and valor.strip())
 
 
 def test_contrato_vigencia_edital():
     skill = (SKILLS / "analisar-edital/SKILL.md").read_text(encoding="utf-8")
-    for termo in ("vigencia", "prorrogavel_ate_meses", "conta_a_partir_de", "minuta de contrato"):
+    for termo in (
+        "vigencia",
+        "prorrogavel_ate_meses",
+        "conta_a_partir_de",
+        "minuta de contrato",
+        "mecanismo_correcao",
+        "indice",
+        "data_base_orcamento",
+    ):
         assert termo in skill
 
     _validar_vigencia({
@@ -374,6 +393,9 @@ def test_contrato_vigencia_edital():
         "conta_a_partir_de": "assinatura",
         "texto": "Vigência de 12 meses contados da assinatura, prorrogável até 60 meses.",
         "fonte": "TR 5.1 (p. 14)",
+        "mecanismo_correcao": "reajuste_indice",
+        "indice": "IPCA",
+        "data_base_orcamento": "2026-10-15",
     })
     _validar_vigencia({
         "tipo": "ata",
@@ -382,6 +404,9 @@ def test_contrato_vigencia_edital():
         "conta_a_partir_de": "publicação do extrato",
         "texto": "Ata válida por 1 ano, prorrogável por igual período.",
         "fonte": "Edital 12.1 (p. 19)",
+        "mecanismo_correcao": "omisso",
+        "indice": None,
+        "data_base_orcamento": None,
     })
     _validar_vigencia({
         "tipo": "contrato",
@@ -410,4 +435,86 @@ def test_contrato_vigencia_edital():
             "conta_a_partir_de": "assinatura",
             "texto": "12 meses",
             "fonte": "TR 5.1",
+        })
+    with pytest.raises(AssertionError):
+        _validar_vigencia({
+            "tipo": "contrato",
+            "meses": 12,
+            "prorrogavel_ate_meses": None,
+            "conta_a_partir_de": "assinatura",
+            "texto": "12 meses",
+            "fonte": "TR 5.1",
+            "mecanismo_correcao": "livre",
+        })
+
+
+def _validar_vigencia_precificacao(vp):
+    if vp is None:
+        return
+    assert isinstance(vp, dict)
+    chaves = {
+        "meses_iniciais",
+        "prorrogavel_ate_meses",
+        "mecanismo",
+        "indice_ou_cct",
+        "data_base",
+        "clausula",
+        "defasagem_reais",
+        "defasagem_pp",
+        "base_fechamento",
+        "recomendacao",
+    }
+    assert set(vp) == chaves
+    for campo_int in ("meses_iniciais", "prorrogavel_ate_meses"):
+        valor = vp[campo_int]
+        assert valor is None or (type(valor) is int and valor > 0)
+    assert vp["mecanismo"] in {"reajuste_indice", "repactuacao", "ambos", "omisso", "vedado", None}
+    for campo_num in ("defasagem_reais", "defasagem_pp"):
+        valor = vp[campo_num]
+        assert valor is None or (isinstance(valor, (int, float)) and type(valor) is not bool)
+    for campo_str in ("indice_ou_cct", "data_base", "clausula", "base_fechamento", "recomendacao"):
+        valor = vp[campo_str]
+        assert valor is None or isinstance(valor, str)
+
+
+def test_contrato_vigencia_precificacao():
+    skill = (SKILLS / "precificar-proposta-exequibilidade/SKILL.md").read_text(encoding="utf-8")
+    for termo in (
+        "vigencia_precificacao",
+        "art. 107",
+        "art. 106",
+        "art. 135",
+        "art. 84",
+        "Decreto 11.462/2023",
+        "premissas.vigencia_meses",
+        "proposta.reajuste",
+    ):
+        assert termo in skill
+
+    _validar_vigencia_precificacao({
+        "meses_iniciais": 30,
+        "prorrogavel_ate_meses": 60,
+        "mecanismo": "repactuacao",
+        "indice_ou_cct": "CCT + IPCA",
+        "data_base": "2026-05-01",
+        "clausula": "Minuta 7.2 (p. 38)",
+        "defasagem_reais": 4200.5,
+        "defasagem_pp": 1.35,
+        "base_fechamento": "vigência inicial de 30 meses",
+        "recomendacao": "Incluir defasagem na vigência inicial; não embutir prorrogação.",
+    })
+    _validar_vigencia_precificacao(None)
+
+    with pytest.raises(AssertionError):
+        _validar_vigencia_precificacao({
+            "meses_iniciais": 12,
+            "prorrogavel_ate_meses": 60,
+            "mecanismo": "invalido",
+            "indice_ou_cct": "IPCA",
+            "data_base": "2026-10-15",
+            "clausula": "TR 5.1",
+            "defasagem_reais": 0.0,
+            "defasagem_pp": 0.0,
+            "base_fechamento": "12 meses",
+            "recomendacao": "ok",
         })

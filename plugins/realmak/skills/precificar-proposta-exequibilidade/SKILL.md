@@ -111,6 +111,20 @@ A base é dado interno do grupo. Na proposta e nos anexos da licitação entra s
 
 Se o analista não indicar a pasta do processo, use a pasta onde estão os documentos do certame e informe o caminho.
 
+## Vigência, prorrogação e reajuste
+
+- **Prorrogação é bilateral (Lei 14.133/2021, art. 107):** a empresa pode renegociar ou recusar a prorrogação. O preço precisa se sustentar apenas na **vigência inicial** (12 meses ou até 5 anos, art. 106). Nunca embutir inflação de prorrogações no lance.
+- **Unidade do lance e custos únicos:** o lance segue a unidade de julgamento do edital (mensal, unitário ou global de 12/30/60 meses). Custos únicos (mobilização, implantação, ferramentas) amortizam na vigência inicial.
+- **Data-base:** no reajuste por índice, conta da data do orçamento estimado (arts. 25, § 7º e 92, § 3º); na repactuação (serviços contínuos com dedicação exclusiva ou predominância de mão de obra, art. 135), usa a CCT para mão de obra e a data da proposta para os demais custos.
+- **Defasagem (sem projeção ano a ano):** calcule `peso da MO × (dissídio esperado − índice do edital)` apenas sobre os anos da vigência inicial, somada à perda dos meses entre a data-base da CCT e o primeiro aniversário de reajuste ou repactuação. Sem taxa fundamentada, informe quanto de aumento de custo o preço absorve.
+- **Casos:**
+  - *Até 12 meses:* inclua o dissídio se a data-base da CCT cair dentro do período.
+  - *Vigência inicial acima de 12 meses:* precifique com a defasagem projetada.
+  - *Edital omisso ou com vedação:* a cláusula de reajuste é obrigatória por lei — peça esclarecimento ou impugne; enquanto isso, monte cenário-base sem correção e registre alerta.
+  - *Ata de registro de preços (ARP):* validade de 1 ano, prorrogável por mais 1 se vantajoso (art. 84); reajuste ou repactuação só se o edital previr (Decreto 11.462/2023, art. 25, III) — sem previsão, cabe apenas revisão; o contrato derivado tem vigência e reajuste próprios e a ata não garante volume.
+- **Cenário conservador:** inclua cenário conservador com colchão apenas quando a defasagem empurrar a margem abaixo do piso. Não faça projeção ano a ano.
+- **Saída:** registre 1 linha na síntese executiva; na planilha (`dados.json`), preencha apenas `premissas.vigencia_meses` e `proposta.reajuste` (sem aba nova).
+
 ## Passo 1: custos
 
 Organize os custos em três blocos. Percorra todos os itens e, para cada um, decida entre incluir o valor ou registrar por que não se aplica ao escopo. Item ignorado sem registro vira custo escondido.
@@ -211,3 +225,4 @@ Antes de entregar:
 
 - Informe `piso_sugerido` como valor mensal quando o cálculo o sustentar. Em `sensibilidade`, use `{rotulo, margem_pct}` com margem em pontos percentuais de cada hipótese calculada. Em `condicoes`, use `{id, texto}` para condições concretas da recomendação, com ID estável.
 - Resuma peças em `pecas_grupos` com `{rotulo, itens, valor_anual, situacao}`. Use `itens` como contagem, `valor_anual` em reais quando calculável e `situacao` como texto curto que indique a base ou a pendência. Não conte os mesmos itens em dois grupos nem use zero para representar valor desconhecido.
+- Em `vigencia_precificacao`, grave um objeto plano opcional com `{meses_iniciais, prorrogavel_ate_meses, mecanismo, indice_ou_cct, data_base, clausula, defasagem_reais, defasagem_pp, base_fechamento, recomendacao}` resumindo o tratamento de vigência, correção e defasagem usado no preço.
