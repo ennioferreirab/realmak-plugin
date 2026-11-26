@@ -10,6 +10,18 @@
  "margem_pct": 12.4,
  "exequivel": "sim",
  "resumo": "Realmak disputa; sem base de custos: hipótese de tributos 15%, margem 10%. Preço global R$ 52,9 mil, 23% abaixo do estimado.",
+ "vigencia_precificacao": {
+  "meses_iniciais": 12,
+  "prorrogavel_ate_meses": 60,
+  "mecanismo": "reajuste_indice",
+  "indice_ou_cct": "IPCA",
+  "data_base": "2026-10-15",
+  "clausula": "TR 5.1 (p. 14)",
+  "defasagem_reais": 0.0,
+  "defasagem_pp": 0.0,
+  "base_fechamento": "vigência inicial de 12 meses",
+  "recomendacao": "Preço sustenta a vigência inicial de 12 meses; reajuste anual pelo IPCA a partir da data-base do orçamento estimado."
+ },
  "cenarios": [
   {
    "nome": "Base",
