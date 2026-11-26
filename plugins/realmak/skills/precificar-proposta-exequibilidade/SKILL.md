@@ -121,9 +121,9 @@ Se o analista não indicar a pasta do processo, use a pasta onde estão os docum
   - *Até 12 meses:* inclua o dissídio se a data-base da CCT cair dentro do período.
   - *Vigência inicial acima de 12 meses:* precifique com a defasagem projetada.
   - *Edital omisso ou com vedação:* a cláusula de reajuste é obrigatória por lei — peça esclarecimento ou impugne; enquanto isso, monte cenário-base sem correção e registre alerta.
-  - *Ata de registro de preços (ARP):* validade de 1 ano, prorrogável por mais 1 se vantajoso (art. 84); reajuste ou repactuação só se o edital previr (Decreto 11.462/2023, art. 25, III) — sem previsão, cabe apenas revisão; o contrato derivado tem vigência e reajuste próprios e a ata não garante volume.
+  - *Ata de registro de preços (ARP):* validade de 1 ano, prorrogável por mais 1 se vantajoso (art. 84); reajuste ou repactuação só se o edital previr (Decreto 11.462/2023, art. 25, III) — sem previsão, cabe apenas revisão; o contrato derivado tem vigência e reajuste próprios e a ata não garante volume. Registre expressamente em `recomendacao` (e no `resumo`) que o contrato derivado tem vigência e reajuste próprios e que a ata não garante volume.
 - **Cenário conservador:** inclua cenário conservador com colchão apenas quando a defasagem empurrar a margem abaixo do piso. Não faça projeção ano a ano.
-- **Saída:** registre 1 linha na síntese executiva; na planilha (`dados.json`), preencha apenas `premissas.vigencia_meses` e `proposta.reajuste` (sem aba nova).
+- **Saída:** inclua obrigatoriamente 1 linha sobre vigência, reajuste, prorrogação e sensibilidade na síntese executiva **e no campo `resumo` de `analise/precificacao.json`** (que é a síntese exibida ao usuário). Exemplo: `"Preço vale para os 12 meses iniciais; primeiro reajuste pelo INCC em 03/2027; prorrogável até 10 anos, sem efeito no lance; cada +1% na mão de obra tira 0,55 ponto de margem."` Na planilha (`dados.json`), preencha apenas `premissas.vigencia_meses` e `proposta.reajuste` (sem aba nova).
 
 ## Passo 1: custos
 
@@ -225,4 +225,7 @@ Antes de entregar:
 
 - Informe `piso_sugerido` como valor mensal quando o cálculo o sustentar. Em `sensibilidade`, use `{rotulo, margem_pct}` com margem em pontos percentuais de cada hipótese calculada. Em `condicoes`, use `{id, texto}` para condições concretas da recomendação, com ID estável.
 - Resuma peças em `pecas_grupos` com `{rotulo, itens, valor_anual, situacao}`. Use `itens` como contagem, `valor_anual` em reais quando calculável e `situacao` como texto curto que indique a base ou a pendência. Não conte os mesmos itens em dois grupos nem use zero para representar valor desconhecido.
-- Em `vigencia_precificacao`, grave um objeto plano opcional com `{meses_iniciais, prorrogavel_ate_meses, mecanismo, indice_ou_cct, data_base, clausula, defasagem_reais, defasagem_pp, base_fechamento, recomendacao}` resumindo o tratamento de vigência, correção e defasagem usado no preço.
+- Em `vigencia_precificacao`, grave um objeto plano opcional com `{meses_iniciais, prorrogavel_ate_meses, mecanismo, indice_ou_cct, data_base, clausula, defasagem_reais, defasagem_pp, base_fechamento, recomendacao}` resumindo o tratamento de vigência, correção e defasagem usado no preço:
+  - `mecanismo`: use exatamente os mesmos valores de `vigencia.mecanismo_correcao` (`"reajuste_indice"|"repactuacao"|"ambos"|"omisso"|"vedado"|null`), nunca frase longa.
+  - `base_fechamento`: informe apenas para qual período e unidade o preço foi fechado (ex.: `"vigência inicial de 12 meses, valor mensal"`).
+  - `recomendacao`: traga a sensibilidade/defasagem e a orientação prática (em ata, cite também que o contrato derivado tem vigência e reajuste próprios e que a ata não garante volume).

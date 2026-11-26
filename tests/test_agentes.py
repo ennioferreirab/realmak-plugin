@@ -159,7 +159,7 @@ def test_fluxo_e_referencias():
 def test_visao_fluxo_contrato_canvas():
     visao = ler_json(ANALISADOR / "visao.json")
     assert visao["versao"] == 1
-    assert visao["gerado_de"]["plugin_versao"] == "0.16.8"
+    assert visao["gerado_de"]["plugin_versao"] == "0.16.9"
     destinos_validos = {"proxima", "parar", "humano", "rerodar", "precos"}
     itens_por_id = {}
     for etapa in visao["etapas"]:
@@ -488,6 +488,10 @@ def test_contrato_vigencia_precificacao():
         "Decreto 11.462/2023",
         "premissas.vigencia_meses",
         "proposta.reajuste",
+        "campo `resumo`",
+        "mecanismo_correcao",
+        "base_fechamento",
+        "não garante volume",
     ):
         assert termo in skill
 
