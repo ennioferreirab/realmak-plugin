@@ -42,7 +42,7 @@ Ver logs (nunca trazem chave, cookie nem link assinado):
 docker compose logs -f mcp-realmak
 ```
 
-Atualizar: `git pull && docker compose up -d --build`.
+Atualizar (máquina local): `git pull && docker compose up -d --build`. **No Stage (VPS), use só `scripts/vps/deploy.sh`**: `docker compose up` sem `compose.vps.yaml` tira o contêiner da rede da borda e `/mcp` responde 502.
 
 ## 3. Caddy
 
@@ -182,7 +182,7 @@ Opcional. Exige o login de pessoa (seção 6) e o realmak-crm com o módulo `rea
    e `ODOO_MCP_SECRET_FILE=/run/realmak-mcp/secret`. Atualize com:
 
    ```bash
-   git pull && docker compose -f compose.yaml -f compose.vps.yaml up -d --build --wait
+   scripts/vps/deploy.sh
    ```
 
    Suba o realmak-crm antes: o volume externo precisa existir.
