@@ -7,12 +7,20 @@
   },
   "etapas": {
     "E0": {
-      "objetivo": "Preparar os insumos determinísticos de leitura sem custo de modelo.",
+      "objetivo": "Garantir documentos e dados mínimos do certame e preparar os insumos de leitura.",
       "criterios": [
+        "Coleta documentos e campos vazios no link oficial quando a preparação automática não bastar; dispensa navegação se já estiver completo.",
         "Garante resumo do ConLicitação e mapa de localização de cláusulas antes de ler o edital."
       ],
-      "descricao": "Prepara os insumos da leitura e da triagem.",
+      "descricao": "Coleta documentos/dados faltantes e prepara os insumos da leitura e da triagem.",
       "grupos": [
+        {
+          "tipo": "sequencia",
+          "rotulo": "Coleta de documentos e dados",
+          "itens": [
+            "coleta"
+          ]
+        },
         {
           "tipo": "paralelo",
           "rotulo": "Preparar insumos",
@@ -104,6 +112,20 @@
     }
   },
   "itens": {
+    "coleta": {
+      "objetivo": "Garantir documentos extraídos e campos mínimos do card antes da análise do edital.",
+      "criterios": [
+        "Lê fontes/coleta-auto.json e grava estado dispensado sem navegar quando documentos e campos mínimos já estão completos.",
+        "Navega no link oficial, baixa documentos com baixar_documento e preenche campos vazios com preencher_card; só bloqueia com registrar_pendencia_coleta quando impossível."
+      ],
+      "resumo": [
+        "Verifica se faltam documentos ou campos mínimos e coleta direto no link oficial da licitação antes do mapa e da leitura do edital."
+      ],
+      "restricoes": [
+        "Nunca inventa campos ausentes nem sobrescreve campos já preenchidos.",
+        "Bloqueia apenas por ausência de link, login/captcha ou arquivos ilegíveis, sempre registrando a pendência no card."
+      ]
+    },
     "resumo": {
       "objetivo": "Garantir o resumo IA do ConLicitação disponível na pasta da análise.",
       "criterios": [
