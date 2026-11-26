@@ -42,6 +42,11 @@
         "vr_dia": 25.0,
         "vt_dia": 11.0
       },
+      "dissidio": {
+        "percentual_esperado": 6.5,
+        "data_base_mes": 5,
+        "informado_em": "2026-11-26"
+      },
       "administracao_central": {
         "pessoas": 1,
         "custo_mensal": 3500.0,

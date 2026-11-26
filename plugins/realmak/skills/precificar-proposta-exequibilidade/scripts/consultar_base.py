@@ -5,7 +5,7 @@ Uso:
     python consultar_base.py base-custos.json --empresa aforca --cargo "Técnico de manutenção" [--cenario base|conservador|otimista]
     python consultar_base.py base-custos.json --listar
 
-Sem --cargo, mostra tributos, encargos e administração central da empresa.
+Sem --cargo, mostra tributos, encargos, dissídio e administração central da empresa.
 Com --cargo, mostra a linha pronta para a aba Custos MO do modelo:
     C (salário/honorário base), D (encargos/adicionais) e E (benefícios/despesas),
     de modo que C × (1 + D) + E feche no custo mensal de referência do cenário.
@@ -47,6 +47,7 @@ def empresa_slug(base, nome):
 
 def resumo_empresa(base, slug):
     e = base["empresas"][slug]
+    dissidio = e.get("dissidio") if isinstance(e.get("dissidio"), dict) else {}
     return {
         "empresa": e["nome"],
         "competencia": base["competencia"],
@@ -55,6 +56,11 @@ def resumo_empresa(base, slug):
         "pendencia_tributos": e["tributos"].get("pendente"),
         "encargos_sociais": e["encargos_sociais"],
         "beneficios": e["beneficios"],
+        "dissidio": {
+            "percentual_esperado": dissidio.get("percentual_esperado"),
+            "data_base_mes": dissidio.get("data_base_mes"),
+            "informado_em": dissidio.get("informado_em"),
+        },
         "administracao_central_mensal": e["administracao_central"]["custo_mensal"],
     }
 

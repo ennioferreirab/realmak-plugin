@@ -159,7 +159,7 @@ def test_fluxo_e_referencias():
 def test_visao_fluxo_contrato_canvas():
     visao = ler_json(ANALISADOR / "visao.json")
     assert visao["versao"] == 1
-    assert visao["gerado_de"]["plugin_versao"] == "0.16.9"
+    assert visao["gerado_de"]["plugin_versao"] == "0.16.10"
     destinos_validos = {"proxima", "parar", "humano", "rerodar", "precos"}
     itens_por_id = {}
     for etapa in visao["etapas"]:
@@ -492,6 +492,9 @@ def test_contrato_vigencia_precificacao():
         "mecanismo_correcao",
         "base_fechamento",
         "não garante volume",
+        "percentual_esperado",
+        "data_base_mes",
+        "dissidio:<empresa>",
     ):
         assert termo in skill
 

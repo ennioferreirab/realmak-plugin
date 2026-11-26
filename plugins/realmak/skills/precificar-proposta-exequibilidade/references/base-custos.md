@@ -23,6 +23,7 @@ Abas sem empresa, sem função ou sem custo ficam fora e aparecem em `alertas`.
 | `empresas.<slug>.tributos` | `aliquota` (sobre o faturamento), `aliquotas_vistas`, `retencao_tipica`, `notas`; `pendente` quando a planilha não tem a alíquota |
 | `empresas.<slug>.encargos_sociais` | `total` e `grupos` (A a E) sobre a remuneração; `origem` diz se veio da empresa ou do padrão do grupo |
 | `empresas.<slug>.beneficios` | `vr_dia` e `vt_dia` |
+| `empresas.<slug>.dissidio` | Dissídio esperado da empresa: `percentual_esperado` (pontos percentuais ao ano, ou `null`), `data_base_mes` (inteiro de 1 a 12, ou `null`) e `informado_em` (`AAAA-MM-DD`); ausência da chave equivale a `null` |
 | `empresas.<slug>.administracao_central` | Pessoas e custo mensal do pessoal administrativo, sócios e apoio |
 | `cargos_por_empresa[]` | `cargo`, `empresa`, `vinculo` (`clt` ou `prestador`), `n`, faixas de `salario_base`, `custo_mensal` e `custo_hora` (`min`, `med`, `media`, `max`), `periculosidade`, `horas_mes` |
 | `cargos_grupo[]` | As mesmas faixas juntando as empresas (`empresa` = `grupo`) |
