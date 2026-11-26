@@ -179,6 +179,37 @@ async def test_criar_encaminha_modalidade_preparacao_e_campos_vazios(monkeypatch
     assert enviado["edital"] == "35/2026"
 
 
+def test_dados_pncp_nao_duplica_ano_no_edital():
+    d = criacao.dados_pncp({"numeroCompra": "008/2026", "anoCompra": 2026})
+    assert d["edital"] == "008/2026"
+    d2 = criacao.dados_pncp({"numeroCompra": "35", "anoCompra": 2026})
+    assert d2["edital"] == "35/2026"
+
+
+def test_dados_conlicitacao_extrai_campos_principais():
+    d = criacao.dados_conlicitacao({
+        "id": 19637504,
+        "public_body": {"nome": "Secretaria Municipal de Saúde"},
+        "orgao_uasg": "",
+        "orgao_cidade": "Tucumã",
+        "orgao_estado": "PA",
+        "edital": "PE/9/2026",
+        "processo": "126/2026/ADM",
+        "objeto": "Aquisição de equipamentos",
+        "valor_estimado": 0.0,
+        "datahora_abertura": "2026-12-08T08:59:00.000-03:00",
+    })
+    assert d == {
+        "orgao": "Secretaria Municipal de Saúde",
+        "cidade": "Tucumã",
+        "uf": "PA",
+        "edital": "PE/9/2026",
+        "processo": "126/2026/ADM",
+        "objeto": "Aquisição de equipamentos",
+        "abertura": "2026-12-08T08:59:00.000-03:00",
+    }
+
+
 @pytest.mark.asyncio
 async def test_proximos_passos_e_link_card_por_fonte_e_numero_edital_preservado(monkeypatch):
     monkeypatch.setenv("MCP_REALMAK_PUBLIC_URL", "https://app.realmakservicos.com.br")
