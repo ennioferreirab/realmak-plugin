@@ -38,11 +38,11 @@ def _proximos_passos(
         if fonte in ("pncp", "conlicitacao"):
             return [
                 "Use somente_conferir=false para criar o card no Acervo. "
-                "Não baixe nem anexe documentos: quando o usuário mover para Análise IA, a plataforma baixa automaticamente."
+                "A plataforma completa os campos pela fonte e inicia download, extração e classificação (Jev) automaticamente na chegada."
             ]
         return [
-            "Use somente_conferir=false para criar o card no Acervo; "
-            "depois o usuário envia o edital pelo card antes de mover para Análise IA."
+            "Use somente_conferir=false para criar o card no Acervo com todos os campos encontrados no portal; "
+            "depois baixe o edital e os anexos do portal e envie com licitacao_enviar_arquivo(destino='documento')."
         ]
     etapa_texto = (etapa or "").strip()
     em_acervo = not etapa_texto or etapa_texto.casefold() == "acervo"
@@ -51,12 +51,12 @@ def _proximos_passos(
     prefixo = "Card criado no Acervo." if criado else "Card já está no Acervo."
     if fonte in ("pncp", "conlicitacao"):
         return [
-            f"{prefixo} Quando você mover para Análise IA, "
-            "a plataforma baixa os documentos e dispara a análise."
+            f"{prefixo} A plataforma completa os campos pela fonte e inicia o download, "
+            "a extração e a classificação (Jev) dos documentos automaticamente no Acervo."
         ]
     return [
-        f"{prefixo} Envie o edital e anexos pelo card (essa fonte não baixa documentos automaticamente); "
-        "quando você mover para Análise IA, a análise será disparada."
+        f"{prefixo} Baixe o edital e os anexos do portal oficial e envie com "
+        "licitacao_enviar_arquivo(destino='documento') para extração e classificação (Jev) no Acervo."
     ]
 
 
@@ -140,6 +140,7 @@ def dados_pncp(item: dict) -> dict:
         "objeto": item.get("objetoCompra"), "orgao": orgao.get("razaoSocial"),
         "uasg": unidade.get("codigoUnidade"), "cidade": unidade.get("municipioNome"),
         "uf": unidade.get("ufSigla"), "edital": f"{item['numeroCompra']}/{item['anoCompra']}",
+        "modalidade": item.get("modalidadeNome"),
         "processo": item.get("processo"), "situacao": item.get("situacaoCompraNome"),
         "abertura": item.get("dataAberturaProposta"), "prazo": item.get("dataEncerramentoProposta"),
         "valor_estimado": item.get("valorTotalEstimado"),
@@ -258,8 +259,18 @@ async def criar(
                 "licitacao": None, "fonte_url": link_licitacao(con_id), "tentativas": tentativas,
                 "proximos_passos": _proximos_passos("conlicitacao", somente_conferir=True),
             }
-        gravado = await odoo.chamar("importar", referencia)
-        return resultado(gravado["licitacao"], gravado["criado"], tentativas, preparacao=gravado["preparacao"])
+        pedido_importar: dict[str, Any] = {
+            **referencia,
+            **({"dados": dados} if dados else {}),
+            **({"empresa": empresa} if empresa else {}),
+        }
+        gravado = await odoo.chamar("importar", pedido_importar)
+        extras: dict[str, Any] = {"preparacao": gravado["preparacao"]}
+        if "atualizado" in gravado:
+            extras["atualizado"] = gravado["atualizado"]
+        if "campos_vazios" in gravado:
+            extras["campos_vazios"] = gravado["campos_vazios"]
+        return resultado(gravado["licitacao"], gravado["criado"], tentativas, **extras)
     tentativas.append("PNCP")
     if not ref:
         try:
@@ -347,4 +358,9 @@ async def criar(
             "proximos_passos": _proximos_passos(fonte, somente_conferir=True),
         }
     gravado = await odoo.chamar("criar", parametros)
-    return resultado(gravado["licitacao"], gravado["criado"], tentativas, atualizado=gravado.get("atualizado", False))
+    extras_criar: dict[str, Any] = {"atualizado": gravado.get("atualizado", False)}
+    if "preparacao" in gravado:
+        extras_criar["preparacao"] = gravado["preparacao"]
+    if "campos_vazios" in gravado:
+        extras_criar["campos_vazios"] = gravado["campos_vazios"]
+    return resultado(gravado["licitacao"], gravado["criado"], tentativas, **extras_criar)

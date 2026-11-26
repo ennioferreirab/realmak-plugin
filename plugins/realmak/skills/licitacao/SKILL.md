@@ -40,7 +40,10 @@ As ferramentas `licitacao_*` agem no Odoo da Realmak como a pessoa que entrou pe
 
 ## 4. Anexar
 
-- `licitacao_enviar_arquivo` anexa à Saída IA, pasta "Agentes MCP". Até 1 MB vai direto (`conteudo_texto` para md, csv, txt, html e json; `conteudo_base64` para binário). Maior, até 50 MB: chame sem conteúdo e rode o `comando` devolvido (`curl --upload-file`), uma vez, em até 15 minutos.
+- `licitacao_enviar_arquivo` tem dois destinos (`destino`):
+  - `saida_ia` (padrão): anexa entregas (análises, planilhas, pareceres) na Saída IA, pasta "Agentes MCP".
+  - `documento`: envia edital e anexos baixados de portal externo para a pasta oficial de documentos do card, disparando extração de texto e classificação (Jev).
+- Até 1 MB vai direto (`conteudo_texto` para md, csv, txt, html e json; `conteudo_base64` para binário). Maior, até 50 MB: chame sem conteúdo e rode o `comando` devolvido (`curl --upload-file`), uma vez, em até 15 minutos.
 - Nome com extensão aceita: pdf, docx, xlsx, csv, md, txt, html, json, png, jpg. Arquivo enviado não é apagado nem substituído; mande uma versão nova com outro nome.
 
 ## 5. Encerrar trabalho com escrita autorizada
@@ -80,14 +83,15 @@ Quando a tarefa autorizar atualização de status, marque `trabalhando` ao come�
 
 ## Adicionar uma licitação
 
-- **Padrão:** criar o card no **Acervo** via `licitacao_criar` (confirme antes em uma frase curta, ex.: "Crio no Acervo?").
+- **Padrão:** criar o card no **Acervo** via `licitacao_criar` no mesmo padrão de um card importado do boletim (`PE/35/2026 - Órgão — Cidade/UF`). Confirme antes em uma frase curta, ex.: "Crio no Acervo?".
 - **Etapa do card:** o padrão é o **Acervo**. **Nunca mude a etapa do card nem sugira mover para outra etapa sem pedido explícito do usuário.**
+- **Preencher os campos do card (nunca nota):** antes de chamar `licitacao_criar`, colete e envie todos os campos disponíveis (`orgao`, `objeto`, `modalidade`, `numero_edital`, `processo`, `uasg`, `cidade`, `uf`, `valor_estimado`, `abertura`, `prazo`, `visita`, `retirada`, `link`, `id_conlicitacao`, `numero_controle_pncp`). **Nunca grave ficha cadastral ("DADOS DO EDITAL") em `licitacao_registrar` no lugar dos campos do card.** O que não encontrar na fonte fica vazio — nunca invente.
 - **Empresa disputante:** não pergunte; deixe `empresa` em branco, salvo se o usuário nomear.
-- **Leitura mínima:** leia só órgão, objeto, datas, valor e identificadores para criar o card. Não pagine lista de itens.
-- **Número do edital:** preencha `numero_edital` com o número do próprio edital (cabeçalho) e cite o sequencial do PNCP apenas como referência.
-- **Documentos (PNCP ou ConLicitação):** não baixe nem anexe PDFs; informe apenas que, quando o usuário mover para **Análise IA**, a plataforma baixa os documentos automaticamente.
-- **Documentos (link de portal ou Compras):** essa fonte não baixa arquivos automaticamente; oriente enviar o edital pelo próprio card (`licitacao_enviar_arquivo` grava na Saída IA e não alimenta a preparação documental).
-- **Resposta final:** entregue o link do card (`link_card`, ex.: `https://app.realmakservicos.com.br/odoo/licitacoes/<id>`) e informe a etapa atual (sem instruir nem sugerir mover o card).
+- **Leitura mínima:** leia só órgão, objeto, modalidade, datas, valor e identificadores para criar o card. Não pagine lista de itens.
+- **Número do edital:** preencha `numero_edital` com o número do próprio edital (cabeçalho) e `modalidade` (ex.: `Pregão Eletrônico`, `PE`) para montar o título padrão; cite o sequencial do PNCP apenas como referência.
+- **ConLicitação e PNCP (fluxo normal na chegada):** ao criar o card no Acervo, a plataforma completa os campos pela fonte e **já inicia automaticamente** o download dos documentos, extração, classificação (Jev) e resumo — sem precisar mover para **Análise IA**. Não baixe nem anexe PDFs manualmente nessas fontes.
+- **Portal externo (sem ConLicitação nem PNCP):** busque no link do pregão os campos disponíveis e o edital/anexos; crie o card com todos os campos encontrados e envie cada documento oficial baixado com `licitacao_enviar_arquivo(..., destino="documento")`, para entrar na pasta de documentos do card e disparar extração e classificação (Jev).
+- **Resposta final:** entregue o link do card (`link_card`, ex.: `https://app.realmakservicos.com.br/odoo/licitacoes/<id>`), a etapa atual, o resumo de `preparacao` e eventuais `campos_vazios` relevantes (sem instruir nem sugerir mover o card).
 
 
 ### Localizar e citar uma passagem do card

@@ -132,10 +132,51 @@ async def test_conlicitacao_importa_depois_de_conferir_sem_usar_outra_fonte(monk
     crm.chamar.assert_awaited_once_with("importar", {"conlicitacao_id": 123, "somente_conferir": True})
     resposta = await criacao.criar(*args, False)
     assert resposta["criado"] and resposta["preparacao"] == {"estado": "pendente"}
-    crm.chamar.assert_awaited_with("importar", {"conlicitacao_id": 123})
+    crm.chamar.assert_awaited_with("importar", {"conlicitacao_id": 123, "dados": {"processo": "A/2026"}})
     repeticao = await criacao.criar(*args, False)
     assert repeticao["ja_existia"] and repeticao["licitacao"] == card
     consulta_pncp.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_criar_encaminha_modalidade_preparacao_e_campos_vazios(monkeypatch):
+    controle = "46251021000180-1-000443/2026"
+    chave = "pncp-46251021000180-1-000443-2026"
+    card = {"id": 7010, "chave": chave, "fonte": "pncp", "etapa": "Acervo"}
+    crm = AsyncMock()
+    crm.chamar.side_effect = [
+        {"chave": chave, "licitacao": None, "existe": False},
+        {"total": 0, "licitacoes": []},
+        {"total": 0, "licitacoes": []},
+        {
+            "chave": chave,
+            "licitacao": card,
+            "criado": True,
+            "atualizado": False,
+            "preparacao": {"estado": "baixando", "motivo": None, "documentos": {"total": 0, "extraindo": 0, "com_texto": 0, "classificados": 0}},
+            "campos_vazios": ["visita"],
+        },
+    ]
+    monkeypatch.setattr(tools, "cliente", lambda: crm)
+    monkeypatch.setattr(criacao, "localizar_conlicitacao", AsyncMock(return_value=None))
+    monkeypatch.setattr(criacao, "consultar_pncp", AsyncMock(return_value={
+        "numeroControlePNCP": controle,
+        "numeroCompra": "35",
+        "anoCompra": 2026,
+        "modalidadeNome": "Pregão - Eletrônico",
+        "processo": "2026/00035",
+        "objetoCompra": "Manutenção preventiva",
+        "orgaoEntidade": {"razaoSocial": "TJGO"},
+        "unidadeOrgao": {"codigoUnidade": "926415", "municipioNome": "Goiânia", "ufSigla": "GO"},
+    }))
+    resposta = json.loads(await tools.licitacao_criar(numero_controle_pncp=controle))
+    assert resposta["criado"] is True
+    assert resposta["preparacao"]["estado"] == "baixando"
+    assert resposta["campos_vazios"] == ["visita"]
+    enviado = crm.chamar.await_args.args[1]["dados"]
+    assert enviado["modalidade"] == "Pregão - Eletrônico"
+    assert enviado["orgao"] == "TJGO"
+    assert enviado["edital"] == "35/2026"
 
 
 @pytest.mark.asyncio
@@ -165,22 +206,20 @@ async def test_proximos_passos_e_link_card_por_fonte_e_numero_edital_preservado(
     assert all("mover" not in p.casefold() and "mova" not in p.casefold() for p in res_analise["proximos_passos"])
     assert crm.chamar.await_args.args[1]["dados"]["edital"] == "47/2026"
 
-    # Card criado no Acervo (PNCP): texto informativo sem ordenar mover.
+    # Card criado no Acervo (PNCP): download, extração e classificação automáticos na chegada, sem mover etapa.
     card_acervo = {
         "id": 6624, "chave": "pncp-02292266000180-1-000165-2026",
         "fonte": "pncp", "etapa": "Acervo",
     }
     res_acervo = criacao.resultado(card_acervo, True, ["ConLicitação", "PNCP"])
     assert res_acervo["link_card"] == "https://app.realmakservicos.com.br/odoo/licitacoes/6624"
-    assert res_acervo["proximos_passos"] == [
-        "Card criado no Acervo. Quando você mover para Análise IA, "
-        "a plataforma baixa os documentos e dispara a análise."
-    ]
+    assert any("Card criado no Acervo." in p and "classificação (Jev)" in p for p in res_acervo["proximos_passos"])
+    assert all("mover" not in p.casefold() and "mova" not in p.casefold() for p in res_acervo["proximos_passos"])
     assert all("licitacao_enviar_arquivo" not in p for p in res_acervo["proximos_passos"])
 
-    # Card criado no Acervo (portal): orienta envio pelo card sem sugerir mover.
+    # Card criado no Acervo (portal): orienta enviar edital/anexos via licitacao_enviar_arquivo(destino='documento').
     card_portal = {"id": 7001, "chave": "url-0123456789abcdef", "fonte": "portal", "etapa": "Acervo"}
     res_portal = criacao.resultado(card_portal, True, ["ConLicitação", "PNCP"])
     assert res_portal["link_card"] == "https://app.realmakservicos.com.br/odoo/licitacoes/7001"
-    assert all("licitacao_enviar_arquivo" not in p and "mova" not in p.casefold() for p in res_portal["proximos_passos"])
-    assert any("Card criado no Acervo." in p and "pelo card" in p for p in res_portal["proximos_passos"])
+    assert all("mover" not in p.casefold() and "mova" not in p.casefold() for p in res_portal["proximos_passos"])
+    assert any("licitacao_enviar_arquivo(destino='documento')" in p for p in res_portal["proximos_passos"])

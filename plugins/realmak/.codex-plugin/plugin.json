@@ -1,6 +1,6 @@
 {
   "name": "realmak",
-  "version": "0.16.6",
+  "version": "0.16.7",
   "description": "Skills de licitação para a equipe da Realmak e das empresas do grupo: analisar edital (geral, de manutenção e de fornecimento), analisar a habilitação das empresas, precificar e demonstrar exequibilidade, cotar peças e materiais, auditar proposta concorrente, trabalhar na licitação da plataforma, consultar o cérebro, buscar no ConLicitação e pesquisar compras públicas, com o conector do servidor MCP da Realmak.",
   "author": {
     "name": "Equipe Realmak"

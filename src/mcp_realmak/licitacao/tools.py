@@ -107,26 +107,27 @@ async def licitacao_criar(
     orgao: Annotated[str | None, Field(description="Nome do órgão como consta no edital.")] = None,
     uasg: Annotated[str | None, Field(pattern=r"^\d{6}$", description="UASG do órgão com seis dígitos.")] = None,
     numero_edital: Annotated[str | None, Field(description="Número do edital conforme o cabeçalho do edital (número/ano); cite o sequencial PNCP só como referência.")] = None,
+    modalidade: Annotated[str | None, Field(description="Modalidade da licitação (ex.: Pregão Eletrônico, PE, Concorrência, Dispensa). Usada para montar a sigla no título padrão do card.")] = None,
     processo: Annotated[str | None, Field(description="Número exato do processo administrativo.")] = None,
     data: Annotated[date | None, Field(description="Data oficial conhecida, em AAAA-MM-DD.")] = None,
     empresa: Annotated[Literal["realmak", "aforca", "nortfort", "una", "sublime"] | None, Field(description="Empresa disputante; deixe em branco por padrão e só preencha se o usuário nomear.")] = None,
     somente_conferir: Annotated[bool, Field(description="Confere a fonte, a chave e a existência do card sem criar.")] = False,
-    titulo: Annotated[str | None, Field(description="Título para o card.")] = None,
+    titulo: Annotated[str | None, Field(description="Título para o card (opcional; o Odoo monta no padrão 'PE/35/2026 - Órgão — Cidade/UF' quando os campos são enviados).")] = None,
     objeto: Annotated[str | None, Field(description="Objeto conforme o portal ou edital.")] = None,
     cidade: Annotated[str | None, Field(description="Município informado na fonte.")] = None,
     uf: Annotated[str | None, Field(description="Sigla da UF informada na fonte.")] = None,
     situacao: Annotated[str | None, Field(description="Situação do certame na fonte.")] = None,
-    abertura: Annotated[str | None, Field(description="Abertura de propostas em AAAA-MM-DD ou data e hora ISO.")] = None,
-    prazo: Annotated[str | None, Field(description="Fim do envio de propostas em AAAA-MM-DD ou data e hora ISO.")] = None,
-    visita: Annotated[str | None, Field(description="Data ou prazo da visita técnica em AAAA-MM-DD ou data e hora ISO.")] = None,
-    retirada: Annotated[str | None, Field(description="Prazo de retirada do edital em AAAA-MM-DD ou data e hora ISO.")] = None,
+    abertura: Annotated[str | None, Field(description="Abertura de propostas em AAAA-MM-DD ou data e hora ISO (Brasília).")] = None,
+    prazo: Annotated[str | None, Field(description="Fim do envio de propostas em AAAA-MM-DD ou data e hora ISO (Brasília).")] = None,
+    visita: Annotated[str | None, Field(description="Data ou prazo da visita técnica em AAAA-MM-DD ou data e hora ISO (Brasília).")] = None,
+    retirada: Annotated[str | None, Field(description="Prazo de retirada do edital em AAAA-MM-DD ou data e hora ISO (Brasília).")] = None,
     cidade_local: Annotated[str | None, Field(description="Município do local de execução, se diferente do município do órgão.")] = None,
     uf_local: Annotated[str | None, Field(description="UF do local de execução, se diferente da UF do órgão.")] = None,
     valor_estimado: Annotated[float | None, Field(ge=0, allow_inf_nan=False, description="Valor estimado em reais.")] = None,
 ) -> str:
-    """Localiza ou cria um card no Acervo (o card permanece no Acervo; nunca mude nem sugira mudar de etapa sem pedido explícito do usuário). Leia só o necessário (órgão, objeto, datas, valor e identificadores; não pagine itens) e deixe `empresa` em branco salvo se o usuário nomear. Procura primeiro no ConLicitação, depois PNCP e Compras.gov. Em PNCP ou ConLicitação, não baixe nem anexe arquivos: quando o usuário mover para Análise IA, a plataforma baixa automaticamente. Só em link de portal ou Compras sem documentos, oriente enviar o edital pelo card. Devolve `link_card`, `chave`, `fonte` e `proximos_passos`."""
+    """Localiza ou cria um card no Acervo no mesmo padrão dos importados do boletim (o card permanece no Acervo; nunca mude nem sugira mudar de etapa sem pedido explícito do usuário). Colete e envie todos os campos encontrados (órgão, objeto, modalidade, número do edital, processo, UASG, cidade/UF, valor estimado, datas e link) — nunca use licitacao_registrar (nota) no lugar de preencher os campos, e deixe vazio o que não achar (sem inventar). Deixe `empresa` em branco salvo se o usuário nomear; não pagine lista de itens. Procura primeiro no ConLicitação, depois PNCP e Compras.gov. Em ConLicitação ou PNCP, a plataforma completa os campos pela fonte e dispara download, extração e classificação (Jev) automaticamente na chegada (não baixe nem anexe PDFs). Em portal externo (sem ConLicitação nem PNCP), baixe o edital e os anexos do portal e envie com licitacao_enviar_arquivo(destino='documento'). Devolve `link_card`, `chave`, `fonte`, `preparacao`, `campos_vazios` e `proximos_passos`."""
     dados: dict[str, Any] = {k: v.strip() for k, v in (
-        ("orgao", orgao), ("uasg", uasg), ("edital", numero_edital), ("processo", processo),
+        ("orgao", orgao), ("uasg", uasg), ("edital", numero_edital), ("modalidade", modalidade), ("processo", processo),
         ("titulo", titulo), ("objeto", objeto), ("cidade", cidade), ("uf", uf), ("situacao", situacao),
         ("abertura", abertura), ("prazo", prazo), ("visita", visita), ("retirada", retirada),
         ("cidade_local", cidade_local), ("uf_local", uf_local),
@@ -263,15 +264,23 @@ async def licitacao_enviar_arquivo(
     conteudo_texto: Annotated[str | None, Field(description="Conteúdo de um arquivo de texto (md, csv, txt, html, json), até 1 MB.")] = None,
     conteudo_base64: Annotated[str | None, Field(description="Conteúdo binário em base64, até 1 MB. Para arquivo maior, não envie conteúdo: peça o link de envio.")] = None,
     descricao: Annotated[str | None, Field(max_length=500, description="Uma linha sobre o arquivo, para o histórico do card.")] = None,
+    destino: Annotated[
+        Literal["saida_ia", "documento"],
+        Field(description="Onde gravar: 'saida_ia' (padrão, entregas/planilhas na pasta Agentes MCP) ou 'documento' (edital e anexos de portal externo; entra na pasta de documentos do card e dispara extração e classificação Jev)."),
+    ] = "saida_ia",
     chave: Annotated[str | None, CHAVE] = None,
 ) -> str:
-    """Anexa um arquivo à licitação, na Saída IA, pasta "Agentes MCP", com o seu nome. Até 1 MB vai direto em conteudo_texto ou conteudo_base64. Arquivo maior (até 50 MB): chame sem conteúdo e envie os bytes para o link devolvido (curl --upload-file <arquivo> '<url>'), válido por 15 minutos e uma vez."""
+    """Anexa um arquivo à licitação com o seu nome. Com destino='saida_ia' (padrão), grava na Saída IA (pasta "Agentes MCP"). Com destino='documento', grava como documento oficial da licitação (edital/anexos baixados de portal externo), disparando extração de texto e classificação (Jev). Até 1 MB vai direto em conteudo_texto ou conteudo_base64. Arquivo maior (até 50 MB): chame sem conteúdo e envie os bytes para o link devolvido (curl --upload-file <arquivo> '<url>'), válido por 15 minutos e uma vez."""
     if conteudo_texto is not None and conteudo_base64 is not None:
         raise ToolError("Licitações: envie conteudo_texto ou conteudo_base64, não os dois.")
     settings, email = _settings(), pessoa()
     licitacao_id = await _id_para_arquivo(licitacao_id, chave)
     if conteudo_texto is None and conteudo_base64 is None:
-        dados = {"t": "enviar", "e": email, "l": licitacao_id, "n": nome, **({"s": descricao} if descricao else {})}
+        dados = {
+            "t": "enviar", "e": email, "l": licitacao_id, "n": nome,
+            **({"s": descricao} if descricao else {}),
+            **({"d": destino} if destino != "saida_ia" else {}),
+        }
         resultado = arquivos.link(settings, "envio/", dados)
         return dumps({**resultado, "comando": f"curl -fsS --upload-file '{nome}' '{resultado['url']}'",
                       "limite_mb": settings.arquivo_max_bytes // (1024 * 1024)})
@@ -285,7 +294,7 @@ async def licitacao_enviar_arquivo(
     if len(conteudo) > LIMITE_DIRETO:
         raise ToolError("Licitações: acima de 1 MB direto na chamada. Chame sem conteúdo para receber o link de envio.")
     try:
-        return dumps(await cliente().enviar(licitacao_id, nome, conteudo, descricao))
+        return dumps(await cliente().enviar(licitacao_id, nome, conteudo, descricao, destino=destino))
     except OdooApiError as exc:
         raise ToolError(explicar_erro(exc)) from None
 
@@ -350,9 +359,12 @@ INSTRUCOES = (
     "- Comece por licitacao_pasta (ou licitacao_buscar para achar a licitação). O JSON traz ids de documentos.\n"
     "- Para acompanhar pendências e prazos de Análise humana e Disputa, use visao_geral_pendencias; para o detalhe "
     "calculado de um card na Visão geral, use visao_geral_licitacao (ambas somente leitura).\n"
-    "- Para adicionar licitação, use licitacao_criar (padrão: criar no Acervo, sem perguntar empresa disputante e sem paginar itens; nunca mude nem sugira mudar de etapa sem pedido explícito do usuário). "
-    "Em PNCP ou ConLicitação, não baixe nem anexe documentos: quando o usuário mover para Análise IA, a plataforma baixa automaticamente. "
-    "Só em portal externo ou Compras sem documentos, oriente enviar o edital pelo card. Devolve link_card e a situação da etapa atual.\n"
+    "- Para adicionar licitação, use licitacao_criar (padrão: criar no Acervo, preenchendo todos os campos encontrados — "
+    "órgão, objeto, modalidade, edital, processo, UASG, cidade/UF, valor, datas e link — sem usar nota no lugar de campo, "
+    "sem perguntar empresa disputante e sem paginar itens; nunca mude nem sugira mudar de etapa sem pedido explícito do usuário). "
+    "Em ConLicitação ou PNCP, a plataforma completa os campos pela fonte e baixa/extrai/classifica (Jev) os documentos automaticamente na chegada (não anexe PDFs). "
+    "Em portal externo sem ConLicitação nem PNCP, baixe o edital e os anexos do portal e envie com licitacao_enviar_arquivo(destino='documento'). "
+    "Devolve link_card, preparacao, campos_vazios e a situação da etapa atual.\n"
     "- Ao começar a trabalhar numa licitação, chame licitacao_status com estado trabalhando; ao terminar, "
     "concluido; se precisar do analista, aguardando.\n"
     "- Localize e cite passagens do card com licitacao_buscar_fontes. Leia o edital com licitacao_ler_texto; edital prevalece sobre manifesto e resumo do ConLicitação. "

@@ -187,6 +187,26 @@ async def test_links_baixam_e_enviam_arquivo_sem_passar_pela_conversa(ambiente):
         direto = await chamar(c, "licitacao_enviar_arquivo",
                               {"licitacao_id": 7, "nome": "notas.md", "conteudo_texto": "# Achados"}, token)
         assert not direto.get("isError") and upload.calls.last.request.content == b"# Achados"
+        assert "destino" not in upload.calls.last.request.url.params
+
+        # Envio de documento oficial do portal (destino=documento), direto e por link assinado.
+        doc_direto = await chamar(
+            c, "licitacao_enviar_arquivo",
+            {"licitacao_id": 7, "nome": "edital.pdf", "conteudo_base64": "JVBERi0xLjQ=", "destino": "documento"},
+            token,
+        )
+        assert not doc_direto.get("isError")
+        assert upload.calls.last.request.url.params["destino"] == "documento"
+
+        envio_doc = corpo(await chamar(
+            c, "licitacao_enviar_arquivo",
+            {"licitacao_id": 7, "nome": "tr.pdf", "descricao": "TR oficial", "destino": "documento"},
+            token,
+        ))
+        r_doc = await c.put(urlsplit(envio_doc["url"]).path, content=b"%PDF-1.4 TR")
+        assert r_doc.status_code == 200
+        assert upload.calls.last.request.url.params["destino"] == "documento"
+        assert upload.calls.last.request.url.params["nome"] == "tr.pdf"
 
 
 async def test_base_de_custos_vem_da_plataforma_e_sobe_por_link_como_a_pessoa(ambiente):
