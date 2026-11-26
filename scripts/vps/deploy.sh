@@ -15,4 +15,10 @@ done
 publico="${MCP_REALMAK_PUBLIC_URL:-https://app.realmakservicos.com.br}"
 codigo="$(curl -s -o /dev/null -w '%{http_code}' -m 20 -X POST -H 'content-type: application/json' "$publico/mcp" || true)"
 [ "$codigo" = 401 ] || { echo "ERRO: $publico/mcp respondeu $codigo (esperado 401 sem credencial)" >&2; exit 1; }
-echo "==> mcp-realmak implantado: $(git log --oneline -1) · $publico/mcp ok (401 sem credencial)"
+if docker ps --format '{{.Names}}' | grep -qx 'realmak-crm-agentes-1'; then
+  invalidos="$(docker exec -w /opt/realmak/agentes realmak-crm-agentes-1 node -e 'import("./src/manifesto.ts").then(m => { const c = new m.Catalogo("/agentes", "/plugin-realmak"); const inv = c.agentesInvalidos(); console.log(JSON.stringify(inv)); if (inv.length) process.exit(1); })')" || {
+    echo "ERRO: realmak-crm-agentes-1 recusou manifesto(s): $invalidos" >&2
+    exit 1
+  }
+fi
+echo "==> mcp-realmak implantado: $(git log --oneline -1) · $publico/mcp ok (401 sem credencial) · catalogo ok"
