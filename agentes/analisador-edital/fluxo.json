@@ -6,22 +6,10 @@
       "titulo": "Preparação",
       "itens": [
         {
-          "id": "coleta",
-          "titulo": "Coleta de documentos e dados",
-          "modo": "skill",
-          "tier": "T2",
-          "skill": "coletar-edital",
-          "passos": "ler fontes/coleta-auto.json; se faltarem documentos ou campos mínimos, navegar no link, baixar anexos e preencher campos vazios; só bloquear com pendência explícita",
-          "saida": "fontes/coleta.json"
-        },
-        {
           "id": "resumo",
           "titulo": "Resumo IA do ConLicitação",
           "modo": "script",
           "tier": "T0",
-          "depende_de": [
-            "coleta"
-          ],
           "cmd": [
             "python3",
             "{pasta_agente_def}/skills/pasta-licitacao/scripts/resumo_conlicitacao.py",
@@ -33,9 +21,6 @@
           "titulo": "Mapa de leitura do edital",
           "modo": "script",
           "tier": "T0",
-          "depende_de": [
-            "coleta"
-          ],
           "cmd": [
             "python3",
             "{pasta_agente_def}/skills/guia-leitura-edital/scripts/localizar.py",
