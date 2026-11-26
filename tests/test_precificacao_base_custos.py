@@ -196,3 +196,33 @@ def test_prestador_vai_cheio_em_c():
     mo = consultar("--empresa", "realmak", "--cargo", "Engenheiro mecânico", "--prestador")["custos_mo"]
     assert mo["D_encargos_adicionais"] == 0 and mo["E_beneficios"] == 0
     assert mo["C_salario_base"] == mo["custo_mensal_referencia"]
+
+
+def test_dissidio_na_consulta_com_e_sem_chave(tmp_path):
+    com = consultar("--empresa", "realmak")
+    assert com["dissidio"] == {
+        "percentual_esperado": 6.5,
+        "data_base_mes": 5,
+        "informado_em": "2026-11-26",
+    }
+    sem = consultar("--empresa", "aforca")
+    assert sem["dissidio"] == {
+        "percentual_esperado": None,
+        "data_base_mes": None,
+        "informado_em": None,
+    }
+    # Base antiga sem nenhuma chave dissidio continua funcionando sem erro.
+    base_antiga = json.loads(EXEMPLO.read_text(encoding="utf-8"))
+    for emp in base_antiga["empresas"].values():
+        emp.pop("dissidio", None)
+    arquivo = tmp_path / "base-antiga.json"
+    arquivo.write_text(json.dumps(base_antiga, ensure_ascii=False), encoding="utf-8")
+    r = subprocess.run(
+        [sys.executable, str(SCRIPTS / "consultar_base.py"), str(arquivo), "--empresa", "realmak"],
+        capture_output=True, text=True, check=True,
+    )
+    assert json.loads(r.stdout)["dissidio"] == {
+        "percentual_esperado": None,
+        "data_base_mes": None,
+        "informado_em": None,
+    }

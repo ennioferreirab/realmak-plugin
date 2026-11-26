@@ -492,6 +492,9 @@ def test_contrato_vigencia_precificacao():
         "mecanismo_correcao",
         "base_fechamento",
         "não garante volume",
+        "percentual_esperado",
+        "data_base_mes",
+        "dissidio:<empresa>",
     ):
         assert termo in skill
 
