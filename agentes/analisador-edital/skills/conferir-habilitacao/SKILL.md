@@ -25,7 +25,8 @@ Refaça a conferência documental de habilitação **somente da empresa indicada
    - Se ainda faltar ou precisar de complemento, faça busca direcionada no Cérebro (`cerebro_buscar` / `cerebro_fatos`) para aquela empresa e exigência específica.
    - Confira no texto real do documento:
      - **CNPJ e razão social** compatíveis com a empresa disputante;
-     - **Emissão e validade** frente à data atual e à data da sessão/envio da proposta;
+     - **Emissão e validade** frente à data atual e à data da sessão/envio da proposta, só para documento que vence (certidões, registro no conselho, balanço);
+     - **Sem prazo de validade:** Atestado de capacidade técnica, CAT (Certidão de Acervo Técnico), CAO (Certidão de Acervo Operacional), ART, TRT, RRT e ato constitutivo **não têm prazo de validade**. Não procure nem cobre validade nesses documentos: deixe `validade` vazio, não escreva "sem validade", "sem prazo" nem "validade não encontrada", e não rebaixe a situação nem abra pendência por falta dessa data. Confira o que conta neles: titular e CNPJ, profissional, objeto, quantitativo, registro no conselho e, só quando o edital limitar, a data de emissão ou de execução (por exemplo, atestado dos últimos N anos). A certidão de registro e quitação no conselho (da empresa ou do profissional) tem validade e continua conferida.
      - **Assinatura / registro / autenticação** quando exigidos (declarações, balanço, ART/CAT, registro no conselho);
      - **Quantitativos / capacidades técnicas** (TR, equipamentos, prazo mínimo) quando for atestado técnico.
 4. Só mude `situacao` para `"atende"` quando houver prova lida e compatível:

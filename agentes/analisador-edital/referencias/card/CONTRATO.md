@@ -27,6 +27,7 @@ O agente grava em `licitacoes/<id>/agents/analisador-edital/analise/`. Toda list
 ```
 
 `habilitacao.json` (skill `analisar-habilitacao`):
+`exigencias[].validade`: data ISO ou texto curto, só para documento que vence. Em atestado, CAT, CAO, ART/TRT/RRT e ato constitutivo fica vazio (`""`): eles não têm prazo de validade e a falta de data não é pendência (Ennio, 26/11/2026).
 Quando houver original de habilitação, `prova` cita arquivo, página, seção ou aba, trecho literal e confronto com os dados aplicáveis à exigência (titular/CNPJ, datas, validade, exercício ou escopo). A mesma prova indica o endereço permanente da cópia na licitação. Sem leitura do original, a exigência documental fica `verificar` se não houver outra prova válida, com “Validação pendente” e a lacuna documental descrita. Uma cópia disponível permite download mesmo com a conferência pendente. O Odoo acrescenta `controle_validacao[]` à resposta da habilitação somente a partir do dossiê privado do usuário autenticado, sem anexá-lo ao JSON compartilhado. Cada registro vincula empresa, SHA-256 e exigência ao original. Inclui arquivo, localizador, trecho literal, parecer `confere|diverge|pendente`, conclusão ou motivo e modelo efetivo. O parecer do leitor não substitui a avaliação de habilitação.
 
 
