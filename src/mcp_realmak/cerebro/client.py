@@ -9,6 +9,8 @@ Rotas:
     GET  /original            ?slug   bytes do arquivo original da página (em fluxo)
     POST /envios              corpo = arquivo cru, x-galeed-nome, x-galeed-contexto (201 novo / 200 repetido)
     GET  /envios              ?limite&id&sha256   andamento dos envios
+    POST /documentos/comentarios  {sha256|caminho, texto}   anota um documento existente (201)
+    GET  /documentos/comentarios  ?sha256|caminho           lista comentários e nota_revisao
 
 Regra de segurança: a chave nunca aparece em mensagem de erro, log ou exceção.
 """
@@ -166,6 +168,33 @@ class GaleedClient:
         if envio_id:
             params["id"] = envio_id
         return await self._request("GET", "/envios", params=params or None)
+
+    async def comentar(
+        self,
+        texto: str,
+        *,
+        sha256: str | None = None,
+        caminho: str | None = None,
+    ) -> Any:
+        body: dict[str, Any] = {"texto": texto}
+        if sha256:
+            body["sha256"] = sha256
+        if caminho:
+            body["caminho"] = caminho
+        return await self._request("POST", "/documentos/comentarios", json_body=body)
+
+    async def comentarios(
+        self,
+        *,
+        sha256: str | None = None,
+        caminho: str | None = None,
+    ) -> Any:
+        params: dict[str, Any] = {}
+        if sha256:
+            params["sha256"] = sha256
+        if caminho:
+            params["caminho"] = caminho
+        return await self._request("GET", "/documentos/comentarios", params=params or None)
 
     def _headers(self) -> dict[str, str]:
         return {"Authorization": f"Bearer {self._token}", **({"X-Galeed-Act-As": self._act_as} if self._act_as else {})}

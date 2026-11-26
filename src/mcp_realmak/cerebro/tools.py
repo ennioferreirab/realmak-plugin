@@ -189,6 +189,8 @@ def explicar_erro(exc: Exception) -> str:
                 return f"Cérebro: requisição inválida (400): {corpo}. Ajuste os argumentos e tente de novo."
             case 404:
                 return f"Cérebro: não encontrado (404): {corpo}."
+            case 409:
+                return f"Cérebro: conflito ou documento ambíguo (409): {corpo}. Informe o sha256 exato obtido em cerebro_buscar."
             case 413:
                 return f"Cérebro: arquivo acima do limite permitido (413): {corpo}."
             case 415:
@@ -240,7 +242,7 @@ async def cerebro_buscar(
     empresa: Annotated[Empresa, Field(description=EMPRESA_DESC)] = "realmak",
     incluir_historico: Annotated[bool, Field(description="Padrão false (traz só documentos vigentes e devolve historico_omitido.aviso quando há versões anteriores/vencidas ocultas). Passe true só quando a pessoa pedir o histórico/versão antiga ou for preciso provar o que foi entregue numa licitação ou contrato.")] = False,
 ) -> str:
-    """Busca no cérebro da empresa escolhida (texto e semântica) e devolve trechos com fonte, estado_documento (vigente|substituido|vencido, rotulo e substituido_por) e o link curto do arquivo original (original.link, 30 minutos), sem redigir resposta. Por padrão (incluir_historico=false) retorna só os documentos vigentes e informa historico_omitido.aviso quando houver versões anteriores ou vencidas ocultas. Use para qualquer pergunta sobre funcionários, responsáveis técnicos, atestados, CATs, ARTs, contratos, licitações e atas. Não gasta LLM. Monte a resposta a partir dos trechos e diga o que ficou sem confirmação."""
+    """Busca no cérebro da empresa escolhida (texto e semântica) e devolve trechos com fonte, estado_documento (vigente|substituido|vencido, rotulo e substituido_por), comentarios ({total, ultimos}) e nota_revisao (quando existirem), além do link curto do arquivo original (original.link, 30 minutos), sem redigir resposta. Por padrão (incluir_historico=false) retorna só os documentos vigentes e informa historico_omitido.aviso quando houver versões anteriores ou vencidas ocultas. Sempre mostre à pessoa os comentarios e nota_revisao devolvidos. Use para qualquer pergunta sobre funcionários, responsáveis técnicos, atestados, CATs, ARTs, contratos, licitações e atas. Não gasta LLM. Monte a resposta a partir dos trechos e diga o que ficou sem confirmação."""
     return await executar(empresa, "retrieve", query, limit, include_facts, os, incluir_historico)
 
 
@@ -284,7 +286,7 @@ async def cerebro_provas(
     empresa: Annotated[Empresa, Field(description=EMPRESA_DESC)] = "realmak",
     incluir_historico: Annotated[bool, Field(description="Padrão false (omite provas de documentos substituídos ou vencidos e traz historico_omitido.aviso). Passe true só quando a pessoa pedir versão antiga ou histórico.")] = False,
 ) -> str:
-    """Provas dos registros: para cada id devolvido por cerebro_consulta, o documento, a posição, estado_documento e o trecho literal de cada valor, com o arquivo original (original.file_path e original.link, válido por 30 minutos; sem ele, original.brain_link e original.brain_download_link). Por padrão (incluir_historico=false) omite provas de documentos substituídos ou vencidos e informa historico_omitido.aviso. Não gasta LLM."""
+    """Provas dos registros: para cada id devolvido por cerebro_consulta, o documento, a posição, estado_documento, comentarios ({total, ultimos}), nota_revisao e o trecho literal de cada valor, com o arquivo original (original.file_path e original.link, válido por 30 minutos; sem ele, original.brain_link e original.brain_download_link). Por padrão (incluir_historico=false) omite provas de documentos substituídos ou vencidos e informa historico_omitido.aviso. Sempre mostre à pessoa os comentarios e nota_revisao devolvidos. Não gasta LLM."""
     return await executar(empresa, "provas", list(ids), os, incluir_historico)
 
 
@@ -425,6 +427,36 @@ async def cerebro_envios(
     return await executar(empresa, "envios", limite=limite, sha256=sha256, envio_id=envio_id)
 
 
+async def cerebro_comentar(
+    texto: Annotated[str, Field(min_length=1, max_length=4000, description="Texto do comentário/anotação a registrar no documento (até 4000 caracteres).")],
+    empresa: Annotated[Empresa, Field(description=EMPRESA_DESC)] = "realmak",
+    sha256: Annotated[str | None, Field(description="SHA-256 (64 hex) do documento existente no cérebro (preferível, evita ambiguidade).")] = None,
+    caminho: Annotated[str | None, Field(description="Caminho relativo ou nome único do arquivo no acervo, quando não tiver o SHA-256.")] = None,
+) -> str:
+    """Registra um comentário/anotação em um documento que já está no cérebro da empresa (histórico só de acréscimo; não edita nem apaga). O comentário passa a aparecer em cerebro_buscar e cerebro_provas. Prefira passar sha256 obtido em cerebro_buscar para evitar erro 409 por nome ambíguo."""
+    texto_limpo = texto.strip()
+    sha = (sha256 or "").strip() or None
+    cam = (caminho or "").strip() or None
+    if not texto_limpo:
+        raise ToolError("Cérebro: informe o texto do comentário.")
+    if not sha and not cam:
+        raise ToolError("Cérebro: informe sha256 ou caminho do documento a comentar.")
+    return await executar(empresa, "comentar", texto_limpo, sha256=sha, caminho=cam)
+
+
+async def cerebro_comentarios(
+    empresa: Annotated[Empresa, Field(description=EMPRESA_DESC)] = "realmak",
+    sha256: Annotated[str | None, Field(description="SHA-256 (64 hex) do documento no cérebro.")] = None,
+    caminho: Annotated[str | None, Field(description="Caminho relativo ou nome único do arquivo no acervo, quando não tiver o SHA-256.")] = None,
+) -> str:
+    """Lista todos os comentários registrados e a nota_revisao de um documento no cérebro da empresa. Use quando cerebro_buscar indicar mais de 3 comentários ou para conferir anotações completas."""
+    sha = (sha256 or "").strip() or None
+    cam = (caminho or "").strip() or None
+    if not sha and not cam:
+        raise ToolError("Cérebro: informe sha256 ou caminho do documento.")
+    return await executar(empresa, "comentarios", sha256=sha, caminho=cam)
+
+
 INSTRUCOES = """Cérebros das empresas do grupo (Realmak, AForça, Nortfort, UNA, Sublime):
 - Comece com cerebro_empresas sem argumentos ({}) uma vez por conversa: diz quais empresas você pode consultar, o nível
   de acesso (total ou parcial) e quais têm o dataset de registros.
@@ -463,6 +495,9 @@ INSTRUCOES = """Cérebros das empresas do grupo (Realmak, AForça, Nortfort, UNA
   - Até 1 MB de arquivo único: envie direto (`conteudo_base64` ou `conteudo_texto`). Maior que 1 MB: chame sem conteúdo e execute o `comando` (`curl --upload-file`). Pasta / vários arquivos: passe a lista em `nomes` numa única chamada e rode o `comando` único devolvido.
   - Para documento que atualiza outro (ex.: cartão CNPJ novo, certidão renovada): busque o antigo com `cerebro_buscar`, pegue `substitui_sha256` e `substitui_caminho` do MESMO documento antigo e envie com `acao="substituir"` (se sha256 e caminho apontarem para vínculos diferentes, o servidor não altera o antigo).
   - Informe à pessoa o estado devolvido e confirme o destino final (ou motivo de revisão / resultado em `substituicao`) com `cerebro_envios`.
+- Comentários e anotações em documentos existentes:
+  - Quando `cerebro_buscar` ou `cerebro_provas` trouxer `comentarios` (`total`, `ultimos`) ou `nota_revisao`, mostre essas anotações à pessoa na resposta (elas registram alertas como razão social antiga, data divergente ou necessidade de emissão atualizada). Use `cerebro_comentarios` se precisar ver todos quando `total > 3`.
+  - Quando a pessoa pedir para anotar ou comentar um documento já presente no cérebro, use `cerebro_comentar(empresa, sha256 ou caminho, texto)` — prefira `sha256` obtido em `cerebro_buscar` para evitar ambiguidade (409). Comentários só se acumulam; não editam nem apagam.
 - Resultado com 'original': termine a resposta com a seção Arquivos, um item por sha256, em markdown e sem URL
   por extenso: '**nome** · [Visualizar](original.link)' e, na linha de baixo, 'Caminho: original.file_path'.
   Use a URL curta exatamente como veio, sem reescrever nem repetir. O link vale 30 minutos, não pede login,
@@ -493,4 +528,6 @@ def build_cerebro_server() -> FastMCP:
     mcp.tool(cerebro_provas, tags={"cerebro", REGISTROS_TAG}, annotations=ro)
     mcp.tool(cerebro_enviar, tags={"cerebro"}, annotations=escrita)
     mcp.tool(cerebro_envios, tags={"cerebro"}, annotations=ro)
+    mcp.tool(cerebro_comentar, tags={"cerebro"}, annotations=escrita)
+    mcp.tool(cerebro_comentarios, tags={"cerebro"}, annotations=ro)
     return mcp

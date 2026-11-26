@@ -37,6 +37,8 @@ As ferramentas `cerebro_*` vêm do conector MCP da Realmak. O nome completo pode
 | `cerebro_provas` | `ids` obrigatório (lista de até 200 strings); `empresa`, `os`, `incluir_historico` (boolean, padrão `false`) |
 | `cerebro_enviar` | `empresa`; `nome` (arquivo único) ou `nomes` (pasta/lote); `conteudo_base64` ou `conteudo_texto` (até 1 MB); `comentario`, `acao` (`enviar` ou `substituir`), `substitui_sha256`, `substitui_caminho` |
 | `cerebro_envios` | `empresa`, `limite` (1–200), `sha256`, `envio_id` |
+| `cerebro_comentar` | `empresa`, `texto` (obrigatório, até 4000 caracteres); `sha256` ou `caminho` |
+| `cerebro_comentarios` | `empresa`; `sha256` ou `caminho` |
 
 Não envie `os` a empresas, esquema ou consulta. `area` filtra fatos; não concede acesso. `cursor` só continua a mesma consulta de fatos, na mesma empresa e com os mesmos filtros.
 
@@ -161,6 +163,7 @@ Para colocar um documento ou pasta no acervo de uma empresa, use sempre `cerebro
 - **Pasta / vários arquivos:** passe a lista de caminhos em `nomes` numa única chamada; a ferramenta devolve um link por arquivo e um `comando` único para enviar todos.
 - **Atualizar documento existente (ex.: cartão CNPJ novo, certidão renovada):** busque o documento antigo com `cerebro_buscar` na empresa certa, pegue `substitui_sha256` e `substitui_caminho` do **mesmo** documento antigo e envie com `acao="substituir"` (se sha256 e caminho apontarem para vínculos diferentes, o servidor não altera o antigo).
 - **Confirmação:** informe à pessoa o estado devolvido pelo envio e confirme o destino final (ou eventual motivo de revisão) com `cerebro_envios`.
+- **Comentar documento já existente:** quando a pessoa pedir para anotar um documento que já está no cérebro, use `cerebro_comentar(empresa, sha256 ou caminho, texto)` (prefira `sha256` obtido em `cerebro_buscar` para evitar ambiguidade 409). Comentários só se acumulam. Sempre mostre à pessoa os campos `comentarios` e `nota_revisao` devolvidos em `cerebro_buscar` e `cerebro_provas` (use `cerebro_comentarios` para ver a lista completa quando `total > 3`).
 
 ## 5. Quando algo dá errado
 
