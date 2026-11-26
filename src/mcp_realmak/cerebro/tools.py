@@ -235,7 +235,7 @@ def explicar_erro_registros(exc: Exception, ferramenta: str, empresa: Empresa = 
 async def cerebro_buscar(
     query: Annotated[str, Field(description="A busca em linguagem natural. Use nomes, números e termos do documento.")],
     limit: Annotated[int | None, Field(ge=1, le=20, description="Máximo de trechos (padrão 8, teto 20).")] = None,
-    include_facts: Annotated[bool | None, Field(description="Se verdadeiro, anexa os fatos tipados relacionados à busca (atenção: fatos ainda não filtram por estado do documento).")] = None,
+    include_facts: Annotated[bool | None, Field(description="Se verdadeiro, anexa os fatos tipados relacionados à busca (seguem o mesmo filtro de incluir_historico; omitidos vão em historico_omitido.fatos).")] = None,
     os: Annotated[Sistema | None, Field(description=OS_DESC)] = None,
     empresa: Annotated[Empresa, Field(description=EMPRESA_DESC)] = "realmak",
     incluir_historico: Annotated[bool, Field(description="Padrão false (traz só documentos vigentes e devolve historico_omitido.aviso quando há versões anteriores/vencidas ocultas). Passe true só quando a pessoa pedir o histórico/versão antiga ou for preciso provar o que foi entregue numa licitação ou contrato.")] = False,
@@ -254,10 +254,12 @@ async def cerebro_fatos(
     cursor: Annotated[str | None, Field(description="Cursor da página seguinte, devolvido na resposta anterior.")] = None,
     os: Annotated[Sistema | None, Field(description=OS_DESC)] = None,
     empresa: Annotated[Empresa, Field(description=EMPRESA_DESC)] = "realmak",
+    incluir_historico: Annotated[bool, Field(description="Padrão false (omite fatos de documentos substituídos ou vencidos e traz historico_omitido.aviso). Passe true só quando a pessoa pedir versão antiga ou histórico.")] = False,
 ) -> str:
-    """Lista fatos registrados no cérebro, com status, confiança e janela de validade. Informação registrada não comprova validade documental nem atendimento a edital. Não gasta LLM. Pagina por cursor: quando a resposta trouxer 'cursor', há mais páginas."""
+    """Lista fatos registrados no cérebro, com status, confiança, estado_documento e janela de validade. Por padrão (incluir_historico=false) omite fatos de documentos substituídos ou vencidos e informa historico_omitido.aviso. Informação registrada não comprova validade documental nem atendimento a edital. Não gasta LLM. Pagina por cursor: quando a resposta trouxer 'cursor', há mais páginas."""
     return await executar(empresa, "facts", dim=dim, area=area, status=status, as_of=as_of,
-                          min_confidence=min_confidence, limit=limit, cursor=cursor, os=os)
+                          min_confidence=min_confidence, limit=limit, cursor=cursor, os=os,
+                          incluir_historico=incluir_historico)
 
 
 async def cerebro_esquema(
@@ -280,9 +282,10 @@ async def cerebro_provas(
     ids: Annotated[list[str], Field(max_length=200, description="Ids de registro devolvidos por cerebro_consulta (até 200). Use a mesma empresa da consulta.")],
     os: Annotated[Sistema | None, Field(description=OS_DESC)] = None,
     empresa: Annotated[Empresa, Field(description=EMPRESA_DESC)] = "realmak",
+    incluir_historico: Annotated[bool, Field(description="Padrão false (omite provas de documentos substituídos ou vencidos e traz historico_omitido.aviso). Passe true só quando a pessoa pedir versão antiga ou histórico.")] = False,
 ) -> str:
-    """Provas dos registros: para cada id devolvido por cerebro_consulta, o documento, a posição e o trecho literal de cada valor, com o arquivo original (original.file_path e original.link, válido por 30 minutos; sem ele, original.brain_link e original.brain_download_link). Não gasta LLM."""
-    return await executar(empresa, "provas", list(ids), os)
+    """Provas dos registros: para cada id devolvido por cerebro_consulta, o documento, a posição, estado_documento e o trecho literal de cada valor, com o arquivo original (original.file_path e original.link, válido por 30 minutos; sem ele, original.brain_link e original.brain_download_link). Por padrão (incluir_historico=false) omite provas de documentos substituídos ou vencidos e informa historico_omitido.aviso. Não gasta LLM."""
+    return await executar(empresa, "provas", list(ids), os, incluir_historico)
 
 
 def _nome_base(caminho: str) -> str:
@@ -442,11 +445,11 @@ INSTRUCOES = """Cérebros das empresas do grupo (Realmak, AForça, Nortfort, UNA
   - CND federal / conjunta -> "certidão negativa de débitos relativos aos tributos federais"
   - CRF / FGTS -> "certificado de regularidade do fgts"
   - CNDT / trabalhista -> "certidão negativa de débitos trabalhistas"
-- Documentos vigentes x substituídos/vencidos em cerebro_buscar:
-  - Responda sempre com o documento vigente (incluir_historico=false é o padrão). Quando a resposta trouxer `historico_omitido.aviso`, mencione que versões anteriores/vencidas não foram mostradas.
+- Documentos vigentes x substituídos/vencidos em cerebro_buscar, cerebro_fatos e cerebro_provas:
+  - Responda sempre com o documento vigente (incluir_historico=false é o padrão nas três ferramentas, inclusive para `include_facts` em `cerebro_buscar`). Quando a resposta trouxer `historico_omitido.aviso`, mencione que versões anteriores/vencidas não foram mostradas.
   - Só use `incluir_historico=true` e cite versões anteriores se a pessoa pedir ou se for preciso provar o que foi entregue numa licitação ou contrato.
-  - Cada trecho com `original.sha256` traz `estado_documento` (`vigente`, `substituido` ou `vencido`, `rotulo` e `substituido_por`). Ao citar um documento `substituido` (inclusive cópia em pasta de ata ou contrato), diga que há versão posterior — não diga que o documento estava vencido quando foi entregue.
-  - `cerebro_fatos` e `include_facts` ainda não filtram por estado do documento: confira o documento vigente em `cerebro_buscar` antes de afirmar vigência.
+  - Cada item com `original.sha256` traz `estado_documento` (`vigente`, `substituido` ou `vencido`, `rotulo` e `substituido_por`). Ao citar um documento `substituido` (inclusive cópia em pasta de ata ou contrato), diga que há versão posterior — não diga que o documento estava vencido quando foi entregue.
+  - `cerebro_consulta` (SQL) não filtra por estado do documento; somente `cerebro_provas` aplica o filtro.
 - Pergunta que precisa de todos os casos (contar, somar, listar): confira registros=true para a empresa
   em cerebro_empresas; cerebro_esquema uma vez por empresa, depois cerebro_consulta e cerebro_provas.
   A presença das ferramentas não garante registros para todas as empresas. Sem registros, informe que

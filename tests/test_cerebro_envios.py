@@ -280,3 +280,54 @@ async def test_cerebro_buscar_incluir_historico_e_estado_documento(monkeypatch, 
                 assert d_hist["hits"][1]["estado_documento"]["estado"] == "substituido"
                 assert d_hist["hits"][1]["estado_documento"]["substituido_por"] == "sha_novo"
 
+
+async def test_cerebro_fatos_e_provas_incluir_historico(monkeypatch, tmp_path):
+    token = _setup_env(monkeypatch, tmp_path)
+    app = build_app(load_settings())
+    with respx.mock(assert_all_called=False) as mock:
+        mock.get(f"{GALEED}/acesso").mock(
+            return_value=httpx.Response(200, json={"brain": "Realmak", "nivel": "total", "areas": ["*"], "registros": True})
+        )
+
+        def facts_handler(req: httpx.Request) -> httpx.Response:
+            vigente = {"id": "f1", "texto": "fato vigente", "estado_documento": {"estado": "vigente"}}
+            antigo = {"id": "f2", "texto": "fato antigo", "estado_documento": {"estado": "substituido", "rotulo": "versão anterior: há versão posterior deste documento"}}
+            if req.url.params.get("incluir_historico") == "true":
+                return httpx.Response(200, json={"facts": [vigente, antigo]})
+            return httpx.Response(
+                200,
+                json={"facts": [vigente], "historico_omitido": {"total": 1, "substituidos": 1, "vencidos": 0, "aviso": "1 fato de versão anterior não mostrado; use incluir_historico=true para ver."}},
+            )
+
+        def provas_handler(req: httpx.Request) -> httpx.Response:
+            body = json.loads(req.content)
+            vigente = {"id": "p1", "estado_documento": {"estado": "vigente"}}
+            antigo = {"id": "p2", "estado_documento": {"estado": "substituido", "rotulo": "versão anterior: há versão posterior deste documento"}}
+            if body.get("incluir_historico") is True:
+                return httpx.Response(200, json={"provas": [vigente, antigo]})
+            return httpx.Response(
+                200,
+                json={"provas": [vigente], "historico_omitido": {"total": 1, "substituidos": 1, "vencidos": 0, "aviso": "1 prova de versão anterior não mostrada; use incluir_historico=true para ver."}},
+            )
+
+        fac = mock.get(f"{GALEED}/facts").mock(side_effect=facts_handler)
+        pro = mock.post(f"{GALEED}/consulta/provas").mock(side_effect=provas_handler)
+        async with app.router.lifespan_context(app):
+            async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url=PUBLIC) as c:
+                rf_pad = json.loads((await call_tool(c, "cerebro_fatos", {"empresa": "realmak", "dim": "facts"}, token))["content"][0]["text"])
+                assert "incluir_historico" not in fac.calls[0].request.url.params
+                assert len(rf_pad["facts"]) == 1 and rf_pad["historico_omitido"]["total"] == 1
+
+                rf_hist = json.loads((await call_tool(c, "cerebro_fatos", {"empresa": "realmak", "dim": "facts", "incluir_historico": True}, token))["content"][0]["text"])
+                assert fac.calls[1].request.url.params.get("incluir_historico") == "true"
+                assert len(rf_hist["facts"]) == 2 and rf_hist["facts"][1]["estado_documento"]["estado"] == "substituido"
+
+                rp_pad = json.loads((await call_tool(c, "cerebro_provas", {"empresa": "realmak", "ids": ["p1", "p2"]}, token))["content"][0]["text"])
+                assert json.loads(pro.calls[0].request.content)["incluir_historico"] is False
+                assert len(rp_pad["provas"]) == 1 and rp_pad["historico_omitido"]["total"] == 1
+
+                rp_hist = json.loads((await call_tool(c, "cerebro_provas", {"empresa": "realmak", "ids": ["p1", "p2"], "incluir_historico": True}, token))["content"][0]["text"])
+                assert json.loads(pro.calls[1].request.content)["incluir_historico"] is True
+                assert len(rp_hist["provas"]) == 2 and rp_hist["provas"][1]["estado_documento"]["estado"] == "substituido"
+
+

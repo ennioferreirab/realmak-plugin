@@ -29,11 +29,15 @@ async def test_rotas_e_corpos():
     assert json.loads(ret.calls[1].request.content) == {"query": "q", "incluir_historico": True}
     await c.facts(dim="decisions", limit=10, area=None, cursor="")
     assert dict(fac.calls[0].request.url.params) == {"dim": "decisions", "limit": "10"}
+    await c.facts(dim="facts", incluir_historico=True)
+    assert dict(fac.calls[1].request.url.params) == {"dim": "facts", "incluir_historico": "true"}
     await c.esquema()
     await c.consulta("select 1", 100)
     assert json.loads(con.calls[0].request.content) == {"sql": "select 1", "limite": 100}
     await c.provas(["a", "b"])
     assert json.loads(pro.calls[0].request.content) == {"ids": ["a", "b"]}
+    await c.provas(["a"], incluir_historico=True)
+    assert json.loads(pro.calls[1].request.content) == {"ids": ["a"], "incluir_historico": True}
     assert esq.called
     for rota in (ret, fac, esq, con, pro):
         assert rota.calls[0].request.headers["authorization"] == "Bearer gld_live_k"
