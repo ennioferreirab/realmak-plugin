@@ -16,6 +16,7 @@ from ..compras.dadosabertos.schemas import Licitacao
 from ..compras.exceptions import HttpClientError
 from ..compras.pncp import client as pncp
 from ..config import load_settings
+from ..conlicitacao.errors import ConlicitacaoError
 from ..conlicitacao.format import link_licitacao
 from ..conlicitacao.tools import get_site_client
 from .client import OdooApiError, OdooClient
@@ -136,15 +137,45 @@ async def consultar_pncp(ref: tuple[str, int, int]) -> dict:
 def dados_pncp(item: dict) -> dict:
     unidade = item.get("unidadeOrgao") or {}
     orgao = item.get("orgaoEntidade") or {}
+    numero = str(item.get("numeroCompra") or "").strip()
+    ano = item.get("anoCompra")
+    edital = numero if (not ano or numero.endswith(f"/{ano}")) else f"{numero}/{ano}"
     return {
         "objeto": item.get("objetoCompra"), "orgao": orgao.get("razaoSocial"),
         "uasg": unidade.get("codigoUnidade"), "cidade": unidade.get("municipioNome"),
-        "uf": unidade.get("ufSigla"), "edital": f"{item['numeroCompra']}/{item['anoCompra']}",
+        "uf": unidade.get("ufSigla"), "edital": edital or None,
         "modalidade": item.get("modalidadeNome"),
         "processo": item.get("processo"), "situacao": item.get("situacaoCompraNome"),
         "abertura": item.get("dataAberturaProposta"), "prazo": item.get("dataEncerramentoProposta"),
         "valor_estimado": item.get("valorTotalEstimado"),
     }
+
+
+def dados_conlicitacao(item: dict) -> dict:
+    orgao_obj = item.get("public_body") if isinstance(item.get("public_body"), dict) else {}
+    valor = item.get("valor_estimado")
+    bruto: dict[str, Any] = {
+        "orgao": orgao_obj.get("nome") or (item.get("orgao") if isinstance(item.get("orgao"), str) else None),
+        "uasg": item.get("orgao_uasg"),
+        "cidade": item.get("orgao_cidade"),
+        "uf": item.get("orgao_estado"),
+        "edital": item.get("edital"),
+        "processo": item.get("processo"),
+        "objeto": item.get("objeto"),
+        "abertura": item.get("datahora_abertura"),
+        "prazo": item.get("datahora_prazo"),
+        "visita": item.get("datahora_visita"),
+        "retirada": item.get("datahora_retirada"),
+        "valor_estimado": valor if isinstance(valor, (int, float)) and valor > 0 else None,
+    }
+    return {k: v.strip() if isinstance(v, str) else v for k, v in bruto.items() if v not in (None, "") and (not isinstance(v, str) or v.strip())}
+
+
+async def consultar_conlicitacao(con_id: int) -> dict | None:
+    try:
+        return await get_site_client().obter_licitacao(con_id)
+    except ConlicitacaoError:
+        return None
 
 
 async def localizar_conlicitacao(dados: dict, data: date | None) -> int | None:
@@ -259,9 +290,11 @@ async def criar(
                 "licitacao": None, "fonte_url": link_licitacao(con_id), "tentativas": tentativas,
                 "proximos_passos": _proximos_passos("conlicitacao", somente_conferir=True),
             }
+        det_con = await consultar_conlicitacao(con_id)
+        dados_importar = {**dados_conlicitacao(det_con), **dados} if det_con else dados
         pedido_importar: dict[str, Any] = {
             **referencia,
-            **({"dados": dados} if dados else {}),
+            **({"dados": dados_importar} if dados_importar else {}),
             **({"empresa": empresa} if empresa else {}),
         }
         gravado = await odoo.chamar("importar", pedido_importar)
