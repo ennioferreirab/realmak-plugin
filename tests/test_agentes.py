@@ -37,7 +37,9 @@ def test_manifestos_e_contexto():
         assert (pasta / "AGENTS.md").is_file()
     analisador = ler_json(ANALISADOR / "agente.json")
     assert (analisador["tipo"], analisador["tier"]) == ("gestor", "T2")
-    assert "buscar_web" in analisador["ferramentas"]
+    assert {"buscar_web", "abrir_pagina", "baixar_documento", "preencher_card", "registrar_pendencia_coleta"} <= set(
+        analisador["ferramentas"]
+    )
     assert {f"cerebro_{acao}" for acao in ("empresas", "buscar", "fatos", "esquema", "consulta", "provas")} <= set(
         analisador["ferramentas"]
     )
@@ -51,6 +53,7 @@ def test_manifestos_e_contexto():
 def test_skills_unicas_e_frontmatter():
     locais = {p.parent.name for p in (ANALISADOR / "skills").glob("*/SKILL.md")}
     assert locais == {
+        "coletar-edital",
         "pasta-licitacao",
         "guia-leitura-edital",
         "analise-tecnica",
@@ -115,7 +118,13 @@ def test_fluxo_e_referencias():
                 assert Path(cmd[1].replace("{pasta_agente_def}", str(ANALISADOR))).is_file()
     assert set(saidas) >= {f"analise/{p.name}" for p in EXEMPLO.glob("*.json")}
     e0 = {i["id"]: i for i in etapas["E0"]["itens"]}
-    assert set(e0) == {"resumo", "mapa"}
+    assert set(e0) == {"coleta", "resumo", "mapa"}
+    coleta = e0["coleta"]
+    assert (coleta["modo"], coleta["skill"], coleta["tier"], coleta["saida"]) == (
+        "skill", "coletar-edital", "T2", "fontes/coleta.json",
+    )
+    assert e0["resumo"]["depende_de"] == ["coleta"]
+    assert e0["mapa"]["depende_de"] == ["coleta"]
     e1 = {i["id"]: i for i in etapas["E1"]["itens"]}
     assert set(e1) == {"edital", "triagem-cerebro"}
     triagem = e1["triagem-cerebro"]
@@ -159,7 +168,7 @@ def test_fluxo_e_referencias():
 def test_visao_fluxo_contrato_canvas():
     visao = ler_json(ANALISADOR / "visao.json")
     assert visao["versao"] == 1
-    assert visao["gerado_de"]["plugin_versao"] == "0.16.11"
+    assert visao["gerado_de"]["plugin_versao"] == "0.16.12"
     destinos_validos = {"proxima", "parar", "humano", "rerodar", "precos"}
     itens_por_id = {}
     for etapa in visao["etapas"]:

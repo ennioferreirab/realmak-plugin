@@ -10,6 +10,7 @@ O agente recomenda, com fonte, **se e a que preço disputar**; decisão e envio 
 
 | Necessidade | Skill ou artefato |
 |---|---|
+| Coletar documentos e campos mínimos faltantes no portal (E0) | [coletar-edital](skills/coletar-edital/SKILL.md) → `fontes/coleta.json` |
 | Ler a licitação e saber onde gravar | [pasta-licitacao](skills/pasta-licitacao/SKILL.md) |
 | Onde está cada informação no edital | [guia-leitura-edital](skills/guia-leitura-edital/SKILL.md) → `fontes/mapa_leitura.json` |
 | Análise geral do edital: atenção, prazos, habilitação exigida, declarações, proposta, impugnação, perguntas ao técnico, avisos | [analisar-edital](../../plugins/realmak/skills/analisar-edital/SKILL.md) (plugin) → `analise/edital.json` |
@@ -138,7 +139,7 @@ Cada skill do agente fica em `skills/<nome>/` com `SKILL.md` ([modelo](templates
 
 ## 7. Skills do realmak-plugin
 
-O daemon usa `skills/` para as cinco skills locais e `../../plugins/realmak/skills/` para as compartilhadas. Faça mudanças nas skills compartilhadas na árvore do plugin. A conversa manual e o agente usam os mesmos arquivos.
+O daemon usa `skills/` para as sete skills locais (`coletar-edital`, `pasta-licitacao`, `guia-leitura-edital`, `analise-tecnica`, `conferir-habilitacao`, `cotacao-fornecedor`, `score`) e `../../plugins/realmak/skills/` para as compartilhadas. Faça mudanças nas skills compartilhadas na árvore do plugin. A conversa manual e o agente usam os mesmos arquivos.
 
 | A skill pede | Aqui |
 |---|---|
