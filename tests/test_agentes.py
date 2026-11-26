@@ -159,7 +159,7 @@ def test_fluxo_e_referencias():
 def test_visao_fluxo_contrato_canvas():
     visao = ler_json(ANALISADOR / "visao.json")
     assert visao["versao"] == 1
-    assert visao["gerado_de"]["plugin_versao"] == "0.16.4"
+    assert visao["gerado_de"]["plugin_versao"] == "0.16.5"
     destinos_validos = {"proxima", "parar", "humano", "rerodar", "precos"}
     itens_por_id = {}
     for etapa in visao["etapas"]:
@@ -250,6 +250,8 @@ def test_contrato_do_card(arquivo, objetos, listas):
     if arquivo == "edital":
         assert "portal_sessao" in exemplo["cabecalho"]
         _validar_portal_sessao(exemplo["cabecalho"]["portal_sessao"])
+        assert "vigencia" in exemplo
+        _validar_vigencia(exemplo["vigencia"])
     if arquivo == "habilitacao":
         assert exemplo["mais_aderente"] in (*EMPRESAS, None)
         assert {e["empresa"] for e in exemplo["empresas"]} == set(EMPRESAS)
@@ -342,4 +344,70 @@ def test_contrato_portal_sessao_edital():
             "url": "javascript:alert(1)",
             "id_no_portal": "124137",
             "fonte": "Edital 2.3",
+        })
+
+
+def _validar_vigencia(vigencia):
+    if vigencia is None:
+        return
+    assert isinstance(vigencia, dict)
+    assert set(vigencia) == {"tipo", "meses", "prorrogavel_ate_meses", "conta_a_partir_de", "texto", "fonte"}
+    assert vigencia["tipo"] in {"contrato", "ata"}
+    for campo_int in ("meses", "prorrogavel_ate_meses"):
+        valor = vigencia[campo_int]
+        assert valor is None or (type(valor) is int and valor > 0)
+    conta = vigencia["conta_a_partir_de"]
+    assert conta is None or isinstance(conta, str)
+    assert isinstance(vigencia["texto"], str) and vigencia["texto"].strip()
+    assert isinstance(vigencia["fonte"], str) and vigencia["fonte"].strip()
+
+
+def test_contrato_vigencia_edital():
+    skill = (SKILLS / "analisar-edital/SKILL.md").read_text(encoding="utf-8")
+    for termo in ("vigencia", "prorrogavel_ate_meses", "conta_a_partir_de", "minuta de contrato"):
+        assert termo in skill
+
+    _validar_vigencia({
+        "tipo": "contrato",
+        "meses": 12,
+        "prorrogavel_ate_meses": 60,
+        "conta_a_partir_de": "assinatura",
+        "texto": "Vigência de 12 meses contados da assinatura, prorrogável até 60 meses.",
+        "fonte": "TR 5.1 (p. 14)",
+    })
+    _validar_vigencia({
+        "tipo": "ata",
+        "meses": 12,
+        "prorrogavel_ate_meses": 24,
+        "conta_a_partir_de": "publicação do extrato",
+        "texto": "Ata válida por 1 ano, prorrogável por igual período.",
+        "fonte": "Edital 12.1 (p. 19)",
+    })
+    _validar_vigencia({
+        "tipo": "contrato",
+        "meses": None,
+        "prorrogavel_ate_meses": None,
+        "conta_a_partir_de": "ordem de serviço",
+        "texto": "Prazo de execução e vigência de 150 dias corridos a partir da ordem de serviço.",
+        "fonte": "Minuta de Contrato 3.1 (p. 42)",
+    })
+    _validar_vigencia(None)
+
+    with pytest.raises(AssertionError):
+        _validar_vigencia({
+            "tipo": "outro",
+            "meses": 12,
+            "prorrogavel_ate_meses": None,
+            "conta_a_partir_de": "assinatura",
+            "texto": "12 meses",
+            "fonte": "TR 5.1",
+        })
+    with pytest.raises(AssertionError):
+        _validar_vigencia({
+            "tipo": "contrato",
+            "meses": "12",
+            "prorrogavel_ate_meses": None,
+            "conta_a_partir_de": "assinatura",
+            "texto": "12 meses",
+            "fonte": "TR 5.1",
         })
