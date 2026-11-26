@@ -53,8 +53,19 @@ class OdooClient:
         corpo = {k: v for k, v in (params or {}).items() if v is not None}
         return await self._pedir("POST", f"/{ferramenta}", json=corpo)
 
-    async def enviar(self, licitacao_id: int, nome: str, conteudo: bytes, descricao: str | None = None) -> Any:
-        query = {"nome": nome, **({"descricao": descricao} if descricao else {})}
+    async def enviar(
+        self,
+        licitacao_id: int,
+        nome: str,
+        conteudo: bytes,
+        descricao: str | None = None,
+        destino: str = "saida_ia",
+    ) -> Any:
+        query = {
+            "nome": nome,
+            **({"descricao": descricao} if descricao else {}),
+            **({"destino": destino} if destino and destino != "saida_ia" else {}),
+        }
         return await self._pedir(
             "POST", f"/arquivo/{licitacao_id}", params=query, content=conteudo,
             headers={"Content-Type": "application/octet-stream"},

@@ -422,7 +422,7 @@ def rotas(
             return _erro(409, "Este link de envio já foi usado. Peça outro com licitacao_enviar_arquivo.")
         try:
             resultado = await OdooClient(settings, dados["e"], transport).enviar(
-                dados["l"], dados["n"], b"".join(partes), dados.get("s"))
+                dados["l"], dados["n"], b"".join(partes), dados.get("s"), dados.get("d", "saida_ia"))
         except OdooApiError as exc:
             return _erro(exc.status or 502, str(exc))
         log.info("Arquivo enviado pelo link para a licitação %s", dados["l"])
