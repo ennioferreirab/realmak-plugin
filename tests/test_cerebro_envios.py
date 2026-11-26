@@ -215,6 +215,8 @@ def test_instrucoes_servidor_refletem_cerebro_enviar():
     assert "há versão posterior" in SERVER_INSTRUCOES
     assert "substitui_sha256` e `substitui_caminho` do MESMO documento antigo" in SERVER_INSTRUCOES
     assert "comprovante de inscrição e de situação cadastral" in SERVER_INSTRUCOES
+    assert "cerebro_comentar" in SERVER_INSTRUCOES
+    assert "nota_revisao" in SERVER_INSTRUCOES
 
 
 async def test_cerebro_buscar_incluir_historico_e_estado_documento(monkeypatch, tmp_path):
@@ -329,5 +331,82 @@ async def test_cerebro_fatos_e_provas_incluir_historico(monkeypatch, tmp_path):
                 rp_hist = json.loads((await call_tool(c, "cerebro_provas", {"empresa": "realmak", "ids": ["p1", "p2"], "incluir_historico": True}, token))["content"][0]["text"])
                 assert json.loads(pro.calls[1].request.content)["incluir_historico"] is True
                 assert len(rp_hist["provas"]) == 2 and rp_hist["provas"][1]["estado_documento"]["estado"] == "substituido"
+
+
+async def test_cerebro_comentar_e_comentarios(monkeypatch, tmp_path):
+    token = _setup_env(monkeypatch, tmp_path)
+    app = build_app(load_settings())
+    sha_doc = "7f930ceba066461cdcecbdb2bb55f96fd8bb0c388e7769ce028098ba41f62053"
+    with respx.mock(assert_all_called=False) as mock:
+        mock.get(f"{GALEED}/acesso").mock(
+            return_value=httpx.Response(200, json={"brain": "Realmak", "nivel": "total", "areas": ["*"], "registros": True})
+        )
+        post_com = mock.post(f"{GALEED}/documentos/comentarios").mock(
+            side_effect=[
+                httpx.Response(
+                    201,
+                    json={
+                        "id": "com-1",
+                        "texto": "Razão social antiga EIRELI.",
+                        "quem": EMAIL,
+                        "origem": "mcp",
+                        "criado_em": "2026-11-26T16:20:00Z",
+                        "sha256": sha_doc,
+                        "caminho": "realmak\\habilitacao\\certidoes\\vigentes\\doc.pdf",
+                    },
+                ),
+                httpx.Response(409, json={"error": "nome ambíguo"}),
+            ]
+        )
+        get_com = mock.get(f"{GALEED}/documentos/comentarios").mock(
+            return_value=httpx.Response(
+                200,
+                json={
+                    "sha256": sha_doc,
+                    "caminho": "realmak\\habilitacao\\certidoes\\vigentes\\doc.pdf",
+                    "comentarios": [{"id": "com-1", "texto": "Razão social antiga EIRELI.", "quem": EMAIL, "origem": "mcp", "criado_em": "2026-11-26T16:20:00Z"}],
+                    "nota_revisao": "Conferido por Ennio",
+                },
+            )
+        )
+        mock.post(f"{GALEED}/retrieve").mock(
+            return_value=httpx.Response(
+                200,
+                json={
+                    "hits": [
+                        {
+                            "slug": "doc",
+                            "original": {"sha256": sha_doc, "file_path": r"E:\acervo-2.0\realmak\doc.pdf"},
+                            "comentarios": {"total": 1, "ultimos": [{"texto": "Razão social antiga EIRELI.", "quem": EMAIL, "origem": "mcp", "criado_em": "2026-11-26T16:20:00Z"}]},
+                            "nota_revisao": "Conferido por Ennio",
+                        }
+                    ]
+                },
+            )
+        )
+        async with app.router.lifespan_context(app):
+            async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url=PUBLIC) as c:
+                r1 = await call_tool(c, "cerebro_comentar", {"empresa": "realmak", "sha256": sha_doc, "texto": "Razão social antiga EIRELI."}, token)
+                assert not r1.get("isError"), r1
+                d1 = json.loads(r1["content"][0]["text"])
+                assert d1["id"] == "com-1" and d1["sha256"] == sha_doc
+                assert post_com.calls[0].request.headers["x-galeed-act-as"] == EMAIL
+
+                r_amb = await call_tool(c, "cerebro_comentar", {"empresa": "realmak", "caminho": "duplicado.pdf", "texto": "oi"}, token)
+                assert r_amb.get("isError") is True and "409" in r_amb["content"][0]["text"]
+
+                r_sem_doc = await call_tool(c, "cerebro_comentar", {"empresa": "realmak", "texto": "sem doc"}, token)
+                assert r_sem_doc.get("isError") is True
+
+                r_list = await call_tool(c, "cerebro_comentarios", {"empresa": "realmak", "sha256": sha_doc}, token)
+                assert not r_list.get("isError"), r_list
+                d_list = json.loads(r_list["content"][0]["text"])
+                assert d_list["nota_revisao"] == "Conferido por Ennio" and len(d_list["comentarios"]) == 1
+                assert get_com.called
+
+                r_busc = json.loads((await call_tool(c, "cerebro_buscar", {"empresa": "realmak", "query": "doc"}, token))["content"][0]["text"])
+                assert r_busc["hits"][0]["comentarios"]["total"] == 1
+                assert r_busc["hits"][0]["nota_revisao"] == "Conferido por Ennio"
+
 
 

@@ -38,6 +38,12 @@ async def test_rotas_e_corpos():
     assert json.loads(pro.calls[0].request.content) == {"ids": ["a", "b"]}
     await c.provas(["a"], incluir_historico=True)
     assert json.loads(pro.calls[1].request.content) == {"ids": ["a"], "incluir_historico": True}
+    com_post = respx.post(f"{URL}/documentos/comentarios").mock(return_value=httpx.Response(201, json={"id": "c1"}))
+    com_get = respx.get(f"{URL}/documentos/comentarios").mock(return_value=httpx.Response(200, json={"comentarios": []}))
+    await c.comentar("anotação", sha256="a" * 64)
+    assert json.loads(com_post.calls[0].request.content) == {"texto": "anotação", "sha256": "a" * 64}
+    await c.comentarios(caminho="doc.pdf")
+    assert dict(com_get.calls[0].request.url.params) == {"caminho": "doc.pdf"}
     assert esq.called
     for rota in (ret, fac, esq, con, pro):
         assert rota.calls[0].request.headers["authorization"] == "Bearer gld_live_k"
