@@ -188,7 +188,7 @@ def test_fluxo_e_referencias():
 def test_visao_fluxo_contrato_canvas():
     visao = ler_json(ANALISADOR / "visao.json")
     assert visao["versao"] == 1
-    assert visao["gerado_de"]["plugin_versao"] == "0.16.32"
+    assert visao["gerado_de"]["plugin_versao"] == "0.16.33"
     destinos_validos = {"proxima", "parar", "humano", "rerodar", "precos"}
     itens_por_id = {}
     for etapa in visao["etapas"]:
@@ -321,7 +321,7 @@ def test_contrato_do_card(arquivo, objetos, listas):
 def test_montagem_proposta_e_assinaturas():
     visao = ler_json(AGENTES / "montagem-proposta/visao.json")
     assert visao["agente"] == "montagem-proposta"
-    assert visao["gerado_de"]["plugin_versao"] == "0.16.32"
+    assert visao["gerado_de"]["plugin_versao"] == "0.16.33"
     for rel in (
         "plugins/realmak/skills/redigir-declaracoes/SKILL.md",
         "plugins/realmak/skills/montar-documentacao-disputa/SKILL.md",
@@ -331,7 +331,8 @@ def test_montagem_proposta_e_assinaturas():
         assert "disputa_adicionar" in texto and "assinaturas" in texto
     conferir = (ANALISADOR / "skills/conferir-habilitacao/SKILL.md").read_text(encoding="utf-8")
     assert "assinatura_motivo" in conferir and "assinaturas_pdf.py" in conferir
-    assert "MINUTA" in conferir and "INDICE DE ENVIO" in conferir
+    assert "MINUTA" in conferir and "indice-envio.json" in conferir
+    assert "etapa_envio" in conferir and "ordem_edital" in conferir and "item_edital" in conferir
     assert "bloqueia" in conferir and "momento" in conferir and "risco_inabilitacao" in conferir
     assert "motivo_bloqueio" in conferir and "conferencia" in conferir
     for rel in (
@@ -340,6 +341,7 @@ def test_montagem_proposta_e_assinaturas():
     ):
         texto = (RAIZ / rel).read_text(encoding="utf-8")
         assert "pendente: true" in texto and "motivo" in texto and "indice-envio.json" in texto
+        assert "etapa_envio" in texto and "ordem_edital" in texto and "item_edital" in texto and "nao_enviar" in texto
         assert "bloqueia" in texto and "momento" in texto and "risco_inabilitacao" in texto
         assert "motivo_bloqueio" in texto and "como_assinar" in texto
         assert "IA/INTERMEDIÁRIOS/montagem-proposta/" in texto and "Entregas da IA" in texto
