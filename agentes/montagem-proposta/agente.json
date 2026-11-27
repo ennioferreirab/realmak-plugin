@@ -8,6 +8,8 @@
     "dados_empresa",
     "disputa_documentos",
     "disputa_adicionar",
+    "documentos_recorrentes",
+    "registrar_recorrente",
     "cerebro_empresas",
     "cerebro_buscar",
     "cerebro_fatos",

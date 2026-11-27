@@ -35,7 +35,7 @@ Códigos de ordem:
 
 Só depois de fechar a lista de exigências, formato e regras de envio (passos 1 e 2), cheque cada documento nesta ordem:
 
-1. **Reutilizar recorrente vigente:** se a empresa já tem documento recorrente assinado e vigente na data da sessão (certidões, ato constitutivo, CREA PJ, balanço, declaração genérica), reutilize-o. Procure na ordem:
+1. **Reutilizar recorrente vigente:** chame primeiro `documentos_recorrentes(empresa)` para listar os recorrentes do Cérebro (`cnd_federal`, `cnd_estadual`, `cnd_municipal`, `fgts`, `cndt`, `falencia`, `ato_constitutivo`, `crea_pj`, `balanco`, `declaracao_generica`). Se o documento recorrente estiver assinado e vigente na data da sessão, reutilize-o copiando para a disputa com `disputa_adicionar(..., sha256=...)`. Complemente na ordem:
    - **Prova já indicada pela análise** (`prova` da exigência, documentos encontrados pela IA em Documentos para disputa);
    - **Cérebro da empresa:** `cerebro_buscar` e `cerebro_provas` (prefira o mais recente e vigente);
    - **Pasta da licitação e acervo no Drive** (`/acervo-drive`, somente leitura).
@@ -52,11 +52,11 @@ Não use documento de outra empresa do grupo. Não altere originais: o pacote é
 
 ## 4. Gerar o que precisa ser redigido
 
-- **Dados da empresa faltando (`cadastro_pendencias` em `dados_empresa`):** se faltar dado cadastral necessário (por exemplo, conta bancária da NortFort ou da UNA), **não invente e não copie de documento antigo**. Crie a pendência no "a fazer" `"Cadastrar <campo> da <empresa>"` (ex.: `"Cadastrar conta bancária da NortFort"`) e deixe o documento afetado (ex.: proposta) marcado como **pendente** nesse ponto.
+- **Dados da empresa faltando (`faltando` / `cadastro_pendencias` em `dados_empresa`):** se faltar dado cadastral necessário (por exemplo, conta bancária da NortFort ou da UNA), **não invente e não copie de documento antigo**. O CRM já mostra o item de `faltando` no card e na empresa; deixe o documento afetado (ex.: proposta) marcado como **pendente** nesse ponto e cite o item faltante no resumo.
 - **Declarações:** use a skill `redigir-declaracoes`, com os dados e a assinatura de `dados_empresa`. Ela produz um DOCX/PDF com uma declaração por página. Para o pacote, separe em um PDF por declaração quando o edital pedir arquivos separados; senão, um PDF "Declarações".
 - **Proposta:** preencha o modelo do anexo do edital (ou o padrão da casa, como no exemplo da Nortfort PE 85/2026) com os valores da precificação aprovada do card. Valor e lote **só** da precificação aprovada ou de instrução humana; sem isso, pendência.
-- **Signatário sem assinatura cadastrada** (RT, contador, outro profissional): o documento sai com a assinatura da empresa já aplicada (quando aplicável) e a linha dele em branco. Declare todos os signatários em `assinaturas: [{nome, papel, assinado: bool, forma: "modelo"|"retornado"}]` (representante cadastrado: `assinado: true, forma: "modelo"`; terceiro sem assinatura: `assinado: false, forma: "modelo"`). Ele não conta como Confirmado: fica **"Aguardando assinatura de <nome>"** e aparece no índice com as assinaturas feitas e as que faltam.
-- **Registrar recorrente (passo condicionado à ferramenta):** quando um documento gerado ou reemitido servir para outras licitações, registre-o como recorrente da empresa com sua vigência assim que a ferramenta de documentos recorrentes estiver disponível no daemon.
+- **Signatário sem assinatura cadastrada** (RT, contador, outro profissional): o documento sai com a assinatura da empresa já aplicada (quando aplicável) e a linha dele em branco. Envie obrigatoriamente `assinaturas: [{nome, papel, assinado: bool, forma: "modelo"|"retornado"}]` no `disputa_adicionar` (representante cadastrado: `assinado: true, forma: "modelo"`; terceiro sem assinatura: `assinado: false, forma: "modelo"`). Ele não conta como Confirmado: fica **"Aguardando assinatura de <nome>"** e aparece no índice com as assinaturas feitas e as que faltam.
+- **Registrar recorrente:** quando um documento gerado ou reemitido servir para outras licitações, chame `registrar_recorrente(empresa, tipo, arquivo, nome?, validade?, substitui_sha256?)` para enviá-lo ao Cérebro da empresa.
 
 ## 5. Montar o pacote
 
