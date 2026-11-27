@@ -28,9 +28,11 @@ Uma linha por documento a enviar, na ordem do edital:
 - **Check-list "A fazer" do card:** item marcado e anotação, por exemplo "RT: Rolando". Anotação humana prevalece sobre a sugestão da análise.
 
 Categorias por etapa (`etapa_envio`) e ordem (`ordem_edital: 1..999`):
-- **`"sessao"` (Para participar da sessão):** somente o que a plataforma prepara ou confere — documento exigido junto com a proposta inicial, garantia de proposta, vistoria obrigatória, amostra, SICAF ativo (quando houver consulta) ou valor aprovado na precificação quando o edital pede proposta anexada. **Nunca** crie item ou aviso para passo manual no portal (cadastrar proposta, marcar declarações no portal, clicar em enviar).
+- **`"sessao"` (Para participar da sessão):** somente o que a plataforma prepara ou confere — documento exigido junto com a proposta inicial, garantia de proposta, vistoria obrigatória, amostra, SICAF ativo (quando houver consulta) ou valor aprovado na precificação quando o edital pede proposta anexada.
 - **`"proposta"` (Proposta):** a proposta completa que o edital pede após o lance, um item por documento: proposta no modelo do edital, planilha de composição de custos, descrição detalhada dos serviços, regime de tributação, declarações que o edital exige com a proposta (por exemplo, sustentabilidade) e procuração, quando houver procurador. Veja a seção 4.1. A proposta inicial do portal (valor e declarações) continua em `"sessao"`.
 - **`"habilitacao"` (Para a habilitação):** tudo o que se anexa após a convocação para habilitar a empresa, na ordem do edital (`ordem_edital: 1, 2, 3…`): habilitação jurídica → fiscal → econômico-financeira → técnica → declarações de habilitação. A proposta não entra aqui.
+
+**Passo manual no portal nunca vira exigência, item nem aviso, em nenhuma etapa (sessão, proposta, habilitação):** clicar, marcar ou cadastrar no portal (declarações do sistema, cadastro da proposta, envio pelo "Enviar anexo") fica fora; só entram documentos que a plataforma prepara ou confere.
 
 **Sem códigos internos para o usuário:** nunca use `H-xx`, `P-xx` ou `00 -` no nome dos arquivos, nas instruções, nos motivos de falta ou no resumo. Use nomes legíveis (ex.: `Certidão de falência.pdf`, `Declaração de indicação do RT.pdf`); a ordem na tela e no ZIP vem de `ordem_edital`, não de prefixo.
 
