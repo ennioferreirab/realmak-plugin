@@ -28,7 +28,7 @@ Uma linha por documento a enviar, na ordem do edital:
 - **Check-list "A fazer" do card:** item marcado e anotação, por exemplo "RT: Rolando". Anotação humana prevalece sobre a sugestão da análise.
 
 Categorias por etapa (`etapa_envio`) e ordem (`ordem_edital: 1..999`):
-- **`"sessao"` (Para participar da sessão):** proposta inicial com valor cadastrada no portal, declarações do cadastro, SICAF ativo, vistoria ou garantia quando exigidas antes da sessão.
+- **`"sessao"` (Para participar da sessão):** somente o que a plataforma prepara ou confere — documento exigido junto com a proposta inicial, garantia de proposta, vistoria obrigatória, amostra, SICAF ativo (quando houver consulta) ou valor aprovado na precificação quando o edital pede proposta anexada. **Nunca** crie item ou aviso para passo manual no portal (cadastrar proposta, marcar declarações no portal, clicar em enviar).
 - **`"habilitacao"` (Para a habilitação):** tudo o que se anexa após a convocação, na ordem do edital (`ordem_edital: 1, 2, 3…`), começando pela **proposta ajustada ao lance** (`ordem_edital: 1`), seguida de habilitação jurídica → fiscal → econômico-financeira → técnica → declarações.
 
 **Sem códigos internos para o usuário:** nunca use `H-xx`, `P-xx` ou `00 -` no nome dos arquivos, nas instruções, nos motivos de falta ou no resumo. Use nomes legíveis (ex.: `Certidão de falência.pdf`, `Declaração de indicação do RT.pdf`); a ordem na tela e no ZIP vem de `ordem_edital`, não de prefixo.

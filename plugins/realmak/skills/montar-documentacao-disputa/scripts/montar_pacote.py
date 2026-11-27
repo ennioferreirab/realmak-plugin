@@ -155,7 +155,8 @@ def montar(plano: dict) -> dict:
                     linha.update(status="pendente", obs=f"não montado: {exc}")
                     avisos.append(f"{nome_limpo}: {exc}")
                 else:
-                    escritor.compress_identical_objects()
+                    if hasattr(escritor, "compress_identical_objects"):
+                        escritor.compress_identical_objects()
                     candidato = f"{nome_limpo}.pdf"
                     sufixo = 2
                     while candidato.lower() in nomes_usados:

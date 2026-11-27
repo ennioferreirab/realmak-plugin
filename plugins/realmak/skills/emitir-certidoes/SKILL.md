@@ -34,7 +34,7 @@ python3 /plugin-realmak/skills/emitir-certidoes/scripts/emitir_certidao.py \
 ```
 
    - No TJDFT, o script **reaproveita certidão vigente por padrão** (`certidao_existente: true`), sem forçar nova emissão. Só passe `--recriar` se a certidão existente vencer antes da sessão pública.
-2. **Emissor marcado como `exige captcha` ou `exige login`:** **não tente contornar**. Retorne imediatamente a pendência com o link oficial direto e a instrução objetiva para uma pessoa emitir e subir na pasta da disputa.
+2. **Emissor marcado como `exige captcha` ou `exige login`:** **não tente contornar** e **não gere aviso nem explicação de que o agente não conseguiu**. O "a fazer" com o link oficial direto só deve aparecer quando a certidão for exigida pelo edital e estiver faltando ou vencida.
 3. **Emissor ainda não listado em `references/emissores.md` (descoberta genérica):**
    - Baixe a página oficial de emissão de certidões do órgão via Python (`urllib`) ou `abrir_pagina`.
    - **Verificação obrigatória de bloqueio:** se a página ou seus scripts tiverem `recaptcha`, `hcaptcha`, `turnstile`, `captcha`, desafio anti-bot/WAF ou exigirem `login`/`gov.br`/certificado digital, **pare imediatamente** e registre a pendência para pessoa com o link direto.
