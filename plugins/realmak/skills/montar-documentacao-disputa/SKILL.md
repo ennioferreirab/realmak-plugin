@@ -5,7 +5,7 @@ description: Monta o pacote de envio de uma licitação na pasta DOCUMENTOS PARA
 
 # Montar a documentação da disputa
 
-Objetivo: deixar em **DOCUMENTOS PARA DISPUTA** tudo o que a empresa vai anexar no portal, pronto para subir. É um arquivo por exigência, no formato e na ordem do edital, mais o `00 - INDICE DE ENVIO`, que diz o que está pronto e o que falta. Uma pessoa confere antes do envio; o agente **não envia nada ao portal**.
+Objetivo: deixar em **DOCUMENTOS PARA DISPUTA** tudo o que a empresa vai anexar no portal, pronto para subir, com **nomes legíveis** (sem códigos internos como `H-01` ou `P-01`), organizado nas duas etapas de envio (**Para participar da sessão** e **Para a habilitação**) na ordem do edital (`ordem_edital`). Uma pessoa confere antes do envio; o agente **não envia nada ao portal**.
 
 ## 1. Regras de envio do edital
 
@@ -27,9 +27,11 @@ Uma linha por documento a enviar, na ordem do edital:
 - **Proposta:** parta do modelo de proposta (anexo) e dos documentos que a acompanham.
 - **Check-list "A fazer" do card:** item marcado e anotação, por exemplo "RT: Rolando". Anotação humana prevalece sobre a sugestão da análise.
 
-Códigos de ordem:
-- `P-01…`: proposta e anexos da proposta.
-- `H-01…`: habilitação, na ordem do edital (jurídica → fiscal → econômico-financeira → técnica → declarações).
+Categorias por etapa (`etapa_envio`) e ordem (`ordem_edital: 1..999`):
+- **`"sessao"` (Para participar da sessão):** proposta inicial com valor cadastrada no portal, declarações do cadastro, SICAF ativo, vistoria ou garantia quando exigidas antes da sessão.
+- **`"habilitacao"` (Para a habilitação):** tudo o que se anexa após a convocação, na ordem do edital (`ordem_edital: 1, 2, 3…`), começando pela **proposta ajustada ao lance** (`ordem_edital: 1`), seguida de habilitação jurídica → fiscal → econômico-financeira → técnica → declarações.
+
+**Sem códigos internos para o usuário:** nunca use `H-xx`, `P-xx` ou `00 -` no nome dos arquivos, nas instruções, nos motivos de falta ou no resumo. Use nomes legíveis (ex.: `Certidão de falência.pdf`, `Declaração de indicação do RT.pdf`); a ordem na tela e no ZIP vem de `ordem_edital`, não de prefixo.
 
 ## 3. Checar cada documento (reutilizar → recriar → gerar)
 
@@ -56,7 +58,7 @@ Não use documento de outra empresa do grupo. Não altere originais: o pacote é
 - **Declarações:** use a skill `redigir-declaracoes`, com os dados e a assinatura de `dados_empresa`. Ela produz um DOCX/PDF com uma declaração por página. Para o pacote, separe em um PDF por declaração quando o edital pedir arquivos separados; senão, um PDF "Declarações".
 - **Proposta:** preencha o modelo do anexo do edital (ou o padrão da casa, como no exemplo da Nortfort PE 85/2026) com os valores da precificação aprovada do card. Valor e lote **só** da precificação aprovada ou de instrução humana; sem isso, pendência.
 - **Signatário sem assinatura cadastrada** (RT, contador, outro profissional): o documento sai com a assinatura da empresa já aplicada (quando aplicável) e a linha dele em branco. Envie obrigatoriamente `assinaturas: [{nome, papel, pagina, local, como_assinar, assinado: bool, forma: "modelo"|"retornado"}]` no `disputa_adicionar` (representante cadastrado: `assinado: true, forma: "modelo", como_assinar: "modelo do cadastro"`; terceiro sem assinatura: `assinado: false, forma: "modelo"`, com `pagina`, `local` ex. `"p. 1, linha 'Responsável técnico indicado'"` e `como_assinar` ex. `"gov.br ou ICP-Brasil"` ou `"à mão e escaneado em PDF"`). Ele não conta como Confirmado: fica **"Aguardando assinatura de <nome>"** e aparece no índice com página, local, como assinar, feitas e pendentes.
-- **Classificação de bloqueio (`CONTRATO.md`, fonte única):** para exigências de habilitação (`H-xx`), **herde** `bloqueia`, `momento`, `risco_inabilitacao` e `motivo_bloqueio` de `habilitacao.json`; classifique apenas os itens `P-xx` (proposta inicial sem preço obrigatório → `bloqueia: true`; proposta recomposta pós-lance → `bloqueia: false`, `momento: "ate_convocacao"`). Passe os 4 campos em `plano.json` / `indice-envio.json` e em `disputa_adicionar`. `motivo_bloqueio` começa sempre pelo momento (`"Antes da sessão —"`, `"Até 2 h após a convocação —"`, `"Em diligência —"`, `"Orientação —"`, `"Antes do contrato —"`) e cita a cláusula.
+- **Classificação de bloqueio (`CONTRATO.md`, fonte única):** para exigências de habilitação, **herde** `bloqueia`, `momento`, `risco_inabilitacao` e `motivo_bloqueio` de `habilitacao.json`; classifique os itens de proposta (proposta inicial sem preço obrigatório → `bloqueia: true`, `etapa_envio: "sessao"`; proposta ajustada pós-lance → `bloqueia: false`, `momento: "ate_convocacao"`, `etapa_envio: "habilitacao"`, `ordem_edital: 1`). Passe os campos em `plano.json` / `indice-envio.json` e em `disputa_adicionar`. `motivo_bloqueio` começa sempre pelo momento (`"Antes da sessão —"`, `"Até 2 h após a convocação —"`, `"Em diligência —"`, `"Orientação —"`, `"Antes do contrato —"`), cita a cláusula e nunca usa códigos internos (`H-xx`, `P-xx`).
 - **Sem duplicar ações:** nunca repita a mesma ação em dois itens. Use o **rótulo exato** da exigência de `habilitacao.json` em `exigencia` quando vários arquivos atenderem a mesma ação; só crie dois itens quando forem ações distintas com conclusão própria (ex.: assinar declaração de indicação do RT × comprovar vínculo do RT).
 - **Registrar recorrente:** quando um documento gerado ou reemitido servir para outras licitações, chame `registrar_recorrente(empresa, tipo, arquivo, nome?, validade?, substitui_sha256?)` para enviá-lo ao Cérebro da empresa.
 
@@ -71,28 +73,31 @@ python3 scripts/montar_pacote.py plano.json
 O script:
 - converte DOC/DOCX/XLSX/imagens com o LibreOffice;
 - junta numa só peça as várias fontes de uma exigência (por exemplo, contrato social mais alterações);
-- nomeia `H-03 - Certidão de falência.pdf`;
+- gera arquivos com **nome legível** sem prefixo interno (ex.: `Certidão de falência.pdf`, nunca `H-03 - ...`) e ordena por `etapa_envio` e `ordem_edital`;
 - avisa sobre arquivos acima do `limite_mb` do portal;
-- gera o `00 - INDICE DE ENVIO` com ordem, documento, item do edital, arquivo, assinaturas (feitas e pendentes, com página, local e como assinar) e situação;
-- quando `indice_json` for informado no `plano.json` (use `agents/montagem-proposta/indice-envio.json`, na área do agente no card — **nunca** em `DOCUMENTOS PARA DISPUTA`), grava o índice estruturado `{"itens": [{"codigo", "situacao": "OK"|"PENDENTE", "motivo", "bloqueia", "momento", "risco_inabilitacao", "motivo_bloqueio"}]}` lido diretamente pelo Odoo na checagem.
+- **não gera** `00 - INDICE DE ENVIO.pdf` em `DOCUMENTOS PARA DISPUTA` (o índice em PDF deixou de entrar no pacote);
+- quando `indice_json` for informado no `plano.json` (use `agents/montagem-proposta/indice-envio.json`, na área do agente no card — **nunca** em `DOCUMENTOS PARA DISPUTA`), grava o índice estruturado `{"itens": [{"etapa_envio", "ordem_edital", "item_edital", "exigencia", "arquivo", "situacao": "OK"|"PENDENTE", "motivo", "nao_enviar?", "bloqueia", "momento", "risco_inabilitacao", "motivo_bloqueio"}]}` lido diretamente pelo Odoo na checagem.
 
 Use `saida` em diretório temporário (por exemplo, `/tmp/pacote-<id>`) ou remova as cópias dos PDFs da pasta da tarefa depois de chamar `disputa_adicionar`, para não duplicar documentos de disputa fora de **DOCUMENTOS PARA DISPUTA**. Arquivos de trabalho (`plano.json`, `spec*.json`, `.md`, logs e `agents/montagem-proposta/indice-envio.json`) são **intermediários**: vão para `IA/INTERMEDIÁRIOS/montagem-proposta/` e **não** aparecem em `"Entregas da IA"`.
 
-Marque `status: "pendente"` com `obs`, `bloqueia`, `momento`, `risco_inabilitacao` e `motivo_bloqueio` em toda exigência sem documento, vencida, sem assinatura ou com dúvida. Se algum item tiver signatário com `assinado: false`, o script força `status: "pendente"` automaticamente.
+Marque `status: "pendente"` com `obs` em linguagem simples, `etapa_envio`, `ordem_edital`, `item_edital`, `bloqueia`, `momento`, `risco_inabilitacao` e `motivo_bloqueio` em toda exigência sem documento, vencida, sem assinatura ou com dúvida. Se algum item tiver signatário com `assinado: false`, o script força `status: "pendente"` automaticamente.
 
 ## 6. Entregar em DOCUMENTOS PARA DISPUTA
 
-Grave cada arquivo do pacote com a ferramenta `disputa_adicionar(nome, arquivo? | sha256?, exigencia?, substituir?, empresa?, assinaturas?, pendente?, motivo?, bloqueia?, momento?, risco_inabilitacao?, motivo_bloqueio?)`, informando o rótulo exato da exigência de `habilitacao.json`, a classificação de bloqueio (herdada de `habilitacao.json` nos `H-xx`; definida nos `P-xx`) e a lista `assinaturas` completa (`nome`, `papel`, `pagina`, `local`, `como_assinar`, `assinado`, `forma`) de todo documento gerado.
+Grave cada arquivo do pacote com a ferramenta `disputa_adicionar(nome, arquivo? | sha256?, exigencia?, substituir?, empresa?, assinaturas?, pendente?, motivo?, etapa_envio?, ordem_edital?, item_edital?, nao_enviar?, bloqueia?, momento?, risco_inabilitacao?, motivo_bloqueio?)`, informando:
+- `nome` legível sem prefixos `H-xx`/`P-xx`;
+- `exigencia` (rótulo exato de `habilitacao.json`), `etapa_envio` (`"sessao"|"habilitacao"`), `ordem_edital` (`1..999`), `item_edital` (até 80 chars) e `nao_enviar: true` apenas quando for rascunho `.docx` ou duplicado;
+- classificação de bloqueio e a lista `assinaturas` completa (`nome`, `papel`, `pagina`, `local`, `como_assinar`, `assinado`, `forma`) de todo documento gerado.
 - `"Entregas da IA"` exibe apenas relatórios finais para leitura humana (`.xlsx`, `.pdf` de relatório), nunca arquivos intermediários nem cópias do que já foi gravado em **DOCUMENTOS PARA DISPUTA**.
-- **Item pendente no plano (`status: "pendente"`):** minuta, valores em branco, falta assinatura ou falta reemitir **não pode confirmar o item**. Passe obrigatoriamente `pendente: true` e `motivo` (ex.: `"Minuta: valores em branco até o lance"`). O arquivo é gravado com `confirmado: false` e o item permanece em **"A fazer"** com o motivo visível (arquivos com `"MINUTA"` no nome nunca confirmam no servidor).
+- **Item pendente no plano (`status: "pendente"`):** minuta, valores em branco, falta assinatura ou falta reemitir **não pode confirmar o item**. Passe obrigatoriamente `pendente: true` e `motivo` em linguagem simples (ex.: `"Falta a assinatura de Fulano (p. 1, linha do RT)"` ou `"Proposta ajustada ao lance pendente após a disputa"`). O arquivo é gravado com `confirmado: false` e o item permanece em **"A fazer"** com o motivo visível (arquivos com `"MINUTA"` no nome nunca confirmam no servidor).
 - Item completo e assinado fica **Confirmado**; item com signatário com `assinado: false` fica **Aguardando assinatura de <nome>**.
-- Use `disputa_documentos` para ver o que já está na pasta e não duplicar. Use `substituir: true` apenas para atualizar a versão anterior do mesmo código gravada por agente.
+- Use `disputa_documentos` para ver o que já está na pasta e não duplicar. Use `substituir: true` apenas para atualizar a versão anterior do mesmo documento gravada por agente (o servidor casa pelo nome exato, código se houver, ou `exigencia`).
 
 Nunca apague nem substitua arquivos que uma pessoa colocou na pasta (`origem: "pessoa"`).
 
 ## 7. Resposta
 
-Responda em poucas linhas:
-1. quantas exigências e quantas prontas;
-2. a lista de **pendências**, cada uma com a ação e o responsável, por exemplo "Reemitir CND municipal (vence 29/11, sessão 30/11)" ou "Assinatura do RT nas declarações H-05 e H-06";
+Responda em poucas linhas (sem códigos internos `H-xx`/`P-xx`):
+1. progresso de cada etapa (**Para participar da sessão** e **Para a habilitação**: prontos e faltas);
+2. a lista de **pendências** em linguagem simples, cada uma com a ação e o responsável, por exemplo "Reemitir CND municipal (vence 29/11, sessão 30/11)" ou "Falta a assinatura do RT na declaração de indicação do RT";
 3. as regras de envio, com prazo e portal.
