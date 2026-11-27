@@ -58,6 +58,7 @@ def test_manifestos_e_contexto():
         "disputa_adicionar",
         "documentos_recorrentes",
         "registrar_recorrente",
+        "emitir_certidoes_paralelo",
         "abrir_pagina",
         "baixar_documento",
         *(f"cerebro_{acao}" for acao in ("empresas", "buscar", "fatos", "esquema", "consulta", "provas")),
@@ -187,7 +188,7 @@ def test_fluxo_e_referencias():
 def test_visao_fluxo_contrato_canvas():
     visao = ler_json(ANALISADOR / "visao.json")
     assert visao["versao"] == 1
-    assert visao["gerado_de"]["plugin_versao"] == "0.16.30"
+    assert visao["gerado_de"]["plugin_versao"] == "0.16.31"
     destinos_validos = {"proxima", "parar", "humano", "rerodar", "precos"}
     itens_por_id = {}
     for etapa in visao["etapas"]:
@@ -320,7 +321,7 @@ def test_contrato_do_card(arquivo, objetos, listas):
 def test_montagem_proposta_e_assinaturas():
     visao = ler_json(AGENTES / "montagem-proposta/visao.json")
     assert visao["agente"] == "montagem-proposta"
-    assert visao["gerado_de"]["plugin_versao"] == "0.16.30"
+    assert visao["gerado_de"]["plugin_versao"] == "0.16.31"
     for rel in (
         "plugins/realmak/skills/redigir-declaracoes/SKILL.md",
         "plugins/realmak/skills/montar-documentacao-disputa/SKILL.md",
@@ -342,7 +343,7 @@ def test_montagem_proposta_e_assinaturas():
         assert "bloqueia" in texto and "momento" in texto and "risco_inabilitacao" in texto
         assert "motivo_bloqueio" in texto and "como_assinar" in texto
         assert "IA/INTERMEDIÁRIOS/montagem-proposta/" in texto and "Entregas da IA" in texto
-        assert "emitir-certidoes" in texto
+        assert "emitir-certidoes" in texto and "emitir_certidoes_paralelo" in texto
     emitir_dir = SKILLS / "emitir-certidoes"
     assert (emitir_dir / "SKILL.md").is_file()
     assert (emitir_dir / "references/emissores.md").is_file()

@@ -90,7 +90,7 @@ def test_emitir_tjdft_reaproveita_vigente_mock(monkeypatch, tmp_path):
         recriar=False,
     )
     assert saida.is_file()
-    assert res["situacao"] == "ok"
+    assert res["situacao"] == "reaproveitada"
     assert res["reutilizada"] is True
     assert res["validade"] == "2026-12-24"
     assert "sem bloqueio" in res["observacao"]
@@ -118,6 +118,6 @@ def test_emitir_sefaz_go_mock(monkeypatch, tmp_path):
         saida=saida,
     )
     assert saida.is_file()
-    assert res["situacao"] == "ok"
+    assert res["situacao"] == "emitida"
     assert res["resultado"] == "NEGATIVA"
     assert res["validade"] == "2027-01-26"
