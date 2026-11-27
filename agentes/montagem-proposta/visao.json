@@ -3,7 +3,7 @@
   "agente": "montagem-proposta",
   "titulo": "Montagem Proposta",
   "gerado_de": {
-    "plugin_versao": "0.16.31",
+    "plugin_versao": "0.16.32",
     "fluxo_sha256": null
   },
   "resumo": "Gera declarações e proposta no padrão do grupo e monta o pacote completo de habilitação e envio (um PDF por exigência, índice com assinaturas e pendências reais) na pasta DOCUMENTOS PARA DISPUTA do card.",
