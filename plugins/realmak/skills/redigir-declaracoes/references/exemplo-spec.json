@@ -1,0 +1,18 @@
+{
+ "_nota": "Exemplo com dados fictícios. No uso real, `empresa` vem do cadastro (ferramenta dados_empresa) e `assinatura`/`timbre` são os arquivos baixados de lá.",
+ "empresa": {
+  "razao_social": "EMPRESA EXEMPLO SERVIÇOS LTDA", "cnpj": "00.000.000/0001-00", "inscricao_estadual": "00.000.000/001-00", "inscricao_rotulo": "CF/DF",
+  "endereco": "Quadra 1, Lote 1, Zona Industrial", "cidade": "Brasília", "uf": "DF", "cep": "70.000-000",
+  "representante": {"nome": "Fulano de Tal", "cargo": "Sócio administrador", "rg": "0.000.000 SSP/DF", "cpf": "000.000.000-00", "tratamento": "o Senhor"},
+  "assinatura": null, "assinatura_inclui_nome": false, "timbre": null
+ },
+ "destinatario": {"orgao": ["TRIBUNAL DE EXEMPLO", "COORDENADORIA DE LICITAÇÃO"], "modalidade": "PREGÃO ELETRÔNICO Nº 1/2026", "processo": "PROCESSO ADMINISTRATIVO Nº 0000/2026"},
+ "local_data": "Brasília, 1º de dezembro de 2026",
+ "declaracoes": [
+  {"titulo": "DECLARAÇÃO DE CUMPRIMENTO DO DISPOSTO NO ART. 7º, INCISO XXXIII, DA CONSTITUIÇÃO FEDERAL",
+   "paragrafos": ["{qualificacao}, DECLARA, para fins do disposto no item 10.6.2, inciso VII, do Edital do {modalidade}, em cumprimento ao art. 7º, inciso XXXIII, da Constituição Federal, que não emprega menor de 18 (dezoito) anos em trabalho noturno, perigoso ou insalubre e não emprega menor de 16 (dezesseis) anos, salvo na condição de aprendiz, a partir de 14 (quatorze) anos."]},
+  {"titulo": "DECLARAÇÃO DE NÃO REALIZAÇÃO DE VISTORIA E DE ASSUNÇÃO DOS RISCOS",
+   "paragrafos": ["{qualificacao}, e por seu responsável técnico indicado, Engenheiro Mecânico Beltrano de Tal, CREA nº 00000/D-DF, DECLARA, para fins do item 10.6.4.3 do Edital do {modalidade}, que optou por não realizar a vistoria facultativa, que conhece as condições locais para a execução do objeto e que assume integralmente os riscos decorrentes da não realização da vistoria."],
+   "assinaturas": [{"nome": "Beltrano de Tal", "linhas": ["Engenheiro Mecânico – CREA nº 00000/D-DF", "Responsável técnico indicado"]}, "representante"]}
+ ]
+}
