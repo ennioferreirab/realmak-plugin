@@ -6,6 +6,7 @@ Uso: python3 montar_pacote.py plano.json
 plano.json:
 {
   "saida": "pasta onde gravar o pacote",
+  "indice_json": "agents/montagem-proposta/indice-envio.json",  # opcional: grava índice estruturado fora de DOCUMENTOS PARA DISPUTA
   "licitacao": "PE 35/2026 – TJMA", "empresa": "REALMAK SERVIÇOS E COMÉRCIO LTDA",
   "limite_mb": 10,                       # tamanho máximo por arquivo do portal, se o edital informar (opcional)
   "itens": [
@@ -151,7 +152,23 @@ def montar(plano):
                         avisos.append(f"{destino.name}: {mb:.1f} MB acima do limite de {limite} MB do portal")
             linhas.append(linha)
         indice = indice_pdf(plano, linhas, saida, tmp)
-    return {'indice': indice.name, 'arquivos': linhas, 'avisos': avisos,
+    indice_json_path = plano.get('indice_json')
+    if indice_json_path:
+        destino_json = Path(indice_json_path)
+        destino_json.parent.mkdir(parents=True, exist_ok=True)
+        payload = {
+            'itens': [
+                {
+                    'codigo': item_linha['ordem'],
+                    'situacao': 'OK' if item_linha['status'] == 'ok' else 'PENDENTE',
+                    'motivo': item_linha.get('obs') or '',
+                }
+                for item_linha in linhas
+            ]
+        }
+        destino_json.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    return {'indice': indice.name, 'indice_json': str(indice_json_path) if indice_json_path else None,
+            'arquivos': linhas, 'avisos': avisos,
             'pendencias': [item_linha for item_linha in linhas if item_linha['status'] != 'ok']}
 
 
