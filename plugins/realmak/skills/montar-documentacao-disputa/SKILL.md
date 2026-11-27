@@ -84,6 +84,8 @@ Cada documento sai como **item próprio** (`etapa_envio: "proposta"`, `ordem_edi
 5. **Declarações exigidas junto com a proposta** (por exemplo, sustentabilidade): `etapa_envio: "proposta"`. As demais declarações são de habilitação.
 6. **Procuração**, só quando o signatário não é o representante legal; sem os dados do outorgado, pendente.
 
+**Documento que depende do valor do lance (proposta ajustada, planilha de composição de custos e qualquer anexo com preço) nunca confirma enquanto a pessoa não informar o lance:** grave com `pendente: true` e `motivo: "Gerada com o preço de referência; refazer com o lance final"` (também no `status: "pendente"` do plano e na `situacao: "PENDENTE"` do índice), mesmo que o preço de referência esteja preenchido e o arquivo pareça completo. Só use `pendente: false` quando o preço vier do lance informado por uma pessoa.
+
 Alerte no resumo quando o preço de referência estiver muito abaixo de cotações anteriores da empresa para o mesmo objeto ou da faixa praticada. O agente registra o alerta; a decisão é de uma pessoa.
 
 ## 5. Montar o pacote
@@ -114,6 +116,7 @@ Grave cada arquivo do pacote com a ferramenta `disputa_adicionar(nome, arquivo? 
 - classificação de bloqueio e a lista `assinaturas` completa (`nome`, `papel`, `pagina`, `local`, `como_assinar`, `assinado`, `forma`) de todo documento gerado.
 - `"Entregas da IA"` exibe apenas relatórios finais para leitura humana (`.xlsx`, `.pdf` de relatório), nunca arquivos intermediários nem cópias do que já foi gravado em **DOCUMENTOS PARA DISPUTA**.
 - **Item pendente no plano (`status: "pendente"`):** minuta, valores em branco, falta assinatura ou falta reemitir **não pode confirmar o item**. Passe obrigatoriamente `pendente: true` e `motivo` em linguagem simples (ex.: `"Falta a assinatura de Fulano (p. 1, linha do RT)"` ou `"Proposta ajustada ao lance pendente após a disputa"`). O arquivo é gravado com `confirmado: false` e o item permanece em **"A fazer"** com o motivo visível (arquivos com `"MINUTA"` no nome nunca confirmam no servidor).
+- **Documento que depende do valor do lance (proposta ajustada, planilha de composição de custos e qualquer anexo com preço) nunca confirma enquanto a pessoa não informar o lance:** grave com `pendente: true` e `motivo: "Gerada com o preço de referência; refazer com o lance final"` (também no `status: "pendente"` do plano e na `situacao: "PENDENTE"` do índice), mesmo que o preço de referência esteja preenchido e o arquivo pareça completo. Só use `pendente: false` quando o preço vier do lance informado por uma pessoa.
 - Item completo e assinado fica **Confirmado**; item com signatário com `assinado: false` fica **Aguardando assinatura de <nome>**.
 - Use `disputa_documentos` para ver o que já está na pasta e não duplicar. Use `substituir: true` apenas para atualizar a versão anterior do mesmo documento gravada por agente (o servidor casa pelo nome exato, código se houver, ou `exigencia`).
 
