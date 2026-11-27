@@ -65,6 +65,8 @@ Não use documento de outra empresa do grupo. Não altere originais: o pacote é
 
 ### 4.1 Etapa Proposta
 
+**Em toda rodada, inclusive reconferência de card que já tem pacote (de qualquer versão do plugin), gere os itens da Proposta que ainda não têm arquivo com `etapa_envio: "proposta"`**; reconferir ou reenviar o existente não substitui gerar o que falta.
+
 Cada documento sai como **item próprio** (`etapa_envio: "proposta"`, `ordem_edital` na ordem em que o edital lista os documentos que acompanham a proposta). **`exigencia` = rótulo exato do item de `habilitacao.json` com `etapa_envio: "proposta"`** (ex.: "Proposta ajustada ao lance final (Anexo II)", "Planilha de composição de custos"); rótulo inventado cria item duplicado no card que o agente não consegue apagar. Scripts em `scripts/gerar_proposta.py` (no contêiner do daemon, `python3` direto):
 
 1. **Proposta no modelo do edital.** Monte `entrada.json` (formato no docstring do script) com:
