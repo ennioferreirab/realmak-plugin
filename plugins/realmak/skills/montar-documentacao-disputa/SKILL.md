@@ -77,7 +77,10 @@ Marque `status: "pendente"` com `obs` em toda exigência sem documento, vencida,
 
 ## 6. Entregar em DOCUMENTOS PARA DISPUTA
 
-Grave cada arquivo do pacote com a ferramenta `disputa_adicionar(nome, arquivo? | sha256?, exigencia?, substituir?, empresa?, assinaturas?)`, informando a exigência correspondente e a lista `assinaturas` de todo documento gerado. Assim o item do "A fazer" fica **Confirmado** (quando completo e assinado) ou **Aguardando assinatura de <nome>** (quando houver signatário com `assinado: false`). Use `disputa_documentos` para ver o que já está na pasta e não duplicar. Use `substituir: true` apenas para atualizar a versão anterior do mesmo código gravada por agente.
+Grave cada arquivo do pacote com a ferramenta `disputa_adicionar(nome, arquivo? | sha256?, exigencia?, substituir?, empresa?, assinaturas?, pendente?, motivo?)`, informando a exigência correspondente e a lista `assinaturas` de todo documento gerado.
+- **Item pendente no plano (`status: "pendente"`):** minuta, valores em branco, falta assinatura ou falta reemitir **não pode confirmar o item**. Passe obrigatoriamente `pendente: true` e `motivo` (ex.: `"Minuta: valores em branco até o lance"`). O arquivo é gravado com `confirmado: false` e o item permanece em **"A fazer"** com o motivo visível (arquivos com `"MINUTA"` no nome nunca confirmam no servidor).
+- Item completo e assinado fica **Confirmado**; item com signatário com `assinado: false` fica **Aguardando assinatura de <nome>**.
+- Use `disputa_documentos` para ver o que já está na pasta e não duplicar. Use `substituir: true` apenas para atualizar a versão anterior do mesmo código gravada por agente.
 
 Nunca apague nem substitua arquivos que uma pessoa colocou na pasta (`origem: "pessoa"`).
 
