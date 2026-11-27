@@ -170,6 +170,7 @@ Diga quais obrigações concentram o risco e quais pontos a analista precisa dec
 - **Tipos de afirmação.** Marque o que é dado do documento, cálculo, premissa ou recomendação. Para cada premissa relevante, diga o que muda se ela estiver errada.
 - **Tema normativo.** Confirme a redação vigente da norma em fonte oficial na data do trabalho. Não prometa resultado do certame.
 - **Originais.** Não altere os documentos recebidos. Trabalhe em cópias.
+- **Bloqueio de participação.** Para cada exigência ou pendência identificada, classifique `bloqueia: true|false` e `motivo_bloqueio` citando o item do edital: bloqueia o que impede habilitar ou propor na sessão (documento obrigatório ausente/vencido, assinatura obrigatória faltando, índice abaixo do exigido, proposta sem valores/fora do modelo); não bloqueia ressalva saneável por esclarecimento/diligência, documento que vence após a sessão nem exigência cobrada só do vencedor antes do contrato (ex.: visto em CREA de outro estado, garantia, mobilização). Na dúvida, `bloqueia: true` com motivo `"verificar"`.
 
 ## Pronto quando
 
