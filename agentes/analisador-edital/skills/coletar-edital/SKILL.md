@@ -40,6 +40,7 @@ Regras de segurança aplicadas pelo daemon no download: apenas `http(s)`, endere
    - **Coletado (`estado: "coletado"`):** quando houver ao menos um documento útil com texto (ou campos mínimos completados em card que já tinha documentos).
    - **Bloqueado (`estado: "bloqueado"`):** **apenas** quando for realmente impossível coletar — card sem link, portal bloqueado por `login`, `captcha` ou erro HTTP sem fonte pública alternativa (como PNCP), ou todos os arquivos baixados ilegíveis (`tem_texto: false`).
    - Ao bloquear, chame obrigatoriamente `registrar_pendencia_coleta(o_que_tentou, falta, acao_pessoa)` explicando exatamente o que foi tentado, o que falta e a ação objetiva que a pessoa precisa executar (ex.: "Baixar o edital autenticado no portal X e anexar no card").
+   - Como `coleta` roda isolado em `E0`, ao final da etapa o daemon verifica no Odoo se o card possui documento com texto; não havendo, a análise é interrompida ali (sem rodar `E1`/`E2`, sem publicar e sem mover o card de Análise IA) até que um documento seja anexado e extraído.
 
 ## Saída (`fontes/coleta.json`)
 
