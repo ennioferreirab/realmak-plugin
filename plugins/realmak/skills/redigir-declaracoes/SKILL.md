@@ -55,14 +55,14 @@ uv run --with python-docx python3 scripts/gerar_declaracoes.py spec.json "Declar
 
 ## 5. Converter, salvar e conferir
 
-1. Converta para PDF com LibreOffice: `soffice --headless --convert-to pdf`.
-2. Salve o DOCX e o PDF na pasta **DOCUMENTOS PARA DISPUTA** do card (pasta da licitação no Drive). Assim aparecem no card em "Documentos para disputa → Adicionados para a disputa".
-3. Abra o PDF e confira cada página:
+1. Converta para PDF com o LibreOffice (`soffice --headless --convert-to pdf`).
+2. Abra o PDF e confira cada página:
    - nada cortado;
    - a assinatura certa;
    - o número do certame e do processo iguais aos do edital;
    - a data do dia.
-4. Responda com:
+3. **Quando faz parte da montagem do pacote** (skill `montar-documentacao-disputa`), entregue o PDF ao plano do pacote; ele grava em DOCUMENTOS PARA DISPUTA pela ferramenta `disputa_adicionar`.
+4. **Quando é pedido avulso**, grave o DOCX e o PDF com `disputa_adicionar`, indicando a exigência de cada declaração. O agente não grava direto no Drive.
+5. Responda com:
    - a lista das declarações, cada uma com o item do edital e a origem do texto (modelo do órgão, padrão da casa ou redação pelo item);
-   - as pendências, como "falta assinatura do RT" ou "confirmar se houve vistoria";
-   - os dois arquivos.
+   - as pendências, como "falta assinatura do RT" ou "confirmar se houve vistoria".
