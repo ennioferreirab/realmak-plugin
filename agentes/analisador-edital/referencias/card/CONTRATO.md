@@ -38,7 +38,7 @@ Se houver diferença material na ordenação, indique em `mais_aderente` a prime
 {"versao": 1, "gerado_em": "", "mais_aderente": "aforca|realmak|una|nortfort|null", "resultado": "",
  "empresas": [{"empresa": "aforca|realmak|una|nortfort", "aderencia": "alta|media|baixa|nao_atende", "resumo": "",
    "exigencias": [{"id": "", "rotulo": "", "risco_principal": false, "exigencia": "", "fonte": "", "situacao": "atende|parcial|nao_atende|verificar", "prova": "", "validade": "",
-    "grupo": "juridica|fiscal|trabalhista|economico_financeira|tecnica", "bloqueia": true, "motivo_bloqueio": "", "motivo": "",
+    "grupo": "juridica|fiscal|trabalhista|economico_financeira|tecnica", "bloqueia": false, "momento": "ate_convocacao|diligencia|contrato|orientacao", "risco_inabilitacao": false, "motivo_bloqueio": "", "motivo": "",
     "assinaturas": [{"nome": "", "papel": "", "pagina": 1, "local": "", "como_assinar": "", "assinado": true, "forma": "modelo|retornado", "conferencia": ""}],
     "acao": {"tipo": "emitir|consultar|localizar_prova|decidir", "onde": "", "o_que": "", "quem": "", "ate": ""}}],
    "pendencias": [""]}],
@@ -54,6 +54,19 @@ O contrato segue na versão 1. Os campos são opcionais tanto no consolidado qua
 - `motivo` resume em até 120 caracteres a lacuna documental ou o impedimento quando `situacao` for diferente de `atende`.
 - `acao` indica uma providência concreta. Informe `o_que`, `quem` e `ate` em `AAAA-MM-DD` ou vazio se o prazo estiver em aberto. Com `acao`, o card exibe “Ação necessária”. Sem ela, o card interpreta `atende` como “Comprovado”, `parcial` como “Ação necessária” e `nao_atende` ou `verificar` como “Não comprovado”. `prova` permanece como evidência na coluna Prova.
 - `pesquisa_incompleta` reúne por empresa, no topo do card, falhas de acesso, teto ou tempo que deixaram itens sem pesquisa suficiente. Informe o alias, o que foi tentado e o impacto. Guarde os detalhes operacionais só aqui. Preserve a marcação `cobertura[].estado: "falha"` e os dados de consulta para o G2. Em saídas antigas sem `pesquisa_incompleta`, o card usa os registros de cobertura com estado `falha`.
+
+### Critério de bloqueio da disputa (fonte única)
+
+Esta seção é a fonte única de classificação de bloqueio para `analisar-habilitacao`, `conferir-habilitacao` e `montagem-proposta` (não duplicar em `analisar-edital*`, que apenas registra o momento de cobrança da exigência):
+
+- **`bloqueia: true` (Bloqueia a disputa):** somente o que impede cadastrar a proposta e dar lance na sessão: empresa impedida/suspensa ou sem cadastro/credenciamento ativo no portal; proposta inicial sem preço aprovado ou fora do modelo exigido no cadastro; declarações obrigatórias marcadas no sistema no cadastro da proposta **somente** se houver fato comprovado que impeça declarar com veracidade (a falta de arquivo sozinha não bloqueia); garantia de proposta ou vistoria **obrigatória** não cumpridas antes da sessão; amostra/documento exigido junto com a proposta inicial.
+- **`bloqueia: false` + `momento` + `risco_inabilitacao`:** todo o resto.
+  - `momento`: `"ate_convocacao"` (habilitação a anexar quando convocado: certidões, declarações, assinatura do RT, vínculo do RT), `"diligencia"` (só se o pregoeiro pedir), `"contrato"` (vencedor, antes do contrato/execução: visto CREA de outro estado, garantia) ou `"orientacao"` (dica "se acontecer X, faça Y").
+  - `risco_inabilitacao: true` quando, se não resolvido até o momento, leva à inabilitação (ex.: certidão de falência vencida na sessão, falta da assinatura do RT, vínculo sem prova).
+- **`situacao: "atende"` nunca bloqueia** (`bloqueia: false`). Fim do "na dúvida, bloqueia": na dúvida, use `bloqueia: false`, `risco_inabilitacao: true` e `motivo_bloqueio` começando pelo momento + `"verificar (<item>)"`.
+- **`motivo_bloqueio`** começa sempre pelo momento (`"Antes da sessão —"`, `"Até 2 h após a convocação —"`, `"Em diligência —"`, `"Orientação —"`, `"Antes do contrato —"`) e cita a cláusula do edital.
+- **Sem duplicar ações:** nunca repetir a mesma ação em dois itens. Uma exigência só vira dois itens quando são ações distintas com conclusão própria (ex.: assinar declaração de indicação do RT × comprovar vínculo do RT). Vários arquivos da mesma ação usam o rótulo exato da exigência de `habilitacao.json` em `exigencia`.
+- **Controle de fluxo do agente:** `bloqueia` de pergunta/execução do gestor (`GESTOR.md`, `AGENTS.md`) é controle de fluxo interno e nunca vai para `exigencias[].bloqueia`.
 
 ### Parciais de habilitação
 
