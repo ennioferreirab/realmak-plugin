@@ -71,7 +71,8 @@ O script:
 - junta numa só peça as várias fontes de uma exigência (por exemplo, contrato social mais alterações);
 - nomeia `H-03 - Certidão de falência.pdf`;
 - avisa sobre arquivos acima do `limite_mb` do portal;
-- gera o `00 - INDICE DE ENVIO` com ordem, documento, item do edital, arquivo, assinaturas (feitas e pendentes) e situação.
+- gera o `00 - INDICE DE ENVIO` com ordem, documento, item do edital, arquivo, assinaturas (feitas e pendentes) e situação;
+- quando `indice_json` for informado no `plano.json` (use `agents/montagem-proposta/indice-envio.json`, na área do agente no card — **nunca** em `DOCUMENTOS PARA DISPUTA`), grava o índice estruturado `{"itens": [{"codigo", "situacao": "OK"|"PENDENTE", "motivo"}]}` lido diretamente pelo Odoo na checagem.
 
 Marque `status: "pendente"` com `obs` em toda exigência sem documento, vencida, sem assinatura ou com dúvida. Se algum item tiver signatário com `assinado: false`, o script força `status: "pendente"` automaticamente.
 
