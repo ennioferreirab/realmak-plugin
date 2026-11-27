@@ -1,6 +1,6 @@
 ---
 name: coletar-edital
-description: "Coleta documentos e campos mínimos do edital na preparação da análise (E0) quando o card chegou sem anexos ou com dados incompletos. Lê fontes/coleta-auto.json, navega no link oficial com abrir_pagina, baixa arquivos com baixar_documento, preenche campos vazios com preencher_card e só registra pendência via registrar_pendencia_coleta quando for impossível coletar."
+description: "Coleta documentos e campos mínimos do edital na preparação da análise (E0) quando o card chegou sem anexos ou com dados incompletos ou incorretos. Lê fontes/coleta-auto.json, navega no link oficial com abrir_pagina, baixa arquivos com baixar_documento, preenche ou corrige campos com preencher_card (com sobrescrever + fonte primária) e só registra pendência via registrar_pendencia_coleta quando for impossível coletar."
 ---
 
 # Coletar edital e dados mínimos (E0)
@@ -16,7 +16,7 @@ Garante que o card tenha documentos extraídos e campos mínimos antes do mapa d
 
 - `abrir_pagina(url)` → `{url_final, status, titulo, texto (até 30.000 chars), links: [{url, texto, arquivo}], bloqueio: null|"login"|"captcha"|"http"}`.
 - `baixar_documento(url, nome?)` → anexa o arquivo como documento oficial do card (`destino="documento"`), extrai texto na hora e agenda classificação (Jev); devolve `{documento_id, nome, tamanho_bytes, tem_texto, ja_existia, motivo}`.
-- `preencher_card(dados)` → preenche apenas campos vazios (nunca sobrescreve): `titulo`, `orgao`, `uasg`, `edital`, `modalidade`, `processo`, `objeto`, `cidade`, `uf`, `valor_estimado`, `abertura`, `prazo`, `visita`, `retirada` (datas ISO no horário de Brasília); devolve `{preenchidos, campos_vazios}`.
+- `preencher_card(dados, sobrescrever?, fonte?)` → lê e atualiza campos do card: `titulo`, `orgao`, `uasg`, `edital`, `modalidade`, `processo`, `objeto`, `cidade`, `uf`, `valor_estimado`, `abertura`, `prazo`, `visita`, `retirada` (datas ISO no horário de Brasília) e `situacao`; devolve `{preenchidos, sobrescritos, campos_vazios, valores_atuais}`. Leia `valores_atuais` antes (com `dados: {}`). Campo vazio é preenchido direto; para corrigir valor já preenchido, passe a chave em `sobrescrever` e informe obrigatoriamente `fonte` com o valor conferido na fonte primária (ex.: `"edital, capa e item 2.1"`, `"PNCP 05288790000176/2026/330"`, `"cadastro ConLicitação 19590193"`). A ferramenta recusa fonte que cite o resumo IA e registra no card a nota `"Dados corrigidos"` (`"Campo: anterior → novo (fonte)"`).
 - `registrar_pendencia_coleta(o_que_tentou, falta, acao_pessoa)` → cria no card a atividade "Pergunta do agente" e nota interna, exibindo em "Agentes aguardando"; devolve `{atividade_id}`.
 - `buscar_web`: uso auxiliar apenas para localizar a página oficial do certame quando o link inicial remeter a outro portal público.
 
@@ -33,9 +33,11 @@ Regras de segurança aplicadas pelo daemon no download: apenas `http(s)`, endere
 3. **Baixar e anexar documentos:**
    - Para cada link de arquivo (`arquivo: true` ou link direto de download de PDF/DOCX/XLSX/ZIP do certame), chame `baixar_documento(url, nome?)`.
    - Confira `tem_texto` e `motivo` no retorno. Não repita arquivos já anexados (`ja_existia: true`).
-4. **Preencher campos vazios:**
-   - Com os dados confirmados na página oficial ou nos documentos baixados, chame `preencher_card(dados)` enviando somente os campos encontrados com segurança.
-   - **Nunca invente dados:** o que não constar na fonte fica vazio.
+4. **Preencher e corrigir campos do card:**
+   - Leia `valores_atuais` antes com `preencher_card({})`.
+   - Com os dados confirmados na fonte primária (edital, PNCP ou cadastro oficial), chame `preencher_card(dados)` para preencher campos vazios direto.
+   - Se encontrar um valor já preenchido errado no card, passe as chaves corrigidas em `sobrescrever` e informe `fonte` apontando a fonte primária conferida — **nunca** use o resumo IA como fonte.
+   - **Nunca invente dados:** o que não constar na fonte primária fica vazio.
 5. **Decidir entre `coletado` e `bloqueado`:**
    - **Coletado (`estado: "coletado"`):** quando houver ao menos um documento útil com texto (ou campos mínimos completados em card que já tinha documentos).
    - **Bloqueado (`estado: "bloqueado"`):** **apenas** quando for realmente impossível coletar — card sem link, portal bloqueado por `login`, `captcha` ou erro HTTP sem fonte pública alternativa (como PNCP), ou todos os arquivos baixados ilegíveis (`tem_texto: false`).
