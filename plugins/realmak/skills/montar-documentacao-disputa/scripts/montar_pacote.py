@@ -63,16 +63,25 @@ def resumir_assinaturas(assinaturas):
         nome = a.get('nome') or '?'
         papel = a.get('papel')
         rotulo = f"{nome} ({papel})" if papel else nome
+        detalhes = []
+        if a.get('local'):
+            detalhes.append(str(a['local']))
+        elif a.get('pagina') is not None:
+            pag = str(a['pagina'])
+            detalhes.append(pag if pag.lower().startswith('p.') else f"p. {pag}")
+        if a.get('como_assinar'):
+            detalhes.append(str(a['como_assinar']))
+        extra = f" — {', '.join(detalhes)}" if detalhes else ''
         if a.get('assinado'):
             forma = a.get('forma')
-            feitas.append(f"{rotulo} [{forma}]" if forma else rotulo)
+            feitas.append(f"{rotulo} [{forma}]{extra}" if forma else f"{rotulo}{extra}")
         else:
-            faltam.append(rotulo)
+            faltam.append(f"{rotulo}{extra}")
     partes = []
     if feitas:
-        partes.append('Feitas: ' + ', '.join(feitas))
+        partes.append('Feitas: ' + '; '.join(feitas))
     if faltam:
-        partes.append('Faltam: ' + ', '.join(faltam))
+        partes.append('Faltam: ' + '; '.join(faltam))
     return ' | '.join(partes) or '—'
 
 
@@ -123,7 +132,10 @@ def montar(plano):
     linhas, avisos = [], []
     with tempfile.TemporaryDirectory() as tmp:
         for item in plano['itens']:
-            linha = {k: item.get(k) for k in ('ordem', 'nome', 'item_edital', 'status', 'obs', 'assinaturas')}
+            linha = {
+                k: item.get(k)
+                for k in ('ordem', 'nome', 'item_edital', 'status', 'obs', 'assinaturas', 'bloqueia', 'motivo_bloqueio')
+            }
             assinaturas = item.get('assinaturas') or []
             faltam_assinar = [a.get('nome') or '?' for a in assinaturas if not a.get('assinado')]
             linha['status'] = item.get('status') or ('ok' if item.get('fontes') else 'pendente')
@@ -162,6 +174,16 @@ def montar(plano):
                     'codigo': item_linha['ordem'],
                     'situacao': 'OK' if item_linha['status'] == 'ok' else 'PENDENTE',
                     'motivo': item_linha.get('obs') or '',
+                    **(
+                        {'bloqueia': bool(item_linha['bloqueia'])}
+                        if item_linha.get('bloqueia') is not None
+                        else {}
+                    ),
+                    **(
+                        {'motivo_bloqueio': item_linha['motivo_bloqueio']}
+                        if item_linha.get('motivo_bloqueio')
+                        else {}
+                    ),
                 }
                 for item_linha in linhas
             ]
