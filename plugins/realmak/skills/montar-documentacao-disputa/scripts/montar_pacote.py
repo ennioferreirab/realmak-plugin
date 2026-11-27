@@ -134,7 +134,10 @@ def montar(plano):
         for item in plano['itens']:
             linha = {
                 k: item.get(k)
-                for k in ('ordem', 'nome', 'item_edital', 'status', 'obs', 'assinaturas', 'bloqueia', 'motivo_bloqueio')
+                for k in (
+                    'ordem', 'nome', 'item_edital', 'status', 'obs', 'assinaturas',
+                    'bloqueia', 'momento', 'risco_inabilitacao', 'motivo_bloqueio',
+                )
             }
             assinaturas = item.get('assinaturas') or []
             faltam_assinar = [a.get('nome') or '?' for a in assinaturas if not a.get('assinado')]
@@ -177,6 +180,16 @@ def montar(plano):
                     **(
                         {'bloqueia': bool(item_linha['bloqueia'])}
                         if item_linha.get('bloqueia') is not None
+                        else {}
+                    ),
+                    **(
+                        {'momento': item_linha['momento']}
+                        if item_linha.get('momento')
+                        else {}
+                    ),
+                    **(
+                        {'risco_inabilitacao': bool(item_linha['risco_inabilitacao'])}
+                        if item_linha.get('risco_inabilitacao') is not None
                         else {}
                     ),
                     **(

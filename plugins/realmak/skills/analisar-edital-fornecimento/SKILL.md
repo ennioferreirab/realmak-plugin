@@ -173,7 +173,7 @@ Enquanto houver itens em "A confirmar" que mudem o resultado, a conclusão é "A
 - **Custo, não preço de venda.** O preço online é custo de compra observado, com link e data. Não estime preço de venda aqui. Valor estimado é o do edital.
 - **Tema normativo.** Confirme a redação vigente da norma em fonte oficial na data do trabalho. Não prometa resultado do certame.
 - **Originais.** Não altere os documentos recebidos. Trabalhe em cópias.
-- **Bloqueio de participação.** Para cada exigência ou pendência identificada, classifique `bloqueia: true|false` e `motivo_bloqueio` citando o item do edital: bloqueia o que impede habilitar ou propor na sessão (documento obrigatório ausente/vencido, assinatura obrigatória faltando, índice abaixo do exigido, proposta sem valores/fora do modelo); não bloqueia ressalva saneável por esclarecimento/diligência, documento que vence após a sessão nem exigência cobrada só do vencedor antes do contrato (ex.: visto em conselho de outro estado, garantia). Na dúvida, `bloqueia: true` com motivo `"verificar"`.
+- **Momento de cobrança.** Indique sempre em que fase cada exigência técnica/comercial é cobrada pelo edital (proposta inicial, convocação/habilitação, diligência ou apenas do vencedor antes do contrato/execução).
 
 ## Pronto quando
 
