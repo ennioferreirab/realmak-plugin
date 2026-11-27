@@ -26,11 +26,12 @@ No contêiner do daemon, `python3` já possui `python-docx`, `pypdf`, `cryptogra
 - `documentos_recorrentes(empresa, historico?)` — lê do Cérebro da empresa os recorrentes (`cnd_federal`, `cnd_estadual`, `cnd_municipal`, `fgts`, `cndt`, `falencia`, `ato_constitutivo`, `crea_pj`, `balanco`, `declaracao_generica`); devolve `{empresa, itens:[{tipo, tipo_rotulo, subtipo, titulo, arquivo, sha256, emissao, validade, situacao: vigente|vence_15d|vencido|sem_validade, origem, url}], reemitir:[textos]}`. Para copiar um recorrente vigente para a disputa, use `disputa_adicionar` passando `sha256`.
 - `registrar_recorrente(empresa, tipo, arquivo, nome?, validade?, substitui_sha256?)` — envia ao Cérebro da empresa (caixa de entrada) o documento gerado ou reemitido em `arquivo` (`"agents/..."`) que serve para outras licitações, com `validade` em `AAAA-MM-DD` (quando vencer) e `substitui_sha256` em reemissão.
 - `disputa_documentos(empresa?)` — lista os arquivos já presentes em **DOCUMENTOS PARA DISPUTA** (`nome`, `tipo`, `sha256`, `origem: "pessoa"|"agente"`, `codigo`, `exigencias`, `assinaturas`). Consulte sempre antes de gravar para não duplicar e nunca mexer em arquivos de `origem: "pessoa"`.
-- `disputa_adicionar(nome, arquivo? | sha256?, exigencia?, substituir?, empresa?, assinaturas?)` — grava o arquivo na pasta **DOCUMENTOS PARA DISPUTA** e atualiza o check-list **"A fazer"**:
+- `disputa_adicionar(nome, arquivo? | sha256?, exigencia?, substituir?, empresa?, assinaturas?, pendente?, motivo?)` — grava o arquivo na pasta **DOCUMENTOS PARA DISPUTA** e atualiza o check-list **"A fazer"**:
   - `nome`: nome final com código na frente (ex.: `"H-03 - Certidão de falência.pdf"`, `"00 - INDICE DE ENVIO.pdf"`).
   - `arquivo` (caminho gerado dentro da pasta do card ou relativo `"agents/..."`) **ou** `sha256` (cópia do original do acervo/recorrente).
   - `exigencia`: rótulo exato da exigência em `habilitacao.json` (normalizado pelo servidor).
   - `substituir`: `true` apenas para atualizar versão anterior do mesmo código gravada por agente.
+  - `pendente` e `motivo`: **obrigatório passar `pendente: true` e `motivo`** (ex.: `"Minuta: valores em branco até o lance"`) para todo item com `status: "pendente"` no plano (minuta, valores em branco, falta assinatura, falta reemitir). O arquivo é gravado **sem confirmar** o item (`confirmado: false`), que permanece em **"A fazer"** exibindo o motivo.
   - `assinaturas`: `[{nome, papel, assinado: bool, forma: "modelo"|"retornado"}]` — **obrigatório enviar em toda declaração/documento gerado, especialmente quando houver signatário externo (RT, contador etc.)**.
     - Representante legal com assinatura no cadastro: `assinado: true, forma: "modelo"`.
     - Signatário sem assinatura cadastrada (RT, contador, outro profissional): gere o documento com a assinatura da empresa aplicada (quando aplicável) e a linha dele em branco, e grave com `assinado: false, forma: "modelo"`. O item fica **"Aguardando assinatura de <nome>"** (não conta como Confirmado).
@@ -57,6 +58,7 @@ No contêiner do daemon, `python3` já possui `python-docx`, `pypdf`, `cryptogra
    - Rode `python3 /plugin-realmak/skills/montar-documentacao-disputa/scripts/montar_pacote.py plano.json`, gerando um PDF numerado por exigência e `00 - INDICE DE ENVIO.pdf` (com a coluna de assinaturas feitas e pendentes).
 4. **Publicar em DOCUMENTOS PARA DISPUTA:**
    - Para cada arquivo gerado (inclusive `00 - INDICE DE ENVIO.pdf`), chame `disputa_adicionar` com `nome`, `arquivo` (ou `sha256`), `exigencia`, `substituir: true` (só se já houver versão de agente do mesmo código) e `assinaturas`.
+   - Para qualquer item com `status: "pendente"` no plano (minuta, valores em branco, falta assinatura ou falta reemitir), passe obrigatoriamente `pendente: true` e `motivo` (texto curto exibido no "A fazer") para gravar o arquivo **sem confirmar** o item.
    - Nunca sobrescreva nem apague arquivo de `origem: "pessoa"`.
 5. **Concluir:**
    - Chame `concluir(resumo)` com resumo objetivo contendo:
