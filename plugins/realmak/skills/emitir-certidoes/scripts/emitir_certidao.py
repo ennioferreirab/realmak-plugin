@@ -265,11 +265,12 @@ def emitir_tjdft(
     reutilizada = bool(sol.get("certidao_existente")) and not recriar
     if reutilizada:
         obs.insert(0, "Reaproveitada certidão vigente já emitida no TJDFT.")
+    situacao = ("reaproveitada" if reutilizada else "emitida") if conf["situacao"] == "ok" else conf["situacao"]
 
     return {
         "certidao": tipo_up.lower(),
         "emissor": "tjdft",
-        "situacao": conf["situacao"],
+        "situacao": situacao,
         "cnpj": formatar_cnpj(cnpj_digitos),
         "nome_esperado": nome or None,
         "nome_emitido": nome_receita,
@@ -330,7 +331,7 @@ def emitir_sefaz_go(
     return {
         "certidao": "cnd_estadual_go",
         "emissor": "sefaz-go",
-        "situacao": conf["situacao"],
+        "situacao": "emitida" if conf["situacao"] == "ok" else conf["situacao"],
         "cnpj": cnpj_fmt,
         "nome_esperado": nome or None,
         "nome_emitido": None,

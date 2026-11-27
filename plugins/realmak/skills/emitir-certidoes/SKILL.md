@@ -63,16 +63,16 @@ Quando a certidão estiver válida e conferida:
 
 ## 5. Saída estruturada (inclusive para subagentes T2)
 
-Ao executar como subagente T2 (um por certidão emitível em paralelo), devolva sempre um JSON com o contrato:
+Ao executar como subagente T2 disparado por `emitir_certidoes_paralelo` (um por certidão emitível em paralelo), grave no caminho `saida` pedido no prompt (e devolva) sempre um JSON com o contrato:
 
 ```json
 {
   "certidao": "falencia",
-  "situacao": "ok",
+  "situacao": "reaproveitada",
   "validade": "2026-12-24",
   "arquivo": "H-11 - Certidão de falência.pdf",
   "observacao": "Reaproveitada certidão vigente do TJDFT; razão social consta como EIRELI na Receita (mesmo CNPJ da LTDA)."
 }
 ```
 
-Em caso de falha, captcha ou login, devolva `situacao: "pendente"`, `arquivo: null`, `validade: null` e `observacao` contendo o **link oficial direto** e a **instrução curta** para o gestor abrir o "a fazer" para uma pessoa.
+Valores válidos de `situacao`: `"emitida"` (nova emissão), `"reaproveitada"` (vigente reaproveitada sem forçar nova), `"pendente"` (captcha, login, resultado positivo ou vencida) ou `"erro"` (falha técnica). Em caso de falha, captcha ou login, devolva `situacao: "pendente"` (ou `"erro"`), `arquivo: null`, `validade: null` e `observacao` contendo o **link oficial direto** e a **instrução curta** para o gestor abrir o "a fazer" para uma pessoa.
