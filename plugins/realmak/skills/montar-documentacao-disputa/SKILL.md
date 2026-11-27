@@ -34,6 +34,8 @@ Categorias por etapa (`etapa_envio`) e ordem (`ordem_edital: 1..999`):
 
 **Passo manual no portal nunca vira exigência, item nem aviso, em nenhuma etapa (sessão, proposta, habilitação):** clicar, marcar ou cadastrar no portal (declarações do sistema, cadastro da proposta, envio pelo "Enviar anexo") fica fora; só entram documentos que a plataforma prepara ou confere.
 
+**`situacao` de `habilitacao.json` (critério único de `CONTRATO.md`):** `atende` = a empresa cumpre o requisito, inclusive quando falta só coletar (assinatura, documento a emitir ou reemitir, confirmar vigência, preencher a proposta com o lance), com a providência em `acao`; `parcial` só para dúvida real de equivalência; `nao_atende` só para impedimento comprovado. Item pendente no pacote (minuta, falta assinar, depende do lance) fica em "A fazer" com `pendente: true`, sem rebaixar a `situacao`; ao gravar ou atualizar `habilitacao.json`, nunca troque `atende` por `parcial` ou `nao_atende` por causa de coleta. Itens com `etapa_envio: "proposta"` não entram na conta da habilitação.
+
 **Sem códigos internos para o usuário:** nunca use `H-xx`, `P-xx` ou `00 -` no nome dos arquivos, nas instruções, nos motivos de falta ou no resumo. Use nomes legíveis (ex.: `Certidão de falência.pdf`, `Declaração de indicação do RT.pdf`); a ordem na tela e no ZIP vem de `ordem_edital`, não de prefixo.
 
 ## 3. Checar cada documento (reutilizar → recriar → gerar)
