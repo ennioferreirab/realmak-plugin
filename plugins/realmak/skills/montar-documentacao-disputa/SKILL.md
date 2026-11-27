@@ -1,0 +1,84 @@
+---
+name: montar-documentacao-disputa
+description: Monta o pacote de envio de uma licitação na pasta DOCUMENTOS PARA DISPUTA do card. Gera o que precisa ser redigido (declarações, proposta) e junta os documentos de habilitação exigidos (certidões, atos, atestados, CAT/CAO, balanços), um PDF por exigência, na ordem e no formato pedidos pelo edital, com índice de envio e pendências. Use quando o card entra em "Preparando documentação" ou quando pedirem para montar a documentação da disputa.
+---
+
+# Montar a documentação da disputa
+
+Objetivo: deixar em **DOCUMENTOS PARA DISPUTA** tudo o que a empresa vai anexar no portal, pronto para subir. É um arquivo por exigência, no formato e na ordem do edital, mais o `00 - INDICE DE ENVIO`, que diz o que está pronto e o que falta. Uma pessoa confere antes do envio; o agente **não envia nada ao portal**.
+
+## 1. Regras de envio do edital
+
+Leia a seção de habilitação e a de proposta do edital e anote:
+
+- **Onde e como se envia.** Por exemplo, Compras.gov.br em "Enviar Anexo", quando o pregoeiro convoca, ou proposta anexada antes da sessão.
+- **Prazo depois da convocação**, por exemplo 2 horas. Isso explica por que o pacote precisa estar pronto antes da sessão.
+- **Formato:** PDF, assinatura digital (ICP-Brasil ou gov.br), arquivo único ou separado, tamanho máximo, cópia autenticada, ordem pedida.
+- **O que o SICAF dispensa** (por exemplo, regularidade fiscal). Mesmo dispensado, junte o documento vigente como reserva, marcado "(SICAF)" no índice.
+- **Proposta:** modelo anexo, planilha, validade, documentos que acompanham.
+
+Cite o item do edital em cada regra que usar.
+
+## 2. Lista de exigências
+
+Uma linha por documento a enviar, na ordem do edital:
+
+- **Habilitação:** parta de `habilitacao.json` (empresa disputante: exigências, situação, prova e ação) e complete pelo edital (itens de habilitação jurídica, fiscal, econômico-financeira e técnica).
+- **Proposta:** parta do modelo de proposta (anexo) e dos documentos que a acompanham.
+- **Check-list "A fazer" do card:** item marcado e anotação, por exemplo "RT: Rolando". Anotação humana prevalece sobre a sugestão da análise.
+
+Códigos de ordem:
+- `P-01…`: proposta e anexos da proposta.
+- `H-01…`: habilitação, na ordem do edital (jurídica → fiscal → econômico-financeira → técnica → declarações).
+
+## 3. Achar cada documento
+
+Para cada exigência, nesta ordem:
+
+1. **Prova já indicada pela análise** (`prova` da exigência, documentos encontrados pela IA em Documentos para disputa).
+2. **Cérebro da empresa:** `cerebro_buscar` e `cerebro_provas`. Prefira o mais recente e vigente.
+3. **Pasta da licitação e acervo no Drive** (`/acervo-drive`, somente leitura).
+
+Confira, antes de incluir:
+- se é da empresa certa (CNPJ);
+- a **validade na data da sessão**; vencido ou vencendo antes da sessão é pendência "reemitir";
+- se o profissional é o mesmo indicado (RT, atestados e CAT);
+- se está legível e completo (todas as páginas).
+
+Não use documento de outra empresa do grupo. Não altere originais: o pacote é feito de cópias.
+
+## 4. Gerar o que precisa ser redigido
+
+- **Declarações:** use a skill `redigir-declaracoes`, com os dados e a assinatura de `dados_empresa`. Ela produz um DOCX/PDF com uma declaração por página. Para o pacote, separe em um PDF por declaração quando o edital pedir arquivos separados; senão, um PDF "Declarações".
+- **Proposta:** preencha o modelo do anexo do edital (ou o padrão da casa, como no exemplo da Nortfort PE 85/2026) com os valores da precificação aprovada do card. Valor e lote **só** da precificação aprovada ou de instrução humana; sem isso, pendência.
+- **Signatário sem assinatura cadastrada** (RT, contador): o documento sai com linha de assinatura e entra no índice como "falta assinatura de …".
+
+## 5. Montar o pacote
+
+Monte um `plano.json` e rode:
+
+```bash
+uv run --with pypdf --with python-docx python3 scripts/montar_pacote.py plano.json
+```
+
+O script:
+- converte DOC/DOCX/XLSX/imagens com o LibreOffice;
+- junta numa só peça as várias fontes de uma exigência (por exemplo, contrato social mais alterações);
+- nomeia `H-03 - Certidão de falência.pdf`;
+- avisa sobre arquivos acima do `limite_mb` do portal;
+- gera o `00 - INDICE DE ENVIO` com ordem, documento, item do edital, arquivo e situação.
+
+Marque `status: "pendente"` com `obs` em toda exigência sem documento, vencida, sem assinatura ou com dúvida.
+
+## 6. Entregar em DOCUMENTOS PARA DISPUTA
+
+Grave cada arquivo do pacote com a ferramenta `disputa_adicionar`, informando a exigência correspondente. Assim o item do "A fazer" fica **Confirmado** com o arquivo. Use `disputa_documentos` para ver o que já está na pasta e não duplicar. Substitua a versão anterior do mesmo código em vez de criar outra.
+
+Nunca apague arquivos que uma pessoa colocou na pasta.
+
+## 7. Resposta
+
+Responda em poucas linhas:
+1. quantas exigências e quantas prontas;
+2. a lista de **pendências**, cada uma com a ação e o responsável, por exemplo "Reemitir CND municipal (vence 29/11, sessão 30/11)" ou "Assinatura do RT nas declarações H-05 e H-06";
+3. as regras de envio, com prazo e portal.
