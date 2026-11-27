@@ -9,6 +9,8 @@
   "tipo_objeto": "fornecimento",
   "valor_estimado": 68400.0,
   "valor_sigiloso": false,
+  "valor_estimado_fonte": "Edital 2.1; TR anexo I p. 4",
+  "valor_estimado_escopo": "global",
   "criterio": "menor preço por item",
   "modo_disputa": "aberto",
   "portal": "Compras.gov.br",

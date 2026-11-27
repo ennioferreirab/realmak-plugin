@@ -9,7 +9,8 @@ O agente grava em `licitacoes/<id>/agents/analisador-edital/analise/`. Toda list
 ```json
 {"versao": 1, "gerado_em": "AAAA-MM-DDTHH:MM",
  "cabecalho": {"modalidade": "", "orgao": "", "uasg": "", "objeto": "", "tipo_objeto": "manutencao|fornecimento|outro_servico|misto",
-   "valor_estimado": 0, "valor_sigiloso": false, "criterio": "", "modo_disputa": "", "portal": "", "link": "",
+   "valor_estimado": 0, "valor_sigiloso": false, "valor_estimado_fonte": "", "valor_estimado_escopo": "global|lote|item",
+   "criterio": "", "modo_disputa": "", "portal": "", "link": "",
    "portal_sessao": {"nome": "", "url": "", "id_no_portal": "", "fonte": ""}},
  "atencao": [{"titulo": "", "ponto": "", "gravidade": "alta|media|baixa", "fonte": "", "o_que_fazer": ""}],
  "prazos": [{"prazo": "", "data": "", "fonte": "", "observacao": ""}],

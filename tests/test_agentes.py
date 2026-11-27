@@ -169,7 +169,7 @@ def test_fluxo_e_referencias():
 def test_visao_fluxo_contrato_canvas():
     visao = ler_json(ANALISADOR / "visao.json")
     assert visao["versao"] == 1
-    assert visao["gerado_de"]["plugin_versao"] == "0.16.16"
+    assert visao["gerado_de"]["plugin_versao"] == "0.16.17"
     destinos_validos = {"proxima", "parar", "humano", "rerodar", "precos"}
     itens_por_id = {}
     for etapa in visao["etapas"]:
@@ -260,6 +260,7 @@ def test_contrato_do_card(arquivo, objetos, listas):
     if arquivo == "edital":
         assert "portal_sessao" in exemplo["cabecalho"]
         _validar_portal_sessao(exemplo["cabecalho"]["portal_sessao"])
+        _validar_valor_estimado_cabecalho(exemplo["cabecalho"])
         assert "vigencia" in exemplo
         _validar_vigencia(exemplo["vigencia"])
     if arquivo == "precificacao":
@@ -296,6 +297,46 @@ def test_contrato_do_card(arquivo, objetos, listas):
                 aliases.add(alerta["empresa"])
                 assert alerta["motivo"]
             assert {linha["empresa"] for linha in linhas.values() if linha["estado"] == "falha"} <= aliases
+
+
+def _validar_valor_estimado_cabecalho(cabecalho):
+    if "valor_estimado_fonte" in cabecalho:
+        fonte = cabecalho["valor_estimado_fonte"]
+        assert fonte is None or (isinstance(fonte, str) and fonte.strip())
+    if "valor_estimado_escopo" in cabecalho:
+        assert cabecalho["valor_estimado_escopo"] in {"global", "lote", "item", None}
+
+
+def test_contrato_valor_estimado_edital():
+    skill = (SKILLS / "analisar-edital/SKILL.md").read_text(encoding="utf-8")
+    for termo in (
+        "valor_estimado_fonte",
+        "valor_estimado_escopo",
+        '"global"',
+        '"lote"',
+        '"item"',
+        "soma dos lotes",
+    ):
+        assert termo in skill
+
+    _validar_valor_estimado_cabecalho({
+        "valor_estimado": 10200000.0,
+        "valor_sigiloso": False,
+        "valor_estimado_fonte": "Edital 2.1; TR anexo I p. 4",
+        "valor_estimado_escopo": "global",
+    })
+    _validar_valor_estimado_cabecalho({
+        "valor_estimado": None,
+        "valor_sigiloso": True,
+        "valor_estimado_fonte": "Edital 4.3 (orçamento sigiloso)",
+        "valor_estimado_escopo": None,
+    })
+    _validar_valor_estimado_cabecalho({"valor_estimado": 50000.0, "valor_sigiloso": False})
+
+    with pytest.raises(AssertionError):
+        _validar_valor_estimado_cabecalho({"valor_estimado_escopo": "total"})
+    with pytest.raises(AssertionError):
+        _validar_valor_estimado_cabecalho({"valor_estimado_fonte": "   "})
 
 
 def _validar_portal_sessao(portal_sessao):
