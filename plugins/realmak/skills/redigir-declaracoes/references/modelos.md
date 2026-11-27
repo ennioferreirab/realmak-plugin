@@ -71,3 +71,25 @@ Use quando a empresa tem 100 ou mais empregados. Com menos de 100, use a declara
 
 ## Sustentabilidade ambiental (Lei Distrital 4.770/2012, editais do DF)
 > {qualificacao}, DECLARA, para fins do [item] do Edital do {modalidade}, que atende aos critérios de sustentabilidade ambiental previstos no art. 7º da Lei Distrital nº 4.770/2012 [listar as alíneas pedidas no edital].
+
+## Regime de tributação (documento próprio da etapa Proposta)
+> {qualificacao_curta}, em atendimento ao [item] do Edital do {modalidade}, INFORMA que seu regime de tributação é [Simples Nacional, Lucro Presumido ou Lucro Real], com a alíquota efetiva considerada na composição de preços de [x,xx]% sobre o faturamento do serviço.
+
+A fonte do regime é a precificação aprovada (`precificacao.json`) ou o Cérebro da empresa. Ele não vem em `dados_empresa`; sem fonte, deixe pendente.
+
+## Procuração para apresentar a proposta (só quando o signatário não é o representante legal)
+> {qualificacao_curta}, nomeia e constitui como seu procurador [nome do outorgado], [nacionalidade, estado civil, profissão], portador(a) da carteira de identidade nº [rg] e do CPF nº [cpf], a quem confere poderes para representá-la no {modalidade}, podendo apresentar proposta, formular lances, negociar preços, interpor e desistir de recursos, assinar declarações e praticar os demais atos necessários ao certame ([item] do Edital).
+
+Se o signatário é o representante legal da empresa (a proposta já sai com a assinatura do cadastro), **não gere procuração**. Sem os dados do outorgado, deixe pendente e diga quem os informa.
+
+## Descrição detalhada dos serviços (proposta; um documento por edital)
+Edital que pede "especificações e características detalhadas dos serviços ofertados" proíbe a simples repetição do Termo de Referência. Redija pelo objeto deste edital, em seções curtas com o subtítulo em `negrito: true`, e use `tabela` onde houver equipe, equipamentos ou prazos:
+1. **Objeto e abrangência:** locais, equipamentos e sistemas atendidos (quantidades e capacidades do TR).
+2. **Como a empresa executa:** operação, preventiva, preditiva e corretiva, com rotina, periodicidade e responsável.
+3. **Equipe ofertada:** função, quantidade e dedicação (da precificação: equipe, RT, supervisão, plantão).
+4. **Ferramental, veículos e sistemas:** o que será mobilizado (da precificação).
+5. **Peças, insumos e gás:** o que está incluído no preço e o que o órgão paga à parte, conforme o TR.
+6. **Prazos e níveis de serviço:** atendimento, mobilização, ART, PMOC, relatórios e credenciamento do fabricante, cada um com a cláusula do TR.
+7. **Documentação e relatórios entregues.**
+
+Cada afirmação precisa de fonte no TR, no edital, em `tecnica.json` ou em `precificacao.json`. Não prometa o que a precificação não custeou; marque como pendência o que depende de decisão humana (por exemplo, o RT indicado).

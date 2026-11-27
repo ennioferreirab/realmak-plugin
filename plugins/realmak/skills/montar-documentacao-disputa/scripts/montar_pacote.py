@@ -25,6 +25,7 @@ plano.json:
     }
   ]
 }
+etapa_envio: "sessao" (para participar da sessão), "proposta" (proposta e anexos) ou "habilitacao" (padrão), nessa ordem.
 Itens sem fontes entram apenas no indice-envio.json (intermediário), como pendência.
 Não gera "00 - INDICE DE ENVIO.pdf" nem usa prefixos internos (H-xx, P-xx) nos nomes de arquivos.
 """
@@ -56,7 +57,7 @@ CONVERTE = {
     ".tiff",
     ".txt",
 }
-ETAPAS_VALIDAS = ("sessao", "habilitacao")
+ETAPAS_VALIDAS = ("sessao", "proposta", "habilitacao")
 PREFIXO_INTERNO_RE = re.compile(r"^(?:00|[HPD]-\d{1,3})\s*[-–—]\s*", re.IGNORECASE)
 
 
@@ -111,7 +112,7 @@ def montar(plano: dict) -> dict:
     limite = plano.get("limite_mb")
     linhas, avisos = [], []
     nomes_usados: set[str] = set()
-    contadores_etapa = {"sessao": 0, "habilitacao": 0}
+    contadores_etapa = dict.fromkeys(ETAPAS_VALIDAS, 0)
 
     with tempfile.TemporaryDirectory() as tmp:
         for item in plano["itens"]:
@@ -174,7 +175,7 @@ def montar(plano: dict) -> dict:
                         )
             linhas.append(linha)
 
-    linhas.sort(key=lambda x: (0 if x["etapa_envio"] == "sessao" else 1, x["ordem_edital"]))
+    linhas.sort(key=lambda x: (ETAPAS_VALIDAS.index(x["etapa_envio"]), x["ordem_edital"]))
 
     indice_json_path = plano.get("indice_json")
     if indice_json_path:
