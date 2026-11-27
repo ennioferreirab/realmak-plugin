@@ -11,6 +11,7 @@ plano.json:
   "itens": [
     {"ordem": "H-01", "nome": "Ato constitutivo – 18ª alteração contratual", "item_edital": "10.6.1 II",
      "fontes": ["/caminho/a.pdf", "/caminho/b.docx"],   # juntadas nesta ordem num só PDF
+     "assinaturas": [{"nome": "Fulano", "papel": "Representante", "assinado": true, "forma": "modelo"}],  # opcional
      "status": "ok" | "pendente", "obs": "texto curto (validade, falta assinatura, ...)"}
   ]
 }
@@ -53,6 +54,27 @@ def para_pdf(fonte, tmp):
     return pdf
 
 
+def resumir_assinaturas(assinaturas):
+    if not assinaturas:
+        return '—'
+    feitas, faltam = [], []
+    for a in assinaturas:
+        nome = a.get('nome') or '?'
+        papel = a.get('papel')
+        rotulo = f"{nome} ({papel})" if papel else nome
+        if a.get('assinado'):
+            forma = a.get('forma')
+            feitas.append(f"{rotulo} [{forma}]" if forma else rotulo)
+        else:
+            faltam.append(rotulo)
+    partes = []
+    if feitas:
+        partes.append('Feitas: ' + ', '.join(feitas))
+    if faltam:
+        partes.append('Faltam: ' + ', '.join(faltam))
+    return ' | '.join(partes) or '—'
+
+
 def indice_pdf(plano, linhas, saida, tmp):
     """Índice em DOCX convertido para PDF; sem LibreOffice, fica o DOCX."""
     from docx import Document
@@ -60,15 +82,22 @@ def indice_pdf(plano, linhas, saida, tmp):
     doc = Document()
     doc.add_heading('ÍNDICE DE ENVIO', level=1)
     doc.add_paragraph(f"{plano.get('licitacao', '')} — {plano.get('empresa', '')}")
-    tabela = doc.add_table(rows=1, cols=5)
+    tabela = doc.add_table(rows=1, cols=6)
     tabela.style = 'Table Grid'
-    for c, t in zip(tabela.rows[0].cells, ['Ordem', 'Documento', 'Item do edital', 'Arquivo', 'Situação']):
+    for c, t in zip(
+        tabela.rows[0].cells,
+        ['Ordem', 'Documento', 'Item do edital', 'Arquivo', 'Assinaturas', 'Situação'],
+        strict=True,
+    ):
         c.text = t
-    for l in linhas:
+    for item_linha in linhas:
         cel = tabela.add_row().cells
-        cel[0].text, cel[1].text, cel[2].text = l['ordem'], l['nome'], l.get('item_edital', '')
-        cel[3].text = l.get('arquivo') or '—'
-        cel[4].text = ('OK' if l['status'] == 'ok' else 'PENDENTE') + (f" — {l['obs']}" if l.get('obs') else '')
+        cel[0].text, cel[1].text, cel[2].text = item_linha['ordem'], item_linha['nome'], item_linha.get('item_edital', '')
+        cel[3].text = item_linha.get('arquivo') or '—'
+        cel[4].text = resumir_assinaturas(item_linha.get('assinaturas'))
+        cel[5].text = ('OK' if item_linha['status'] == 'ok' else 'PENDENTE') + (
+            f" — {item_linha['obs']}" if item_linha.get('obs') else ''
+        )
     for linha in tabela.rows:
         for c in linha.cells:
             for p in c.paragraphs:
@@ -93,8 +122,14 @@ def montar(plano):
     linhas, avisos = [], []
     with tempfile.TemporaryDirectory() as tmp:
         for item in plano['itens']:
-            linha = {k: item.get(k) for k in ('ordem', 'nome', 'item_edital', 'status', 'obs')}
+            linha = {k: item.get(k) for k in ('ordem', 'nome', 'item_edital', 'status', 'obs', 'assinaturas')}
+            assinaturas = item.get('assinaturas') or []
+            faltam_assinar = [a.get('nome') or '?' for a in assinaturas if not a.get('assinado')]
             linha['status'] = item.get('status') or ('ok' if item.get('fontes') else 'pendente')
+            if faltam_assinar:
+                linha['status'] = 'pendente'
+                if not linha.get('obs'):
+                    linha['obs'] = 'Aguardando assinatura de ' + ', '.join(faltam_assinar)
             fontes = item.get('fontes') or []
             if fontes:
                 escritor = PdfWriter()
@@ -117,7 +152,7 @@ def montar(plano):
             linhas.append(linha)
         indice = indice_pdf(plano, linhas, saida, tmp)
     return {'indice': indice.name, 'arquivos': linhas, 'avisos': avisos,
-            'pendencias': [l for l in linhas if l['status'] != 'ok']}
+            'pendencias': [item_linha for item_linha in linhas if item_linha['status'] != 'ok']}
 
 
 if __name__ == '__main__':

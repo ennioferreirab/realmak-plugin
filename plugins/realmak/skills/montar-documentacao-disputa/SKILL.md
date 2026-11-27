@@ -51,14 +51,14 @@ Não use documento de outra empresa do grupo. Não altere originais: o pacote é
 
 - **Declarações:** use a skill `redigir-declaracoes`, com os dados e a assinatura de `dados_empresa`. Ela produz um DOCX/PDF com uma declaração por página. Para o pacote, separe em um PDF por declaração quando o edital pedir arquivos separados; senão, um PDF "Declarações".
 - **Proposta:** preencha o modelo do anexo do edital (ou o padrão da casa, como no exemplo da Nortfort PE 85/2026) com os valores da precificação aprovada do card. Valor e lote **só** da precificação aprovada ou de instrução humana; sem isso, pendência.
-- **Signatário sem assinatura cadastrada** (RT, contador): o documento sai com linha de assinatura e entra no índice como "falta assinatura de …".
+- **Signatário sem assinatura cadastrada** (RT, contador, outro profissional): o documento sai com a assinatura da empresa já aplicada (quando aplicável) e a linha dele em branco. Declare todos os signatários em `assinaturas: [{nome, papel, assinado: bool, forma: "modelo"|"retornado"}]` (representante cadastrado: `assinado: true, forma: "modelo"`; terceiro sem assinatura: `assinado: false, forma: "modelo"`). Ele não conta como Confirmado: fica **"Aguardando assinatura de <nome>"** e aparece no índice com as assinaturas feitas e as que faltam.
 
 ## 5. Montar o pacote
 
-Monte um `plano.json` e rode:
+Monte um `plano.json` (incluindo `assinaturas` em cada item que exige assinatura) e rode (no contêiner do daemon use `python3` direto; fora dele, `uv run --with pypdf --with python-docx python3`):
 
 ```bash
-uv run --with pypdf --with python-docx python3 scripts/montar_pacote.py plano.json
+python3 scripts/montar_pacote.py plano.json
 ```
 
 O script:
@@ -66,15 +66,15 @@ O script:
 - junta numa só peça as várias fontes de uma exigência (por exemplo, contrato social mais alterações);
 - nomeia `H-03 - Certidão de falência.pdf`;
 - avisa sobre arquivos acima do `limite_mb` do portal;
-- gera o `00 - INDICE DE ENVIO` com ordem, documento, item do edital, arquivo e situação.
+- gera o `00 - INDICE DE ENVIO` com ordem, documento, item do edital, arquivo, assinaturas (feitas e pendentes) e situação.
 
-Marque `status: "pendente"` com `obs` em toda exigência sem documento, vencida, sem assinatura ou com dúvida.
+Marque `status: "pendente"` com `obs` em toda exigência sem documento, vencida, sem assinatura ou com dúvida. Se algum item tiver signatário com `assinado: false`, o script força `status: "pendente"` automaticamente.
 
 ## 6. Entregar em DOCUMENTOS PARA DISPUTA
 
-Grave cada arquivo do pacote com a ferramenta `disputa_adicionar`, informando a exigência correspondente. Assim o item do "A fazer" fica **Confirmado** com o arquivo. Use `disputa_documentos` para ver o que já está na pasta e não duplicar. Substitua a versão anterior do mesmo código em vez de criar outra.
+Grave cada arquivo do pacote com a ferramenta `disputa_adicionar(nome, arquivo? | sha256?, exigencia?, substituir?, empresa?, assinaturas?)`, informando a exigência correspondente e a lista `assinaturas` de todo documento gerado. Assim o item do "A fazer" fica **Confirmado** (quando completo e assinado) ou **Aguardando assinatura de <nome>** (quando houver signatário com `assinado: false`). Use `disputa_documentos` para ver o que já está na pasta e não duplicar. Use `substituir: true` apenas para atualizar a versão anterior do mesmo código gravada por agente.
 
-Nunca apague arquivos que uma pessoa colocou na pasta.
+Nunca apague nem substitua arquivos que uma pessoa colocou na pasta (`origem: "pessoa"`).
 
 ## 7. Resposta
 

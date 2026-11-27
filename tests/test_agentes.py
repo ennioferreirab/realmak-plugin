@@ -25,7 +25,11 @@ def ler_json(arquivo):
 
 
 def test_manifestos_e_contexto():
-    for chave, titulo in (("analisador-edital", "Analisador de Edital"), ("garimpo", "Garimpo")):
+    for chave, titulo in (
+        ("analisador-edital", "Analisador de Edital"),
+        ("garimpo", "Garimpo"),
+        ("montagem-proposta", "Montagem Proposta"),
+    ):
         pasta = AGENTES / chave
         manifesto = ler_json(pasta / "agente.json")
         assert manifesto["acao"] == chave
@@ -44,6 +48,18 @@ def test_manifestos_e_contexto():
         analisador["ferramentas"]
     )
     assert (ANALISADOR / "GESTOR.md").stat().st_size
+    montagem = ler_json(AGENTES / "montagem-proposta/agente.json")
+    assert montagem["depende_de"] == ["analisador-edital"]
+    assert montagem["funil"] is True and montagem["chat"] is True
+    assert not montagem.get("chat_card") and "tipo" not in montagem
+    assert {
+        "dados_empresa",
+        "disputa_documentos",
+        "disputa_adicionar",
+        "abrir_pagina",
+        "baixar_documento",
+        *(f"cerebro_{acao}" for acao in ("empresas", "buscar", "fatos", "esquema", "consulta", "provas")),
+    } <= set(montagem["ferramentas"])
     contexto = AGENTES / "contexto"
     assert set(EMPRESAS) <= ler_json(contexto / "empresas.json")["cerebros"].keys()
     for arquivo in ("prompt_empresa.md", "prompt_sistema.md"):
@@ -169,7 +185,7 @@ def test_fluxo_e_referencias():
 def test_visao_fluxo_contrato_canvas():
     visao = ler_json(ANALISADOR / "visao.json")
     assert visao["versao"] == 1
-    assert visao["gerado_de"]["plugin_versao"] == "0.16.20"
+    assert visao["gerado_de"]["plugin_versao"] == "0.16.21"
     destinos_validos = {"proxima", "parar", "humano", "rerodar", "precos"}
     itens_por_id = {}
     for etapa in visao["etapas"]:
@@ -297,6 +313,21 @@ def test_contrato_do_card(arquivo, objetos, listas):
                 aliases.add(alerta["empresa"])
                 assert alerta["motivo"]
             assert {linha["empresa"] for linha in linhas.values() if linha["estado"] == "falha"} <= aliases
+
+
+def test_montagem_proposta_e_assinaturas():
+    visao = ler_json(AGENTES / "montagem-proposta/visao.json")
+    assert visao["agente"] == "montagem-proposta"
+    assert visao["gerado_de"]["plugin_versao"] == "0.16.21"
+    for rel in (
+        "plugins/realmak/skills/redigir-declaracoes/SKILL.md",
+        "plugins/realmak/skills/montar-documentacao-disputa/SKILL.md",
+        "agentes/montagem-proposta/AGENTS.md",
+    ):
+        texto = (RAIZ / rel).read_text(encoding="utf-8")
+        assert "disputa_adicionar" in texto and "assinaturas" in texto
+    conferir = (ANALISADOR / "skills/conferir-habilitacao/SKILL.md").read_text(encoding="utf-8")
+    assert "assinatura_motivo" in conferir and "assinaturas_pdf.py" in conferir
 
 
 def test_coletar_edital_preencher_card_sobrescrever():

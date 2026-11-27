@@ -32,9 +32,11 @@ Sem fonte, gere a versão mais provável, marque **PENDENTE** no resumo e diga q
 
 ## 3. Dados da empresa e assinatura
 
-- Os dados vêm do **cadastro da empresa no CRM** (Cadastros → Empresas do grupo; ferramenta `dados_empresa`): razão social, CNPJ, inscrição, sede, CEP, representante (nome, cargo, RG, CPF, tratamento), imagem da **assinatura**, imagem do **timbre** e a flag `assinatura_inclui_nome`.
+- Os dados vêm do **cadastro da empresa no CRM** (Cadastros → Empresas do grupo; ferramenta `dados_empresa`): razão social, CNPJ, inscrição, sede, CEP, representante (nome, cargo, RG, CPF, tratamento), flag `assinatura_inclui_nome` e `arquivos: {assinatura, timbre}` (caminhos PNG relativos à pasta do card; converta para caminho absoluto no `spec.json`).
 - Nunca copie CPF, RG ou assinatura de outro documento nem os grave fora do cadastro.
-- **Signatário sem imagem de assinatura**, como o responsável técnico: o gerador coloca uma linha de assinatura com nome, registro e CPF. Ele assina à mão ou digitalmente. Liste esse documento no resumo como "falta assinatura de …".
+- **Declaração obrigatória de signatários (`assinaturas`):** todo documento gerado declara seus signatários ao ser gravado via `disputa_adicionar` no formato `[{nome, papel, assinado: bool, forma: "modelo"|"retornado"}]`:
+  - **Representante da empresa** (com assinatura cadastrada em `dados_empresa`): entra como `assinado: true, forma: "modelo"`.
+  - **Signatário sem imagem de assinatura** (RT, contador ou outro profissional): o gerador aplica a assinatura da empresa (quando também assina) e coloca a linha em branco com nome, registro e CPF do terceiro. Grave-o com `assinado: false, forma: "modelo"` — o item fica **"Aguardando assinatura de <nome>"** no "A fazer" (não conta como Confirmado) e gera a pendência de enviar a ele para assinar e devolver.
 
 ## 4. Modelo de assinatura
 
@@ -47,10 +49,10 @@ Use o `scripts/gerar_declaracoes.py`, que aplica o padrão:
 - **Assinatura do representante:** imagem centralizada com 6,5 cm de largura; abaixo, a razão social. Se a imagem não traz o nome impresso (`assinatura_inclui_nome: false`), o gerador acrescenta o nome em maiúsculas, o cargo e o CPF.
 - **Outros signatários:** passe `{"nome", "linhas": [registro, CPF, papel]}` em `assinaturas`. A ordem da lista é a ordem na página. Por exemplo, a declaração de vistoria assinada pelo RT leva o RT primeiro.
 
-Especificação: veja o docstring do script e o exemplo em [references/exemplo-spec.json](references/exemplo-spec.json). Execute:
+Especificação: veja o docstring do script e o exemplo em [references/exemplo-spec.json](references/exemplo-spec.json). Execute (no contêiner do daemon use `python3` direto; fora dele, `uv run --with python-docx python3`):
 
 ```bash
-uv run --with python-docx python3 scripts/gerar_declaracoes.py spec.json "Declaracoes_<Empresa>_<MOD>-<num>-<ano>_<Orgao>.docx"
+python3 scripts/gerar_declaracoes.py spec.json "Declaracoes_<Empresa>_<MOD>-<num>-<ano>_<Orgao>.docx"
 ```
 
 ## 5. Converter, salvar e conferir
