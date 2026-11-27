@@ -56,6 +56,8 @@ def test_manifestos_e_contexto():
         "dados_empresa",
         "disputa_documentos",
         "disputa_adicionar",
+        "documentos_recorrentes",
+        "registrar_recorrente",
         "abrir_pagina",
         "baixar_documento",
         *(f"cerebro_{acao}" for acao in ("empresas", "buscar", "fatos", "esquema", "consulta", "provas")),
@@ -185,7 +187,7 @@ def test_fluxo_e_referencias():
 def test_visao_fluxo_contrato_canvas():
     visao = ler_json(ANALISADOR / "visao.json")
     assert visao["versao"] == 1
-    assert visao["gerado_de"]["plugin_versao"] == "0.16.23"
+    assert visao["gerado_de"]["plugin_versao"] == "0.16.24"
     destinos_validos = {"proxima", "parar", "humano", "rerodar", "precos"}
     itens_por_id = {}
     for etapa in visao["etapas"]:
@@ -318,7 +320,7 @@ def test_contrato_do_card(arquivo, objetos, listas):
 def test_montagem_proposta_e_assinaturas():
     visao = ler_json(AGENTES / "montagem-proposta/visao.json")
     assert visao["agente"] == "montagem-proposta"
-    assert visao["gerado_de"]["plugin_versao"] == "0.16.23"
+    assert visao["gerado_de"]["plugin_versao"] == "0.16.24"
     for rel in (
         "plugins/realmak/skills/redigir-declaracoes/SKILL.md",
         "plugins/realmak/skills/montar-documentacao-disputa/SKILL.md",
