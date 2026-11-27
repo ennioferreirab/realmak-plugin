@@ -52,8 +52,17 @@ O contrato segue na versão 1. Os campos são opcionais tanto no consolidado qua
 
 - `grupo` vem de `edital.json`, com o mesmo enum de `habilitacao[].grupo`, e agrupa as exigências no card.
 - `motivo` resume em até 120 caracteres a lacuna documental ou o impedimento quando `situacao` for diferente de `atende`.
-- `acao` indica uma providência concreta. Informe `o_que`, `quem` e `ate` em `AAAA-MM-DD` ou vazio se o prazo estiver em aberto. Com `acao`, o card exibe “Ação necessária”. Sem ela, o card interpreta `atende` como “Comprovado”, `parcial` como “Ação necessária” e `nao_atende` ou `verificar` como “Não comprovado”. `prova` permanece como evidência na coluna Prova.
+- `acao` indica uma providência concreta. Informe `o_que`, `quem` e `ate` em `AAAA-MM-DD` ou vazio se o prazo estiver em aberto. Com `acao`, o card exibe “Ação necessária” (inclusive em `atende`, quando falta só coletar). Sem ela, o card interpreta `atende` como “Comprovado”, `parcial` como “Ação necessária” e `nao_atende` ou `verificar` como “Não comprovado”. Veja o critério de `situacao` abaixo. `prova` permanece como evidência na coluna Prova.
 - `pesquisa_incompleta` reúne por empresa, no topo do card, **somente** falhas reais de acesso, teto ou tempo que deixaram itens sem pesquisa suficiente numa empresa que deveria ter sido pesquisada. Empresas puladas de propósito em G1 (priorização por triagem) **não** entram em `pesquisa_incompleta`; ficam apenas em `empresas[]` com o resumo curto da triagem, sem aviso. Informe o alias, o que foi tentado e o impacto. Guarde os detalhes operacionais só aqui. Preserve a marcação `cobertura[].estado: "falha"` e os dados de consulta para o G2. Em saídas antigas sem `pesquisa_incompleta`, o card usa os registros de cobertura com estado `falha`.
+
+### Critério de `situacao` (fonte única)
+
+Vale para `analisar-habilitacao`, `conferir-habilitacao` e `montagem-proposta`. "Habilitação não comprovada" só aparece quando não há como a empresa cumprir de verdade.
+
+- `atende`: a empresa cumpre o requisito, inclusive quando falta só **coletar** (colher assinatura, emitir ou reemitir documento, confirmar vigência, conferir vínculo do RT, preencher a proposta com o lance). Registre a providência em `acao`; o card mostra "Ação necessária" e conta o item como atendido.
+- `parcial`: somente dúvida real de equivalência (ex.: o atestado talvez não cubra o objeto). Motivo de coleta não é `parcial`.
+- `nao_atende`: impedimento comprovado (a empresa não tem como cumprir).
+- Itens com `etapa_envio: "proposta"` não entram na conta da habilitação.
 
 ### Critério de bloqueio da disputa (fonte única)
 
