@@ -27,6 +27,7 @@ plano.json:
 }
 etapa_envio: "sessao" (para participar da sessão), "proposta" (proposta e anexos) ou "habilitacao" (padrão), nessa ordem.
 Itens sem fontes entram apenas no indice-envio.json (intermediário), como pendência.
+Passo manual no portal (declarações do sistema, cadastro da proposta, "Enviar anexo") é ignorado em qualquer etapa: não vira item nem aviso.
 Não gera "00 - INDICE DE ENVIO.pdf" nem usa prefixos internos (H-xx, P-xx) nos nomes de arquivos.
 """
 
@@ -59,6 +60,19 @@ CONVERTE = {
 }
 ETAPAS_VALIDAS = ("sessao", "proposta", "habilitacao")
 PREFIXO_INTERNO_RE = re.compile(r"^(?:00|[HPD]-\d{1,3})\s*[-–—]\s*", re.IGNORECASE)
+# Passo manual no portal (clicar, marcar, cadastrar) não é documento: não vira item em nenhuma etapa.
+PASSO_PORTAL_RE = re.compile(
+    r"declara\w*\s+(?:no|do|de)\s+(?:sistema|portal)\b"
+    r"|\b(?:marcar|cadastrar|clicar|preencher)\b[^.\n]{0,80}\b(?:portal|sistema|compras\.?gov)"
+    r"|\bcadastr\w*\s+(?:d[ao]\s+)?proposta\b"
+    r"|\benviar\s+anexo\b",
+    re.IGNORECASE,
+)
+
+
+def passo_manual_portal(item: dict) -> bool:
+    texto = " ".join(str(item.get(c) or "") for c in ("exigencia", "nome"))
+    return bool(PASSO_PORTAL_RE.search(texto))
 
 
 def nome_seguro(texto: str) -> str:
@@ -116,6 +130,8 @@ def montar(plano: dict) -> dict:
 
     with tempfile.TemporaryDirectory() as tmp:
         for item in plano["itens"]:
+            if passo_manual_portal(item):
+                continue
             etapa = _normalizar_etapa(item.get("etapa_envio"))
             contadores_etapa[etapa] += 1
             ordem_edital = _normalizar_ordem(item.get("ordem_edital"), contadores_etapa[etapa])

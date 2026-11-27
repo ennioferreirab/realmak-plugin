@@ -172,6 +172,7 @@ Identifique o portal onde ocorre a sessão pública (disputa eletrônica) e o n�
 - Não invente item, data ou valor. Se o edital for contraditório (edital × TR, TR × minuta), mostre os dois trechos e diga qual prevalece só se o próprio edital disser.
 - Não dê parecer jurídico definitivo. Na impugnação, aponte o fundamento e recomende que a analista ou o advogado avaliem.
 - Não envie nada ao órgão, não dê lance e não registre nada em portal.
+- **Passo manual no portal nunca vira exigência, item nem aviso na análise, em nenhuma etapa (sessão, proposta, habilitação):** clicar, marcar ou cadastrar no portal (declarações do sistema, cadastro da proposta, envio pelo "Enviar anexo") fica fora; só entram documentos que a plataforma prepara ou confere.
 
 ## Próximo passo
 

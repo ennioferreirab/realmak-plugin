@@ -82,3 +82,24 @@ def test_ordem_das_etapas_no_pacote():
     assert mp.ETAPAS_VALIDAS == ("sessao", "proposta", "habilitacao")
     assert mp._normalizar_etapa("proposta") == "proposta"
     assert mp._normalizar_etapa("outra") == "habilitacao"
+
+
+@pytest.mark.parametrize("etapa", ["sessao", "proposta", "habilitacao"])
+def test_passo_manual_no_portal_nao_vira_item(tmp_path, etapa):
+    pytest.importorskip("pypdf")
+    mp = _carregar("montar_pacote")
+    passos = [
+        "Declarações no sistema (Compras.gov.br)",
+        "Marcar as declarações do sistema ao cadastrar a proposta inicial",
+        "Cadastro da proposta inicial no portal",
+        'Enviar anexo pelo botão "Enviar anexo"',
+    ]
+    itens = [{"etapa_envio": etapa, "exigencia": p, "status": "pendente"} for p in passos]
+    itens.append({"etapa_envio": etapa, "exigencia": "Declaração de critérios de sustentabilidade", "status": "pendente"})
+    indice = tmp_path / "indice.json"
+    resultado = mp.montar({"saida": str(tmp_path / "saida"), "indice_json": str(indice), "itens": itens})
+    import json
+
+    exigencias = [i["exigencia"] for i in json.loads(indice.read_text())["itens"]]
+    assert exigencias == ["Declaração de critérios de sustentabilidade"]
+    assert not any("sistema" in a.lower() for a in resultado.get("avisos", []))

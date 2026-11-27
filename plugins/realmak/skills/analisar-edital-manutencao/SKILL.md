@@ -171,6 +171,7 @@ Diga quais obrigações concentram o risco e quais pontos a analista precisa dec
 - **Tema normativo.** Confirme a redação vigente da norma em fonte oficial na data do trabalho. Não prometa resultado do certame.
 - **Originais.** Não altere os documentos recebidos. Trabalhe em cópias.
 - **Momento de cobrança.** Indique sempre em que fase cada exigência técnica/operacional é cobrada pelo edital (proposta inicial, convocação/habilitação, diligência ou apenas do vencedor antes do contrato/execução).
+- **Passo manual no portal nunca vira exigência, item nem aviso, em nenhuma etapa (sessão, proposta, habilitação):** clicar, marcar ou cadastrar no portal (declarações do sistema, cadastro da proposta, envio pelo "Enviar anexo") fica fora; só entram documentos que a plataforma prepara ou confere.
 
 ## Pronto quando
 
