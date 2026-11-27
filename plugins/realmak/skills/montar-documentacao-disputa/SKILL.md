@@ -31,17 +31,20 @@ Códigos de ordem:
 - `P-01…`: proposta e anexos da proposta.
 - `H-01…`: habilitação, na ordem do edital (jurídica → fiscal → econômico-financeira → técnica → declarações).
 
-## 3. Achar cada documento
+## 3. Checar cada documento (reutilizar → recriar → gerar)
 
-Para cada exigência, nesta ordem:
+Só depois de fechar a lista de exigências, formato e regras de envio (passos 1 e 2), cheque cada documento nesta ordem:
 
-1. **Prova já indicada pela análise** (`prova` da exigência, documentos encontrados pela IA em Documentos para disputa).
-2. **Cérebro da empresa:** `cerebro_buscar` e `cerebro_provas`. Prefira o mais recente e vigente.
-3. **Pasta da licitação e acervo no Drive** (`/acervo-drive`, somente leitura).
+1. **Reutilizar recorrente vigente:** se a empresa já tem documento recorrente assinado e vigente na data da sessão (certidões, ato constitutivo, CREA PJ, balanço, declaração genérica), reutilize-o. Procure na ordem:
+   - **Prova já indicada pela análise** (`prova` da exigência, documentos encontrados pela IA em Documentos para disputa);
+   - **Cérebro da empresa:** `cerebro_buscar` e `cerebro_provas` (prefira o mais recente e vigente);
+   - **Pasta da licitação e acervo no Drive** (`/acervo-drive`, somente leitura).
+2. **Recriar recorrente inadequado ou vencido:** se o recorrente estiver vencido, vencendo antes da sessão ou não atender ao que o edital pede (por exemplo, declaração genérica quando o edital exige o modelo próprio ou cita o número do certame), **recrie** (redija novamente ou marque `"reemitir"` como pendência).
+3. **Gerar o que não existe:** o que não existir vai para o passo 4 (redação).
 
 Confira, antes de incluir:
 - se é da empresa certa (CNPJ);
-- a **validade na data da sessão**; vencido ou vencendo antes da sessão é pendência "reemitir";
+- a **validade na data da sessão** (só para documentos que vencem); vencido ou vencendo antes da sessão é pendência `"reemitir"`;
 - se o profissional é o mesmo indicado (RT, atestados e CAT);
 - se está legível e completo (todas as páginas).
 
@@ -49,9 +52,11 @@ Não use documento de outra empresa do grupo. Não altere originais: o pacote é
 
 ## 4. Gerar o que precisa ser redigido
 
+- **Dados da empresa faltando (`cadastro_pendencias` em `dados_empresa`):** se faltar dado cadastral necessário (por exemplo, conta bancária da NortFort ou da UNA), **não invente e não copie de documento antigo**. Crie a pendência no "a fazer" `"Cadastrar <campo> da <empresa>"` (ex.: `"Cadastrar conta bancária da NortFort"`) e deixe o documento afetado (ex.: proposta) marcado como **pendente** nesse ponto.
 - **Declarações:** use a skill `redigir-declaracoes`, com os dados e a assinatura de `dados_empresa`. Ela produz um DOCX/PDF com uma declaração por página. Para o pacote, separe em um PDF por declaração quando o edital pedir arquivos separados; senão, um PDF "Declarações".
 - **Proposta:** preencha o modelo do anexo do edital (ou o padrão da casa, como no exemplo da Nortfort PE 85/2026) com os valores da precificação aprovada do card. Valor e lote **só** da precificação aprovada ou de instrução humana; sem isso, pendência.
 - **Signatário sem assinatura cadastrada** (RT, contador, outro profissional): o documento sai com a assinatura da empresa já aplicada (quando aplicável) e a linha dele em branco. Declare todos os signatários em `assinaturas: [{nome, papel, assinado: bool, forma: "modelo"|"retornado"}]` (representante cadastrado: `assinado: true, forma: "modelo"`; terceiro sem assinatura: `assinado: false, forma: "modelo"`). Ele não conta como Confirmado: fica **"Aguardando assinatura de <nome>"** e aparece no índice com as assinaturas feitas e as que faltam.
+- **Registrar recorrente (passo condicionado à ferramenta):** quando um documento gerado ou reemitido servir para outras licitações, registre-o como recorrente da empresa com sua vigência assim que a ferramenta de documentos recorrentes estiver disponível no daemon.
 
 ## 5. Montar o pacote
 
