@@ -37,33 +37,29 @@ No contêiner do daemon, `python3` já possui `python-docx`, `pypdf`, `cryptogra
 - `abrir_pagina`, `baixar_documento` — uso auxiliar apenas quando faltar anexo/modelo oficial do edital no portal público.
 - Verificador de assinatura em PDF (quando conferir documento retornado): `python3 /opt/realmak/agentes/scripts/assinaturas_pdf.py ARQUIVO.pdf "NOME"`.
 
-## 4. Passo a passo da execução
+## 4. Ordem de trabalho e execução
 
-1. **Ler insumos do card:**
+1. **Primeiro, analisar o edital e as necessidades:**
    - Leia `agents/analisador-edital/analise/edital.json`, `habilitacao.json`, `precificacao.json` (se houver), o check-list "A fazer" e anotações humanas do pedido (anotação humana prevalece sobre sugestão da análise).
-   - Identifique a empresa disputante e a data da sessão pública.
+   - Identifique a empresa disputante, a data da sessão pública, o portal, o prazo pós-convocação, o formato, o limite de MB e o que o SICAF dispensa (citando o item do edital).
+   - Monte a lista completa de documentos exigidos na ordem: `P-01…` (proposta e anexos, só com valores da precificação aprovada ou instrução humana) e `H-01…` (habilitação jurídica → fiscal → econômico-financeira → técnica → declarações).
    - Chame `disputa_documentos` para inventariar o que já existe na pasta (preservando tudo que for `origem: "pessoa"`).
-   - Chame `dados_empresa(empresa)` para obter os dados cadastrais, timbre e assinatura.
-2. **Mapear regras de envio e exigências:**
-   - Anote portal, prazo pós-convocação, formato, limite de MB e o que o SICAF dispensa (citando o item do edital).
-   - Monte a lista ordenada: `P-01…` (proposta e anexos, só com valores da precificação aprovada ou instrução humana) e `H-01…` (habilitação jurídica → fiscal → econômico-financeira → técnica → declarações).
-3. **Coletar documentos vigentes:**
-   - Busque na ordem: provas já indicadas em `habilitacao.json` → Cérebro (`cerebro_buscar` / `cerebro_provas`) → pasta da licitação / `/acervo-drive` (somente leitura).
-   - Confira CNPJ, legibilidade e **validade na data da sessão** apenas para documentos que vencem (certidões, registro/quitação no conselho, balanço). Certidão vencida ou que vence antes da sessão entra como pendência real de reemissão.
-   - **Sem prazo de validade:** atestados, CAT, CAO, ART/TRT/RRT, contrato social/ato constitutivo, cartão CNPJ, inscrição estadual/municipal e declarações não geram pendência de validade.
-4. **Redigir declarações (e proposta quando houver base aprovada):**
-   - Aplique `redigir-declaracoes` usando modelos oficiais do edital quando existirem, ou os padrões de `references/modelos.md`.
-   - Converta para PDF com `soffice --headless --convert-to pdf` e confira as páginas geradas.
-   - Declare `assinaturas` de cada documento gerado.
-5. **Montar o pacote e o índice:**
+   - Chame `dados_empresa(empresa)` para obter os dados cadastrais, timbre, assinatura e `cadastro_pendencias`.
+   - **Dados da empresa faltando no cadastro (`cadastro_pendencias`, ex.: conta bancária):** **nunca invente e nunca copie de documento antigo**. Registre o "a fazer" no formato `"Cadastrar <campo> da <empresa>"` (ex.: `"Cadastrar conta bancária da NortFort"`) e deixe o documento afetado (ex.: proposta) marcado como **pendente** nesse ponto.
+2. **Depois, fazer o check de cada documento exigido (nesta ordem):**
+   - **Reutilizar:** documento recorrente da empresa já assinado e vigente na data da sessão (certidões, ato constitutivo, CREA PJ, balanço, declaração genérica) encontrado nas provas de `habilitacao.json`, no Cérebro (`cerebro_buscar` / `cerebro_provas`) ou no acervo (`/acervo-drive`, somente leitura). Confira CNPJ, legibilidade e **validade na data da sessão** apenas para documentos que vencem (certidões, registro/quitação no conselho, balanço). Documentos sem prazo de validade (atestados, CAT, CAO, ART/TRT/RRT, contrato social/ato constitutivo, cartão CNPJ, inscrição estadual/municipal e declarações) não geram pendência de validade.
+   - **Recriar:** recorrente vencido, vencendo antes da sessão ou que não atende ao que o edital pede (ex.: declaração genérica quando o edital exige modelo próprio ou cita o número do certame) → redija de novo ou marque `"reemitir"` como pendência real.
+   - **Gerar:** o que ainda não existe (declarações específicas do certame, proposta quando houver base aprovada) → aplique `redigir-declaracoes` (modelos oficiais do edital quando existirem, ou padrões de `references/modelos.md`), converta para PDF com `soffice --headless --convert-to pdf`, confira as páginas geradas e declare `assinaturas`.
+   - **Registro de recorrente (condicionado à ferramenta):** quando um documento gerado ou reemitido servir para outras licitações, registre-o como recorrente da empresa com vigência assim que a ferramenta de documentos recorrentes estiver disponível no daemon.
+3. **Montar o pacote e o índice:**
    - Grave `plano.json` na pasta da tarefa (`agents/montagem-proposta/tarefa-<id>/`) incluindo `assinaturas` em cada item que exige assinatura.
    - Rode `python3 /plugin-realmak/skills/montar-documentacao-disputa/scripts/montar_pacote.py plano.json`, gerando um PDF numerado por exigência e `00 - INDICE DE ENVIO.pdf` (com a coluna de assinaturas feitas e pendentes).
-6. **Publicar em DOCUMENTOS PARA DISPUTA:**
+4. **Publicar em DOCUMENTOS PARA DISPUTA:**
    - Para cada arquivo gerado (inclusive `00 - INDICE DE ENVIO.pdf`), chame `disputa_adicionar` com `nome`, `arquivo` (ou `sha256`), `exigencia`, `substituir: true` (só se já houver versão de agente do mesmo código) e `assinaturas`.
    - Nunca sobrescreva nem apague arquivo de `origem: "pessoa"`.
-7. **Concluir:**
+5. **Concluir:**
    - Chame `concluir(resumo)` com resumo objetivo contendo:
      1. total de exigências, quantas prontas e quantas pendentes;
      2. lista de arquivos gravados em **DOCUMENTOS PARA DISPUTA** (incluindo `00 - INDICE DE ENVIO.pdf`);
-     3. lista de **pendências reais** (ação objetiva e responsável — ex.: assinatura do RT, confirmação de vistoria, certidões que vencem antes da sessão);
+     3. lista de **pendências reais** (ação objetiva e responsável — ex.: assinatura do RT, confirmação de vistoria, certidões que vencem antes da sessão, cadastro de dados faltantes em `cadastro_pendencias`);
      4. regras de envio do edital (portal, forma e prazo).
