@@ -19,8 +19,8 @@ Refaça a conferência documental de habilitação **somente da empresa indicada
 ## Como conferir
 
 1. Leia `analise/habilitacao.json` e localize o bloco da `empresa` solicitada dentro de `empresas[]`.
-2. **Escopo por etapa (`etapa_envio`):** o pedido informa `etapa_envio`: `"sessao"` (**Para participar da sessão**), `"habilitacao"` (**Para a habilitação**) ou `"todas"` (padrão).
-   - Quando `etapa_envio` for `"sessao"` ou `"habilitacao"`, confira **somente os itens daquela etapa** (validade, assinaturas, nome da empresa, completude), preservando intactos os itens da outra etapa.
+2. **Escopo por etapa (`etapa_envio`):** o pedido informa `etapa_envio`: `"sessao"` (**Para participar da sessão**), `"proposta"` (**Proposta**), `"habilitacao"` (**Para a habilitação**) ou `"todas"` (padrão).
+   - Quando `etapa_envio` for `"sessao"`, `"proposta"` ou `"habilitacao"`, confira **somente os itens daquela etapa** (validade, assinaturas, nome da empresa, completude), preservando intactos os itens da outra etapa.
    - **Sem itens de ação manual no portal:** nunca crie item ou pendência para passo manual no portal (cadastrar proposta inicial, marcar declarações no portal, clicar em enviar); a etapa `"sessao"` lista apenas o que a plataforma prepara ou confere (documento exigido junto com a proposta inicial, garantia de proposta, vistoria obrigatória, amostra, SICAF ativo quando houver consulta, valor aprovado quando o edital pede proposta anexada).
    - **Sem códigos internos:** nunca escreva `H-xx`, `P-xx` ou `00 -` em motivos, ações, `conferencia` ou resumo. Escreva o motivo da falta em linguagem simples (ex.: `"Falta a assinatura de Fulano (p. 1, linha do RT)"`).
 3. Liste todos os arquivos reais da pasta `DOCUMENTOS PARA DISPUTA` (se ela existir e tiver arquivos). Para PDFs, DOCX, XLSX e TXT adicionados pela equipe, leia o conteúdo (usando Python/bash com `fitz`/`pypdf`/`openpyxl` ou leitura direta) antes de concluir qualquer item.
@@ -35,7 +35,7 @@ Refaça a conferência documental de habilitação **somente da empresa indicada
        - `bloqueia: true` **somente** para o que impede cadastrar a proposta e dar lance na sessão; `situacao: "atende"` nunca bloqueia (`bloqueia: false`).
        - Todo o resto leva `bloqueia: false`, `momento` e `risco_inabilitacao` (`true` se não resolver até o momento levar à inabilitação; na dúvida, `bloqueia: false` com `risco_inabilitacao: true` e motivo citando `"verificar (<item>)"`).
        - Nunca repita a mesma ação em dois itens; só mantenha dois itens quando forem ações distintas com conclusão própria (ex.: assinar declaração de indicação do RT × comprovar vínculo do RT).
-     - **Categoria por etapa (`etapa_envio`, `ordem_edital`, `item_edital`):** preencha ou preserve `etapa_envio` (`"sessao"|"habilitacao"`), `ordem_edital` (`1..999`) e `item_edital` (até 80 chars) em cada exigência revisada.
+     - **Categoria por etapa (`etapa_envio`, `ordem_edital`, `item_edital`):** preencha ou preserve `etapa_envio` (`"sessao"|"proposta"|"habilitacao"`), `ordem_edital` (`1..999`) e `item_edital` (até 80 chars) em cada exigência revisada.
      - **Documento incompleto / minuta nunca confirma:** se o arquivo for minuta, tiver campos ou valores em branco (ex.: proposta com preços vazios), contiver `"MINUTA"` no nome ou no texto, ou constar como `PENDENTE` em `agents/montagem-proposta/indice-envio.json`, **não** marque `"atende"` nem confirme o item — mantenha `situacao: "parcial"` com `motivo` em linguagem simples (ex.: `"Proposta ajustada ao lance pendente após a disputa"`) e `acao` clara.
      - **Checagem de assinaturas (`assinaturas[]` e `conferencia`):** para cada signatário pendente em declarações, balanço, ART/CAT ou registro no conselho:
        - procure no PDF devolvido a assinatura digital (nome no certificado usando `python3 /opt/realmak/agentes/scripts/assinaturas_pdf.py ARQUIVO.pdf "NOME"` quando disponível) **ou** a assinatura visível na `pagina` e no `local` indicados;

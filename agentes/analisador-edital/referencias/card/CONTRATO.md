@@ -38,7 +38,7 @@ Se houver diferença material na ordenação, indique em `mais_aderente` a prime
 {"versao": 1, "gerado_em": "", "mais_aderente": "aforca|realmak|una|nortfort|null", "resultado": "",
  "empresas": [{"empresa": "aforca|realmak|una|nortfort", "aderencia": "alta|media|baixa|nao_atende", "resumo": "",
    "exigencias": [{"id": "", "rotulo": "", "risco_principal": false, "exigencia": "", "fonte": "", "situacao": "atende|parcial|nao_atende|verificar", "prova": "", "validade": "",
-    "grupo": "juridica|fiscal|trabalhista|economico_financeira|tecnica", "etapa_envio": "sessao|habilitacao", "ordem_edital": 1, "item_edital": "", "bloqueia": false, "momento": "ate_convocacao|diligencia|contrato|orientacao", "risco_inabilitacao": false, "motivo_bloqueio": "", "motivo": "",
+    "grupo": "juridica|fiscal|trabalhista|economico_financeira|tecnica", "etapa_envio": "sessao|proposta|habilitacao", "ordem_edital": 1, "item_edital": "", "bloqueia": false, "momento": "ate_convocacao|diligencia|contrato|orientacao", "risco_inabilitacao": false, "motivo_bloqueio": "", "motivo": "",
     "assinaturas": [{"nome": "", "papel": "", "pagina": 1, "local": "", "como_assinar": "", "assinado": true, "forma": "modelo|retornado", "conferencia": ""}],
     "acao": {"tipo": "emitir|consultar|localizar_prova|decidir", "onde": "", "o_que": "", "quem": "", "ate": ""}}],
    "pendencias": [""]}],

@@ -58,6 +58,8 @@ Especificação: veja o docstring do script e o exemplo em [references/exemplo-s
 python3 scripts/gerar_declaracoes.py spec.json "Declaracoes_<Empresa>_<MOD>-<num>-<ano>_<Orgao>.docx"
 ```
 
+Tabelas (equipe ofertada, prazos): um item de `paragrafos` pode ser `{"tabela": {"cabecalho": [...], "linhas": [[...]], "larguras_cm": [...], "direita": [colunas à direita], "negrito_linhas": [...], "tamanho": 9}}`. A proposta de preços com valores sai de `montar-documentacao-disputa/scripts/gerar_proposta.py`, que reutiliza este gerador. Para a etapa Proposta, use também os modelos de regime de tributação, procuração e descrição detalhada dos serviços em `references/modelos.md`.
+
 ## 5. Converter, salvar e conferir
 
 1. Converta para PDF com o LibreOffice (`soffice --headless --convert-to pdf`).

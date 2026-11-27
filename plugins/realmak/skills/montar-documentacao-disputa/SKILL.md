@@ -5,7 +5,7 @@ description: Monta o pacote de envio de uma licitação na pasta DOCUMENTOS PARA
 
 # Montar a documentação da disputa
 
-Objetivo: deixar em **DOCUMENTOS PARA DISPUTA** tudo o que a empresa vai anexar no portal, pronto para subir, com **nomes legíveis** (sem códigos internos como `H-01` ou `P-01`), organizado nas duas etapas de envio (**Para participar da sessão** e **Para a habilitação**) na ordem do edital (`ordem_edital`). Uma pessoa confere antes do envio; o agente **não envia nada ao portal**.
+Objetivo: deixar em **DOCUMENTOS PARA DISPUTA** tudo o que a empresa vai anexar no portal, pronto para subir, com **nomes legíveis** (sem códigos internos como `H-01` ou `P-01`), organizado nas três etapas de envio (**Para participar da sessão**, **Proposta** e **Para a habilitação**) na ordem do edital (`ordem_edital`). Uma pessoa confere antes do envio; o agente **não envia nada ao portal**.
 
 ## 1. Regras de envio do edital
 
@@ -29,7 +29,8 @@ Uma linha por documento a enviar, na ordem do edital:
 
 Categorias por etapa (`etapa_envio`) e ordem (`ordem_edital: 1..999`):
 - **`"sessao"` (Para participar da sessão):** somente o que a plataforma prepara ou confere — documento exigido junto com a proposta inicial, garantia de proposta, vistoria obrigatória, amostra, SICAF ativo (quando houver consulta) ou valor aprovado na precificação quando o edital pede proposta anexada. **Nunca** crie item ou aviso para passo manual no portal (cadastrar proposta, marcar declarações no portal, clicar em enviar).
-- **`"habilitacao"` (Para a habilitação):** tudo o que se anexa após a convocação, na ordem do edital (`ordem_edital: 1, 2, 3…`), começando pela **proposta ajustada ao lance** (`ordem_edital: 1`), seguida de habilitação jurídica → fiscal → econômico-financeira → técnica → declarações.
+- **`"proposta"` (Proposta):** a proposta completa que o edital pede após o lance, um item por documento: proposta no modelo do edital, planilha de composição de custos, descrição detalhada dos serviços, regime de tributação, declarações que o edital exige com a proposta (por exemplo, sustentabilidade) e procuração, quando houver procurador. Veja a seção 4.1. A proposta inicial do portal (valor e declarações) continua em `"sessao"`.
+- **`"habilitacao"` (Para a habilitação):** tudo o que se anexa após a convocação para habilitar a empresa, na ordem do edital (`ordem_edital: 1, 2, 3…`): habilitação jurídica → fiscal → econômico-financeira → técnica → declarações de habilitação. A proposta não entra aqui.
 
 **Sem códigos internos para o usuário:** nunca use `H-xx`, `P-xx` ou `00 -` no nome dos arquivos, nas instruções, nos motivos de falta ou no resumo. Use nomes legíveis (ex.: `Certidão de falência.pdf`, `Declaração de indicação do RT.pdf`); a ordem na tela e no ZIP vem de `ordem_edital`, não de prefixo.
 
@@ -56,11 +57,30 @@ Não use documento de outra empresa do grupo. Não altere originais: o pacote é
 
 - **Dados da empresa faltando (`faltando` / `cadastro_pendencias` em `dados_empresa`):** se faltar dado cadastral necessário (por exemplo, conta bancária da NortFort ou da UNA), **não invente e não copie de documento antigo**. O CRM já mostra o item de `faltando` no card e na empresa; deixe o documento afetado (ex.: proposta) marcado como **pendente** nesse ponto e cite o item faltante no resumo.
 - **Declarações:** use a skill `redigir-declaracoes`, com os dados e a assinatura de `dados_empresa`. Ela produz um DOCX/PDF com uma declaração por página. Para o pacote, separe em um PDF por declaração quando o edital pedir arquivos separados; senão, um PDF "Declarações".
-- **Proposta:** preencha o modelo do anexo do edital (ou o padrão da casa, como no exemplo da Nortfort PE 85/2026) com os valores da precificação aprovada do card. Valor e lote **só** da precificação aprovada ou de instrução humana; sem isso, pendência.
+- **Proposta:** siga a seção 4.1. Valor e lote **só** da precificação aprovada ou de instrução humana; sem isso, pendência.
 - **Signatário sem assinatura cadastrada** (RT, contador, outro profissional): o documento sai com a assinatura da empresa já aplicada (quando aplicável) e a linha dele em branco. Envie obrigatoriamente `assinaturas: [{nome, papel, pagina, local, como_assinar, assinado: bool, forma: "modelo"|"retornado"}]` no `disputa_adicionar` (representante cadastrado: `assinado: true, forma: "modelo", como_assinar: "modelo do cadastro"`; terceiro sem assinatura: `assinado: false, forma: "modelo"`, com `pagina`, `local` ex. `"p. 1, linha 'Responsável técnico indicado'"` e `como_assinar` ex. `"gov.br ou ICP-Brasil"` ou `"à mão e escaneado em PDF"`). Ele não conta como Confirmado: fica **"Aguardando assinatura de <nome>"** e aparece no índice com página, local, como assinar, feitas e pendentes.
-- **Classificação de bloqueio (`CONTRATO.md`, fonte única):** para exigências de habilitação, **herde** `bloqueia`, `momento`, `risco_inabilitacao` e `motivo_bloqueio` de `habilitacao.json`; classifique os itens de proposta (proposta inicial sem preço obrigatório → `bloqueia: true`, `etapa_envio: "sessao"`; proposta ajustada pós-lance → `bloqueia: false`, `momento: "ate_convocacao"`, `etapa_envio: "habilitacao"`, `ordem_edital: 1`). Passe os campos em `plano.json` / `indice-envio.json` e em `disputa_adicionar`. `motivo_bloqueio` começa sempre pelo momento (`"Antes da sessão —"`, `"Até 2 h após a convocação —"`, `"Em diligência —"`, `"Orientação —"`, `"Antes do contrato —"`), cita a cláusula e nunca usa códigos internos (`H-xx`, `P-xx`).
+- **Classificação de bloqueio (`CONTRATO.md`, fonte única):** para exigências de habilitação, **herde** `bloqueia`, `momento`, `risco_inabilitacao` e `motivo_bloqueio` de `habilitacao.json`; classifique os itens de proposta (proposta inicial sem preço obrigatório → `bloqueia: true`, `etapa_envio: "sessao"`; proposta ajustada pós-lance e seus anexos → `bloqueia: false`, `momento: "ate_convocacao"`, `etapa_envio: "proposta"`, `ordem_edital: 1, 2, 3…`). Passe os campos em `plano.json` / `indice-envio.json` e em `disputa_adicionar`. `motivo_bloqueio` começa sempre pelo momento (`"Antes da sessão —"`, `"Até 2 h após a convocação —"`, `"Em diligência —"`, `"Orientação —"`, `"Antes do contrato —"`), cita a cláusula e nunca usa códigos internos (`H-xx`, `P-xx`).
 - **Sem duplicar ações:** nunca repita a mesma ação em dois itens. Use o **rótulo exato** da exigência de `habilitacao.json` em `exigencia` quando vários arquivos atenderem a mesma ação; só crie dois itens quando forem ações distintas com conclusão própria (ex.: assinar declaração de indicação do RT × comprovar vínculo do RT).
 - **Registrar recorrente:** quando um documento gerado ou reemitido servir para outras licitações, chame `registrar_recorrente(empresa, tipo, arquivo, nome?, validade?, substitui_sha256?)` para enviá-lo ao Cérebro da empresa.
+
+### 4.1 Etapa Proposta
+
+Cada documento sai como **item próprio** (`etapa_envio: "proposta"`, `ordem_edital` na ordem em que o edital lista os documentos que acompanham a proposta). Scripts em `scripts/gerar_proposta.py` (no contêiner do daemon, `python3` direto):
+
+1. **Proposta no modelo do edital.** Monte `entrada.json` (formato no docstring do script) com:
+   - `empresa` de `dados_empresa` (inclusive banco, agência e conta; se faltarem, o script avisa e a linha sai sem eles, e o item fica pendente);
+   - `preco_mensal` do **preço de referência da precificação aprovada** (`precificacao.json`, G3 "seguir") ou do lance/instrução humana, nunca de proposta antiga;
+   - `teto_mensal`, itens fixos da Administração, validade mínima, limite de exequibilidade e cláusulas, tudo lido do edital e do TR;
+   - `regime_tributario` de `precificacao.json` (ou Cérebro); `dados_empresa` não traz o regime.
+
+   Rode `python3 scripts/gerar_proposta.py proposta entrada.json "Proposta de preços.docx"`. Ele calcula subtotais, preço total por extenso, desconto D = [1 – (VP/VE)] × 100 (quando o edital aplica o desconto aos serviços sob demanda), e **recusa** (exit 2, nada é gerado) preço acima do máximo, abaixo do limite de exequibilidade (por exemplo, 75% do valor orçado), validade menor que o mínimo e regime ausente. Item fixo da Administração (por exemplo, serviços sob demanda e peças) aparece com valor anual e total da vigência, deixando claro o que entra no preço total. Use o **modelo do anexo do edital** quando houver (mesmos campos e ordem); sem modelo à mão, a estrutura do script. Grave o PDF como item enviável e o DOCX com `nao_enviar: true`; a assinatura é a do representante cadastrado (`assinaturas`).
+2. **Planilha de composição de custos**, no modelo da skill `precificar-proposta-exequibilidade` (sem formato novo): `python3 scripts/gerar_proposta.py planilha agents/analisador-edital/analise/proposta-exequibilidade.xlsx <saida> --preco-mensal <o mesmo preço da proposta> --data AAAA-MM-DD`. O script recalcula o modelo com o preço informado e gera um PDF só com as abas de composição (mão de obra, custos operacionais e formação do preço), sem fontes, observações internas nem checks. **Nunca envie o workbook inteiro** (memória de exequibilidade, fontes e margem-alvo): ele fica só em "Entregas da IA". O JSON de saída traz `lucro_pct` e `checks_pendentes_ou_falhos`; se o lucro ficar ≤ 0 ou o preço divergir do da precificação, avise no resumo. Se o edital trouxer planilha própria, preserve esse formato em vez do modelo.
+3. **Descrição detalhada dos serviços**, específica do edital, redigida a partir do TR, da análise técnica e da precificação (modelo em `redigir-declaracoes/references/modelos.md`). Não repita o TR: mostre como a empresa atende (Edital: repetir o TR sem comprovação pode desclassificar).
+4. **Regime de tributação**, como documento próprio curto quando o edital pede, além da linha na proposta.
+5. **Declarações exigidas junto com a proposta** (por exemplo, sustentabilidade): `etapa_envio: "proposta"`. As demais declarações são de habilitação.
+6. **Procuração**, só quando o signatário não é o representante legal; sem os dados do outorgado, pendente.
+
+Alerte no resumo quando o preço de referência estiver muito abaixo de cotações anteriores da empresa para o mesmo objeto ou da faixa praticada. O agente registra o alerta; a decisão é de uma pessoa.
 
 ## 5. Montar o pacote
 
@@ -86,7 +106,7 @@ Marque `status: "pendente"` com `obs` em linguagem simples, `etapa_envio`, `orde
 
 Grave cada arquivo do pacote com a ferramenta `disputa_adicionar(nome, arquivo? | sha256?, exigencia?, substituir?, empresa?, assinaturas?, pendente?, motivo?, etapa_envio?, ordem_edital?, item_edital?, nao_enviar?, bloqueia?, momento?, risco_inabilitacao?, motivo_bloqueio?)`, informando:
 - `nome` legível sem prefixos `H-xx`/`P-xx`;
-- `exigencia` (rótulo exato de `habilitacao.json`), `etapa_envio` (`"sessao"|"habilitacao"`), `ordem_edital` (`1..999`), `item_edital` (até 80 chars) e `nao_enviar: true` apenas quando for rascunho `.docx` ou duplicado;
+- `exigencia` (rótulo exato de `habilitacao.json`), `etapa_envio` (`"sessao"|"proposta"|"habilitacao"`), `ordem_edital` (`1..999`), `item_edital` (até 80 chars) e `nao_enviar: true` apenas quando for rascunho `.docx` ou duplicado;
 - classificação de bloqueio e a lista `assinaturas` completa (`nome`, `papel`, `pagina`, `local`, `como_assinar`, `assinado`, `forma`) de todo documento gerado.
 - `"Entregas da IA"` exibe apenas relatórios finais para leitura humana (`.xlsx`, `.pdf` de relatório), nunca arquivos intermediários nem cópias do que já foi gravado em **DOCUMENTOS PARA DISPUTA**.
 - **Item pendente no plano (`status: "pendente"`):** minuta, valores em branco, falta assinatura ou falta reemitir **não pode confirmar o item**. Passe obrigatoriamente `pendente: true` e `motivo` em linguagem simples (ex.: `"Falta a assinatura de Fulano (p. 1, linha do RT)"` ou `"Proposta ajustada ao lance pendente após a disputa"`). O arquivo é gravado com `confirmado: false` e o item permanece em **"A fazer"** com o motivo visível (arquivos com `"MINUTA"` no nome nunca confirmam no servidor).
@@ -98,6 +118,6 @@ Nunca apague nem substitua arquivos que uma pessoa colocou na pasta (`origem: "p
 ## 7. Resposta
 
 Responda em poucas linhas (sem códigos internos `H-xx`/`P-xx`):
-1. progresso de cada etapa (**Para participar da sessão** e **Para a habilitação**: prontos e faltas);
+1. progresso de cada etapa (**Para participar da sessão**, **Proposta** e **Para a habilitação**: prontos e faltas);
 2. a lista de **pendências** em linguagem simples, cada uma com a ação e o responsável, por exemplo "Reemitir CND municipal (vence 29/11, sessão 30/11)" ou "Falta a assinatura do RT na declaração de indicação do RT";
 3. as regras de envio, com prazo e portal.
