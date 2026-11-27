@@ -7,12 +7,12 @@
   },
   "etapas": {
     "E0": {
-      "objetivo": "Garantir documentos e dados mínimos do certame e preparar os insumos de leitura.",
+      "objetivo": "Garantir documentos extraídos e dados mínimos do certame antes de liberar a análise.",
       "criterios": [
         "Coleta documentos e campos vazios no link oficial quando a preparação automática não bastar; dispensa navegação se já estiver completo.",
-        "Garante resumo do ConLicitação e mapa de localização de cláusulas antes de ler o edital."
+        "Ao fim da etapa, o daemon confere documentos com texto no card: sem documento, a tarefa para em Análise IA com a pendência visível, sem rodar E1+, sem publicar e sem mover o card."
       ],
-      "descricao": "Coleta documentos/dados faltantes e prepara os insumos da leitura e da triagem.",
+      "descricao": "Coleta documentos e campos mínimos faltantes; trava determinística no daemon impede avançar sem documento com texto.",
       "grupos": [
         {
           "tipo": "sequencia",
@@ -20,7 +20,18 @@
           "itens": [
             "coleta"
           ]
-        },
+        }
+      ]
+    },
+    "E1": {
+      "objetivo": "Preparar insumos, extrair fatos do edital e triar por SQL qual das 4 empresas ativas tem prova própria.",
+      "criterios": [
+        "Garante resumo do ConLicitação e mapa de localização de cláusulas antes de ler o edital.",
+        "Lê o edital completo antes de consultar o Cérebro.",
+        "Consulta apenas realmak, nortfort, aforca e una (nunca sublime) distinguindo prova própria de terceiro."
+      ],
+      "descricao": "Prepara insumos de leitura, consolida os fatos do edital e executa triagem SQL no Cérebro antes do portão G1.",
+      "grupos": [
         {
           "tipo": "paralelo",
           "rotulo": "Preparar insumos",
@@ -28,17 +39,7 @@
             "resumo",
             "mapa"
           ]
-        }
-      ]
-    },
-    "E1": {
-      "objetivo": "Extrair fatos do edital e triar por SQL qual das 4 empresas ativas tem prova própria.",
-      "criterios": [
-        "Lê o edital completo antes de consultar o Cérebro.",
-        "Consulta apenas realmak, nortfort, aforca e una (nunca sublime) distinguindo prova própria de terceiro."
-      ],
-      "descricao": "Consolida os fatos do edital e executa triagem SQL no Cérebro antes do portão G1.",
-      "grupos": [
+        },
         {
           "tipo": "sequencia",
           "rotulo": "Leitura e triagem",

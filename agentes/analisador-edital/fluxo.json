@@ -3,7 +3,7 @@
   "etapas": [
     {
       "id": "E0",
-      "titulo": "Preparação",
+      "titulo": "Coleta",
       "itens": [
         {
           "id": "coleta",
@@ -13,15 +13,18 @@
           "skill": "coletar-edital",
           "passos": "ler fontes/coleta-auto.json; se faltarem documentos ou campos mínimos, navegar no link, baixar anexos e preencher campos vazios; só bloquear com pendência explícita",
           "saida": "fontes/coleta.json"
-        },
+        }
+      ]
+    },
+    {
+      "id": "E1",
+      "titulo": "Preparação, Leitura e Triagem",
+      "itens": [
         {
           "id": "resumo",
           "titulo": "Resumo IA do ConLicitação",
           "modo": "script",
           "tier": "T0",
-          "depende_de": [
-            "coleta"
-          ],
           "cmd": [
             "python3",
             "{pasta_agente_def}/skills/pasta-licitacao/scripts/resumo_conlicitacao.py",
@@ -33,27 +36,22 @@
           "titulo": "Mapa de leitura do edital",
           "modo": "script",
           "tier": "T0",
-          "depende_de": [
-            "coleta"
-          ],
           "cmd": [
             "python3",
             "{pasta_agente_def}/skills/guia-leitura-edital/scripts/localizar.py",
             "{licitacao_id}"
           ]
-        }
-      ]
-    },
-    {
-      "id": "E1",
-      "titulo": "Leitura e Triagem",
-      "itens": [
+        },
         {
           "id": "edital",
           "titulo": "Análise do edital",
           "modo": "skill",
           "tier": "T2",
           "skill": "analisar-edital",
+          "depende_de": [
+            "resumo",
+            "mapa"
+          ],
           "saida": "analise/edital.json"
         },
         {

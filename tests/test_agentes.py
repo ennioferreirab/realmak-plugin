@@ -118,15 +118,16 @@ def test_fluxo_e_referencias():
                 assert Path(cmd[1].replace("{pasta_agente_def}", str(ANALISADOR))).is_file()
     assert set(saidas) >= {f"analise/{p.name}" for p in EXEMPLO.glob("*.json")}
     e0 = {i["id"]: i for i in etapas["E0"]["itens"]}
-    assert set(e0) == {"coleta", "resumo", "mapa"}
+    assert set(e0) == {"coleta"}
     coleta = e0["coleta"]
     assert (coleta["modo"], coleta["skill"], coleta["tier"], coleta["saida"]) == (
         "skill", "coletar-edital", "T2", "fontes/coleta.json",
     )
-    assert e0["resumo"]["depende_de"] == ["coleta"]
-    assert e0["mapa"]["depende_de"] == ["coleta"]
     e1 = {i["id"]: i for i in etapas["E1"]["itens"]}
-    assert set(e1) == {"edital", "triagem-cerebro"}
+    assert set(e1) == {"resumo", "mapa", "edital", "triagem-cerebro"}
+    assert not e1["resumo"].get("depende_de")
+    assert not e1["mapa"].get("depende_de")
+    assert set(e1["edital"]["depende_de"]) == {"resumo", "mapa"}
     triagem = e1["triagem-cerebro"]
     assert (triagem["skill"], triagem["tier"]) == ("cerebro", "T2")
     assert triagem["depende_de"] == ["edital"] and triagem["saida"] == "fontes/triagem_cerebro.json"
@@ -168,7 +169,7 @@ def test_fluxo_e_referencias():
 def test_visao_fluxo_contrato_canvas():
     visao = ler_json(ANALISADOR / "visao.json")
     assert visao["versao"] == 1
-    assert visao["gerado_de"]["plugin_versao"] == "0.16.15"
+    assert visao["gerado_de"]["plugin_versao"] == "0.16.16"
     destinos_validos = {"proxima", "parar", "humano", "rerodar", "precos"}
     itens_por_id = {}
     for etapa in visao["etapas"]:
