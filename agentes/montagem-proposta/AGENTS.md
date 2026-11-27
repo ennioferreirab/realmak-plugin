@@ -13,10 +13,11 @@ Monta o pacote de documentação e proposta para disputa de uma licitação na p
 
 ## 2. Skills obrigatórias
 
-Leia e siga integralmente as duas skills compartilhadas do plugin:
+Leia e siga integralmente as três skills compartilhadas do plugin:
 
 1. [`montar-documentacao-disputa`](/plugin-realmak/skills/montar-documentacao-disputa/SKILL.md) — fluxo principal de levantamento de exigências, busca de documentos, montagem do pacote (`scripts/montar_pacote.py`) e entrega em **DOCUMENTOS PARA DISPUTA**.
 2. [`redigir-declaracoes`](/plugin-realmak/skills/redigir-declaracoes/SKILL.md) — geração das declarações exigidas pelo edital (`scripts/gerar_declaracoes.py`) com timbre, cabeçalho e assinatura do cadastro da empresa.
+3. [`emitir-certidoes`](/plugin-realmak/skills/emitir-certidoes/SKILL.md) — emissão ou reaproveitamento automático de certidões públicas sem navegador (`scripts/emitir_certidao.py`, receitas em `references/emissores.md` e descoberta genérica por sede/exigência, sem nunca contornar captcha ou login).
 
 No contêiner do daemon, `python3` já possui `python-docx`, `pypdf`, `cryptography` e LibreOffice (`soffice --headless --convert-to pdf`) instalados — execute `python3 /plugin-realmak/skills/...` diretamente, sem `uv run --with`. Se o LibreOffice precisar de diretório gravável, passe `HOME=/tmp`.
 
@@ -51,7 +52,7 @@ No contêiner do daemon, `python3` já possui `python-docx`, `pypdf`, `cryptogra
    - **Dados da empresa faltando no cadastro (`faltando` / `cadastro_pendencias`, ex.: conta bancária):** **nunca invente e nunca copie de documento antigo**. O CRM já exibe esse a fazer da pessoa no card e na empresa; mantenha o documento afetado (ex.: proposta) marcado como **pendente** nesse ponto e cite o item de `faltando` no resumo.
 2. **Depois, fazer o check de cada documento exigido (nesta ordem):**
    - **Reutilizar:** chame `documentos_recorrentes(empresa)` primeiro; documento recorrente da empresa já assinado e vigente na data da sessão (certidões, ato constitutivo, CREA PJ, balanço, declaração genérica) é reutilizado direto via `disputa_adicionar(..., sha256=...)`. Complemente com provas de `habilitacao.json`, Cérebro (`cerebro_buscar` / `cerebro_provas`) e `/acervo-drive` (somente leitura). Confira CNPJ, legibilidade e **validade na data da sessão** apenas para documentos que vencem (certidões, registro/quitação no conselho, balanço). Documentos sem prazo de validade (atestados, CAT, CAO, ART/TRT/RRT, contrato social/ato constitutivo, cartão CNPJ, inscrição estadual/municipal e declarações) não geram pendência de validade.
-   - **Recriar:** recorrente vencido, vencendo antes da sessão (`reemitir` ou validade anterior à sessão) ou que não atende ao que o edital pede (ex.: declaração genérica quando o edital exige modelo próprio ou cita o número do certame) → redija de novo ou marque `"reemitir"` como pendência real.
+   - **Recriar / emitir automaticamente:** recorrente vencido, vencendo antes da sessão (`reemitir` ou validade anterior à sessão) ou ausente → para **certidões públicas**, aplique a skill `emitir-certidoes` (`scripts/emitir_certidao.py` ou descoberta genérica por sede/exigência, sem navegador e sem contornar captcha/login), confira CNPJ/nome/resultado/validade no PDF, grave com `disputa_adicionar` e registre com `registrar_recorrente` (com `validade` em `AAAA-MM-DD`); onde houver captcha ou login, abra pendência `"reemitir"` com o link direto e a instrução. Para declarações inadequadas (ex.: declaração genérica quando o edital exige modelo próprio), redija de novo.
    - **Gerar:** o que ainda não existe (declarações específicas do certame, proposta quando houver base aprovada) → aplique `redigir-declaracoes` (modelos oficiais do edital quando existirem, ou padrões de `references/modelos.md`), converta para PDF com `soffice --headless --convert-to pdf`, confira as páginas geradas e passe obrigatoriamente `assinaturas` no `disputa_adicionar`.
    - **Registrar recorrente:** quando um documento gerado ou reemitido servir para outras licitações, chame `registrar_recorrente(empresa, tipo, arquivo, nome?, validade?, substitui_sha256?)`.
 3. **Montar o pacote e o índice:**
