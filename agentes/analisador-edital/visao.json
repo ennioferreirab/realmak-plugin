@@ -3,7 +3,7 @@
   "agente": "analisador-edital",
   "titulo": "Analisador de Edital",
   "gerado_de": {
-    "plugin_versao": "0.16.17",
+    "plugin_versao": "0.16.18",
     "fluxo_sha256": "5867cc129c5f1e8b16f547d633571f0aa6c5de4f8698a694b09bff86ef9174c4"
   },
   "resumo": "Analisa o edital, tria as 4 empresas ativas no Cérebro, aprofunda somente as elegíveis e calcula execução, preço e score para revisão humana.",
@@ -39,13 +39,13 @@
               "objetivo": "Garantir documentos extraídos e campos mínimos do card antes da análise do edital.",
               "criterios": [
                 "Lê fontes/coleta-auto.json e grava estado dispensado sem navegar quando documentos e campos mínimos já estão completos.",
-                "Navega no link oficial, baixa documentos com baixar_documento e preenche campos vazios com preencher_card; só bloqueia com registrar_pendencia_coleta quando impossível."
+                "Navega no link oficial, baixa documentos com baixar_documento e preenche ou corrige campos com preencher_card; só bloqueia com registrar_pendencia_coleta quando impossível."
               ],
               "resumo": [
                 "Verifica se faltam documentos ou campos mínimos e coleta direto no link oficial da licitação antes do mapa e da leitura do edital."
               ],
               "restricoes": [
-                "Nunca inventa campos ausentes nem sobrescreve campos já preenchidos.",
+                "Nunca inventa campos; só sobrescreve campo preenchido com valor conferido na fonte primária, informando a fonte.",
                 "Bloqueia apenas por ausência de link, login/captcha ou arquivos ilegíveis, sempre registrando a pendência no card."
               ],
               "tolera_falha": false,

@@ -117,13 +117,13 @@
       "objetivo": "Garantir documentos extraídos e campos mínimos do card antes da análise do edital.",
       "criterios": [
         "Lê fontes/coleta-auto.json e grava estado dispensado sem navegar quando documentos e campos mínimos já estão completos.",
-        "Navega no link oficial, baixa documentos com baixar_documento e preenche campos vazios com preencher_card; só bloqueia com registrar_pendencia_coleta quando impossível."
+        "Navega no link oficial, baixa documentos com baixar_documento e preenche ou corrige campos com preencher_card; só bloqueia com registrar_pendencia_coleta quando impossível."
       ],
       "resumo": [
         "Verifica se faltam documentos ou campos mínimos e coleta direto no link oficial da licitação antes do mapa e da leitura do edital."
       ],
       "restricoes": [
-        "Nunca inventa campos ausentes nem sobrescreve campos já preenchidos.",
+        "Nunca inventa campos; só sobrescreve campo preenchido com valor conferido na fonte primária, informando a fonte.",
         "Bloqueia apenas por ausência de link, login/captcha ou arquivos ilegíveis, sempre registrando a pendência no card."
       ]
     },

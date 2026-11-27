@@ -169,7 +169,7 @@ def test_fluxo_e_referencias():
 def test_visao_fluxo_contrato_canvas():
     visao = ler_json(ANALISADOR / "visao.json")
     assert visao["versao"] == 1
-    assert visao["gerado_de"]["plugin_versao"] == "0.16.17"
+    assert visao["gerado_de"]["plugin_versao"] == "0.16.18"
     destinos_validos = {"proxima", "parar", "humano", "rerodar", "precos"}
     itens_por_id = {}
     for etapa in visao["etapas"]:
@@ -297,6 +297,13 @@ def test_contrato_do_card(arquivo, objetos, listas):
                 aliases.add(alerta["empresa"])
                 assert alerta["motivo"]
             assert {linha["empresa"] for linha in linhas.values() if linha["estado"] == "falha"} <= aliases
+
+
+def test_coletar_edital_preencher_card_sobrescrever():
+    skill = (ANALISADOR / "skills/coletar-edital/SKILL.md").read_text(encoding="utf-8")
+    assert "nunca sobrescreve" not in skill.lower()
+    for termo in ("sobrescrever", "fonte", "valores_atuais", "situacao", "resumo IA"):
+        assert termo in skill
 
 
 def _validar_valor_estimado_cabecalho(cabecalho):
