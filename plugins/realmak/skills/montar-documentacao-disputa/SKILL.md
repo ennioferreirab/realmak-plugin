@@ -76,11 +76,14 @@ O script:
 - gera o `00 - INDICE DE ENVIO` com ordem, documento, item do edital, arquivo, assinaturas (feitas e pendentes, com página, local e como assinar) e situação;
 - quando `indice_json` for informado no `plano.json` (use `agents/montagem-proposta/indice-envio.json`, na área do agente no card — **nunca** em `DOCUMENTOS PARA DISPUTA`), grava o índice estruturado `{"itens": [{"codigo", "situacao": "OK"|"PENDENTE", "motivo", "bloqueia", "momento", "risco_inabilitacao", "motivo_bloqueio"}]}` lido diretamente pelo Odoo na checagem.
 
+Use `saida` em diretório temporário (por exemplo, `/tmp/pacote-<id>`) ou remova as cópias dos PDFs da pasta da tarefa depois de chamar `disputa_adicionar`, para não duplicar documentos de disputa fora de **DOCUMENTOS PARA DISPUTA**. Arquivos de trabalho (`plano.json`, `spec*.json`, `.md`, logs e `agents/montagem-proposta/indice-envio.json`) são **intermediários**: vão para `IA/INTERMEDIÁRIOS/montagem-proposta/` e **não** aparecem em `"Entregas da IA"`.
+
 Marque `status: "pendente"` com `obs`, `bloqueia`, `momento`, `risco_inabilitacao` e `motivo_bloqueio` em toda exigência sem documento, vencida, sem assinatura ou com dúvida. Se algum item tiver signatário com `assinado: false`, o script força `status: "pendente"` automaticamente.
 
 ## 6. Entregar em DOCUMENTOS PARA DISPUTA
 
 Grave cada arquivo do pacote com a ferramenta `disputa_adicionar(nome, arquivo? | sha256?, exigencia?, substituir?, empresa?, assinaturas?, pendente?, motivo?, bloqueia?, momento?, risco_inabilitacao?, motivo_bloqueio?)`, informando o rótulo exato da exigência de `habilitacao.json`, a classificação de bloqueio (herdada de `habilitacao.json` nos `H-xx`; definida nos `P-xx`) e a lista `assinaturas` completa (`nome`, `papel`, `pagina`, `local`, `como_assinar`, `assinado`, `forma`) de todo documento gerado.
+- `"Entregas da IA"` exibe apenas relatórios finais para leitura humana (`.xlsx`, `.pdf` de relatório), nunca arquivos intermediários nem cópias do que já foi gravado em **DOCUMENTOS PARA DISPUTA**.
 - **Item pendente no plano (`status: "pendente"`):** minuta, valores em branco, falta assinatura ou falta reemitir **não pode confirmar o item**. Passe obrigatoriamente `pendente: true` e `motivo` (ex.: `"Minuta: valores em branco até o lance"`). O arquivo é gravado com `confirmado: false` e o item permanece em **"A fazer"** com o motivo visível (arquivos com `"MINUTA"` no nome nunca confirmam no servidor).
 - Item completo e assinado fica **Confirmado**; item com signatário com `assinado: false` fica **Aguardando assinatura de <nome>**.
 - Use `disputa_documentos` para ver o que já está na pasta e não duplicar. Use `substituir: true` apenas para atualizar a versão anterior do mesmo código gravada por agente.
