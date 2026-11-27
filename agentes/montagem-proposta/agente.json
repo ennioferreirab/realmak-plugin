@@ -1,9 +1,7 @@
 {
   "titulo": "Montagem Proposta",
   "acao": "montagem-proposta",
-  "depende_de": [
-    "analisador-edital"
-  ],
+  "depende_de": [],
   "chat": true,
   "funil": true,
   "ferramentas": [
