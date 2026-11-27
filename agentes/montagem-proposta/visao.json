@@ -1,0 +1,45 @@
+{
+  "versao": 1,
+  "agente": "montagem-proposta",
+  "titulo": "Montagem Proposta",
+  "gerado_de": {
+    "plugin_versao": "0.16.21",
+    "fluxo_sha256": null
+  },
+  "resumo": "Gera declarações e proposta no padrão do grupo e monta o pacote completo de habilitação e envio (um PDF por exigência, índice com assinaturas e pendências reais) na pasta DOCUMENTOS PARA DISPUTA do card.",
+  "etapas": [
+    {
+      "id": "levantamento",
+      "titulo": "Levantamento de exigências e documentos",
+      "objetivo": "Cruzar edital, habilitacao.json, check-list do card, dados cadastrais e Cérebro para listar cada documento exigido e sua situação.",
+      "criterios": [
+        "Consulta dados_empresa e disputa_documentos antes de gerar ou gravar arquivos.",
+        "Preserva integralmente arquivos adicionados por pessoas e sinaliza certidões vencidas ou a vencer antes da sessão."
+      ],
+      "descricao": "Lê as regras de envio do edital, o resultado de habilitação e as marcações humanas, localiza os documentos vigentes da empresa disputante no Cérebro e no acervo somente leitura.",
+      "grupos": []
+    },
+    {
+      "id": "redacao",
+      "titulo": "Redação de declarações e proposta",
+      "objetivo": "Gerar declarações com timbre e assinatura cadastrada e proposta quando houver precificação aprovada, declarando todos os signatários.",
+      "criterios": [
+        "Aplica redigir-declaracoes com modelos do edital ou padrões da casa, sem inventar fatos.",
+        "Marca representante cadastrado como assinado (modelo) e terceiros sem assinatura (RT, contador) como pendentes."
+      ],
+      "descricao": "Produz os DOCX e PDFs das declarações e documentos redigidos, deixando linha em branco para signatários externos sem assinatura cadastrada.",
+      "grupos": []
+    },
+    {
+      "id": "montagem_entrega",
+      "titulo": "Montagem do pacote e entrega na disputa",
+      "objetivo": "Consolidar um PDF numerado por exigência, gerar o 00 - INDICE DE ENVIO com assinaturas e pendências e publicar em DOCUMENTOS PARA DISPUTA.",
+      "criterios": [
+        "Executa montar_pacote.py e grava cada arquivo via disputa_adicionar com exigência e lista de assinaturas.",
+        "Nunca envia nada ao portal nem apaga arquivos colocados por pessoas; encerra via concluir."
+      ],
+      "descricao": "Converte e junta os documentos no formato do edital, publica em DOCUMENTOS PARA DISPUTA atualizando o check-list A fazer e entrega o resumo de arquivos, pendências reais e regras de envio.",
+      "grupos": []
+    }
+  ]
+}

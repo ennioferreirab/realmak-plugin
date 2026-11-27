@@ -1,0 +1,23 @@
+{
+  "titulo": "Montagem Proposta",
+  "acao": "montagem-proposta",
+  "depende_de": [
+    "analisador-edital"
+  ],
+  "chat": true,
+  "funil": true,
+  "ferramentas": [
+    "dados_empresa",
+    "disputa_documentos",
+    "disputa_adicionar",
+    "cerebro_empresas",
+    "cerebro_buscar",
+    "cerebro_fatos",
+    "cerebro_esquema",
+    "cerebro_consulta",
+    "cerebro_provas",
+    "abrir_pagina",
+    "baixar_documento"
+  ],
+  "thinking": "high"
+}
