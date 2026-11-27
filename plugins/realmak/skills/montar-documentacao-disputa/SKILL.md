@@ -39,7 +39,7 @@ Só depois de fechar a lista de exigências, formato e regras de envio (passos 1
    - **Prova já indicada pela análise** (`prova` da exigência, documentos encontrados pela IA em Documentos para disputa);
    - **Cérebro da empresa:** `cerebro_buscar` e `cerebro_provas` (prefira o mais recente e vigente);
    - **Pasta da licitação e acervo no Drive** (`/acervo-drive`, somente leitura).
-2. **Recriar recorrente inadequado ou vencido:** se o recorrente estiver vencido, vencendo antes da sessão ou não atender ao que o edital pede (por exemplo, declaração genérica quando o edital exige o modelo próprio ou cita o número do certame), **recrie** (redija novamente ou marque `"reemitir"` como pendência).
+2. **Recriar ou emitir certidão automaticamente:** se uma **certidão pública** estiver ausente, vencida ou vencendo antes da sessão, aplique a skill `emitir-certidoes` (determinando o emissor pela exigência + sede da empresa em `dados_empresa`, sem navegador e sem nunca contornar captcha ou login): emita ou reaproveite a vigente, confira CNPJ/nome/resultado/validade no PDF, grave com `disputa_adicionar` e registre em `registrar_recorrente` com a validade; onde houver captcha ou login, marque `"reemitir"` como pendência com o link oficial direto e a instrução. Para outros recorrentes inadequados (por exemplo, declaração genérica quando o edital exige o modelo próprio ou cita o número do certame), **recrie** (redija novamente).
 3. **Gerar o que não existe:** o que não existir vai para o passo 4 (redação).
 
 Confira, antes de incluir:

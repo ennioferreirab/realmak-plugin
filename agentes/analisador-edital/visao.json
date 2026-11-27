@@ -3,7 +3,7 @@
   "agente": "analisador-edital",
   "titulo": "Analisador de Edital",
   "gerado_de": {
-    "plugin_versao": "0.16.29",
+    "plugin_versao": "0.16.30",
     "fluxo_sha256": "5867cc129c5f1e8b16f547d633571f0aa6c5de4f8698a694b09bff86ef9174c4"
   },
   "resumo": "Analisa o edital, tria as 4 empresas ativas no Cérebro, aprofunda somente as elegíveis e calcula execução, preço e score para revisão humana.",
