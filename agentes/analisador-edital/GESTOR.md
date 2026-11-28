@@ -69,7 +69,7 @@ Verifique a cobertura de cada exigência eliminatória nas empresas aprofundadas
 
 ## G3 · Fechamento (depois da precificação e do score)
 
-Ao fechar, preserve os campos do score e atualize `relatorio/topo.json.sintese` para refletir a decisão final, a empresa escolhida e a condição principal (frase de até 200 caracteres, sem nomes de arquivo).
+Ao fechar, preserve os campos do score e atualize `relatorio/topo.json.sintese` para refletir a decisão final, a empresa escolhida e a condição principal (frase de até 200 caracteres, sem nomes de arquivo). Reescreva também `relatorio/topo.json.motivos_nota` (3 a 5 itens `{sinal: "+"|"-", texto}`, texto até 90 caracteres) com os motivos resumidos da nota, no estado vigente: os fatos que mais pesam (prova de capacidade, margem e preço, lacunas de documento ou de leitura). Sem códigos (`hab-016`, `H-18`, `G1`), sem nomes de arquivo e sem repetir o `porque` longo. Exemplos: "+ CAO de 1.140 TR, quase o dobro do exigido"; "- Preço no limite: margem de 15% com peças e descontos por desempenho no preço"; "- Anexos I a XIII do termo de referência não lidos". Confira que o preço e a margem citados são os de `precificacao.json` publicado (nunca de rodada de teste revertida) e que o `porque` do G3 cita o mesmo preço.
 
 Antes de `seguir`, confira obrigatoriamente:
 1. **Coerência de empresa:** `analise/precificacao.json.empresa_precificada` deve ser idêntica a `G2.empresa_escolhida` (nunca aceitar Realmak precificada silenciosamente quando G2 escolheu outra empresa).
