@@ -133,6 +133,19 @@ Somente para empresas cujo item não concluiu e que não têm avaliação válid
 
 Em `precificacao.json`, `tributos_pct` e `margem_minima_pct` opcionais registram os pontos percentuais efetivamente usados no cenário-base, e `margem_pct` fica com a margem calculada. O score lê esses valores e só identifica como hipótese o padrão utilizado por falta de dado. Na ausência de alíquota explícita, o score pode calculá-la com o componente mensal de tributos e o preço mensal do mesmo cenário-base.
 
+### Pedido de precificação
+
+Quando o analista pede uma nova precificação no card, o daemon grava `fontes/pedido_precificacao.json` na pasta do agente antes de rodar a rodada parcial (`precificacao` e `score`) e o remove nas rodadas sem pedido. Percentuais em pontos percentuais, valores em reais:
+
+```json
+{"modo": "preco|desconto|margem|premissas", "preco_mensal": 0, "desconto_pct": 0, "margem_pct": 0,
+ "premissas": {"folha_pct": 0, "pecas_fator": 1, "tributos_pct": 0, "margem_pct": 0},
+ "atualizar_planilha": false, "gerar_proposta": false, "buscar_cotacoes": false,
+ "recado": "", "pedido_por": 0, "pedido_em": "AAAA-MM-DDTHH:MM:SS"}
+```
+
+Só o campo do `modo` é obrigatório (`premissas` aceita qualquer subconjunto; `folha_pct` é a variação sobre a folha atual e `pecas_fator` é multiplicador). Em `precificacao.json` voltam, além do contrato acima: `pedido` (eco do pedido), `preco_anterior` (`preco_mensal`, `preco_global`, `margem_pct`), `avisos_pedido[]` (textos) e, em `cenarios[]`, `preco_mensal` e `origem` opcionais: `"pedido"` marca o cenário do pedido (o card mostra "pedido seu"), `"anterior"` o `Preço-alvo anterior`; sem `origem` é cenário da IA. Saídas antigas continuam válidas.
+
 Em `tecnica.json` e `precificacao.json`, `premissa_decisiva` (booleano opcional) indica que a conclusão-base ainda depende de hipótese que muda equipe ou recomendação. Marque `true` somente se a hipótese ainda afetar a conclusão publicada. Cite a hipótese e a lacuna no resumo e mantenha o seu efeito em cenário alternativo. O score trata essa dimensão como inconclusiva. Saídas antigas continuam válidas.
 
 Acréscimos:
