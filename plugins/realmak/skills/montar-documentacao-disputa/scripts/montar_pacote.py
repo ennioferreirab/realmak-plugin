@@ -76,7 +76,11 @@ PASSO_PORTAL_RE = re.compile(
 
 
 # Documento da etapa proposta que leva o preço final (mesma regra de analisar-edital/scripts/validar_card.py).
-DEPENDE_LANCE_RE = re.compile(r"proposta|planilha|composi[cç][aã]o|pre[cç]o|lance|custos", re.IGNORECASE)
+DEPENDE_LANCE_RE = re.compile(
+    r"\blance\b|planilha|composi[cç][aã]o de (?:pre[cç]|custo)|proposta de pre[cç]os"
+    r"|pre[cç]os? (?:unit|global|final|de refer)|anexos? (?:de|com) pre[cç]o",
+    re.IGNORECASE,
+)
 MOTIVO_LANCE = "Gerada com o preço de referência; refazer com o lance final"
 
 

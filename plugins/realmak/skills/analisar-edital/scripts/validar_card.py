@@ -29,7 +29,11 @@ MICRO_PRAZO_RE = re.compile(
     re.IGNORECASE,
 )
 # Documento da etapa proposta que leva o preço final (proposta ajustada, planilha, anexo com preço).
-DEPENDE_LANCE_RE = re.compile(r"proposta|planilha|composi[cç][aã]o|pre[cç]o|lance|custos", re.IGNORECASE)
+DEPENDE_LANCE_RE = re.compile(
+    r"\blance\b|planilha|composi[cç][aã]o de (?:pre[cç]|custo)|proposta de pre[cç]os"
+    r"|pre[cç]os? (?:unit|global|final|de refer)|anexos? (?:de|com) pre[cç]o",
+    re.IGNORECASE,
+)
 
 
 def depende_do_lance(item: dict) -> bool:

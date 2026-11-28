@@ -103,12 +103,18 @@ ROTULOS_LANCE = [
     "Planilha de composição de custos",
     "Proposta de preços",
     "Anexo de preços unitários",
+    "Proposta assinada, ajustada ao último lance, com todas as informações do modelo do Anexo II do TR.",
+    "Planilha de composição de preços em anexo à proposta, com todos os custos dos serviços do TR.",
 ]
 ROTULOS_SEM_LANCE = [
     "Descrição detalhada dos serviços",
     "Declaração de critérios de sustentabilidade",
     "Comprovante do regime de tributação",
     "Procuração",
+    "Especificações detalhadas dos serviços ofertados; repetir o TR sem comprovação pode desclassificar a proposta.",
+    "Informar o regime de tributação da empresa na proposta.",
+    "Declaração de cumprimento dos critérios de sustentabilidade da cláusula 18 do edital, junto com a proposta ajustada.",
+    "Instrumento de mandato com poderes para o ato, só se a proposta for assinada por procurador.",
 ]
 
 
