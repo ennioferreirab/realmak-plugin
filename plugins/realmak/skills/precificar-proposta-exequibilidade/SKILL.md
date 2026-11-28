@@ -22,7 +22,7 @@ Se o trabalho for feito na plataforma de licitações, leia a skill `licitacao` 
 
 ## Pedido de precificação vindo do card
 
-No fluxo do agente, se existir `fontes/pedido_precificacao.json`, a rodada é um **pedido do analista** ("Nova precificação" no card): aplique o pedido sobre a precificação atual, sem refazer custos, equipe nem as outras fases. Sem esse arquivo, ignore esta seção.
+No fluxo do agente, se o prompt do item trouxer a linha `Pedido de precificação do usuário (JSON): {...}` (ou existir `fontes/pedido_precificacao.json`), a rodada é um **pedido do analista** ("Nova precificação" no card): aplique o pedido sobre a precificação atual, sem refazer custos, equipe nem as outras fases. Sem pedido no prompt nem no arquivo, ignore esta seção. Pedido vindo do prompt: grave o JSON em `fontes/pedido_precificacao.json` e use esse arquivo nos passos abaixo.
 
 O pedido tem `modo` (`preco`, `desconto`, `margem` ou `premissas`), os números do modo (`preco_mensal`, `desconto_pct`, `margem_pct` ou `premissas` com `folha_pct`, `pecas_fator`, `tributos_pct`, `margem_pct`), `atualizar_planilha`, `gerar_proposta`, `buscar_cotacoes`, `recado`, `pedido_por` e `pedido_em`. Percentuais em pontos percentuais, `pecas_fator` como multiplicador.
 

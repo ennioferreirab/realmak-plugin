@@ -289,7 +289,7 @@
           "tier": "T2",
           "skill": "precificar-proposta-exequibilidade",
           "saida": "analise/precificacao.json",
-          "passos": "formar preço para empresa_escolhida gravando empresa_precificada e usando fontes/pecas.json; bloquear modelo de manutenção em obra/reforma"
+          "passos": "formar preço para empresa_escolhida gravando empresa_precificada e usando fontes/pecas.json; bloquear manutenção em obra/reforma; com pedido do usuário no prompt, aplicá-lo (aplicar_pedido.py)"
         },
         {
           "id": "score",

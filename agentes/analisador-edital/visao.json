@@ -3,8 +3,8 @@
   "agente": "analisador-edital",
   "titulo": "Analisador de Edital",
   "gerado_de": {
-    "plugin_versao": "0.16.43",
-    "fluxo_sha256": "5867cc129c5f1e8b16f547d633571f0aa6c5de4f8698a694b09bff86ef9174c4"
+    "plugin_versao": "0.16.44",
+    "fluxo_sha256": "1cc382502b1b143b6d92c4e4f2f53fef0cac0adccd94a1c65d0a3a72f2887e8a"
   },
   "resumo": "Analisa o edital, tria as 4 empresas ativas no Cérebro, aprofunda somente as elegíveis e calcula execução, preço e score para revisão humana.",
   "etapas": [
@@ -869,6 +869,7 @@
                 "assets/base-custos-exemplo.json",
                 "references/base-custos.md",
                 "references/planilha.md",
+                "scripts/aplicar_pedido.py",
                 "scripts/consultar_base.py",
                 "scripts/ingerir_custos.py",
                 "scripts/preencher_planilha.py"
