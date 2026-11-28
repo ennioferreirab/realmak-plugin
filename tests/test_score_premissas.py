@@ -161,3 +161,85 @@ def test_score_trava_quando_prazo_ja_encerrado(tmp_path):
     )
     assert ontem["nota"] == 1 and ontem["score"] <= 20
     assert [t["fonte"] for t in ontem["trava"]] == ["Edital 1.2"]
+
+
+# --- motivos_nota e ressalva técnica -------------------------------------------------
+
+def _hab(aderencia="alta"):
+    return {"mais_aderente": "realmak", "empresas": [{"empresa": "realmak", "aderencia": aderencia}]}
+
+
+def test_motivos_nota_forma_e_estado_atual(tmp_path):
+    result = calcular(
+        tmp_path, habilitacao=_hab(),
+        tecnica={"conclusao": {"viavel": "com_ressalvas", "ressalvas": [
+            "Dimensionamento de carga e SLA pendentes: anexos I a XIII do TR fora do acervo"]}},
+        precificacao={"exequivel": "no_limite", "margem_pct": 15, "margem_minima_pct": 10, "tributos_pendente": True},
+    )
+    motivos = result["motivos_nota"]
+    assert SCORE["validar_motivos_nota"](motivos) == []
+    assert 3 <= len(motivos) <= 5
+    assert motivos[0] == {"sinal": "+", "texto": "Realmak atende bem à habilitação"}
+    assert any(m["sinal"] == "-" and "Dimensionamento" in m["texto"] for m in motivos)
+    assert any("margem de 15%" in m["texto"] for m in motivos)
+    assert any("tributária" in m["texto"] for m in motivos)
+
+
+def test_motivos_nota_sem_dados_continuam_validos(tmp_path):
+    result = calcular(tmp_path)
+    assert SCORE["validar_motivos_nota"](result["motivos_nota"]) == []
+    assert len(result["motivos_nota"]) == 3
+
+
+def test_motivos_nota_ressalva_com_codigo_ou_bastidor_nao_vira_motivo(tmp_path):
+    result = calcular(tmp_path, tecnica={"conclusao": {"viavel": "com_ressalvas", "ressalvas": [
+        "Rodada limitada à herança da habilitação (empresa_avaliada = realmak)", "Veja hab-016 em tecnica.json"]}})
+    textos = " ".join(m["texto"] for m in result["motivos_nota"])
+    assert "empresa_avaliada" not in textos and "hab-016" not in textos and "tecnica.json" not in textos
+    assert SCORE["validar_motivos_nota"](result["motivos_nota"]) == []
+
+
+def test_motivos_nota_trava_entra_na_lista(tmp_path):
+    result = calcular(tmp_path, precificacao={"exequivel": "nao", "margem_pct": -16.1})
+    assert any("inexequível" in m["texto"] for m in result["motivos_nota"])
+    assert len(result["motivos_nota"]) <= 5
+
+
+@pytest.mark.parametrize("motivos", [
+    None, [], [{"sinal": "+", "texto": "a"}] * 2, [{"sinal": "+", "texto": "a"}] * 6,
+    [{"sinal": "*", "texto": "a"}] * 3, [{"sinal": "+", "texto": ""}] * 3,
+    [{"sinal": "+", "texto": "x" * 91}] * 3,
+    [{"sinal": "-", "texto": "Falta hab-016 no edital"}] * 3,
+    [{"sinal": "-", "texto": "Risco H-18 aberto"}] * 3,
+    [{"sinal": "-", "texto": "Decidido no G1"}] * 3,
+    [{"sinal": "-", "texto": "Ver habilitacao.json"}] * 3,
+])
+def test_validar_motivos_nota_rejeita(motivos):
+    assert SCORE["validar_motivos_nota"](motivos)
+
+
+def test_validar_ressalva_tecnica():
+    validar = SCORE["validar_ressalva_tecnica"]
+    assert validar({"conclusao": {"resumo": "Atende", "ressalvas": [
+        "Dimensionamento de carga e SLA pendentes: anexos I a XIII do TR fora do acervo"]}}) == []
+    assert validar({"conclusao": {"ressalvas": ["Rodada limitada à herança da habilitação (empresa_avaliada = una)"]}})
+    assert validar({"conclusao": {"resumo": "Análise na rodada de G2"}})
+    assert validar({"conclusao": {"ressalvas": ["x" * 201]}})
+    assert validar(None) == []
+
+
+def test_cli_validar(tmp_path, capsys):
+    import subprocess
+    import sys
+    (tmp_path / "relatorio").mkdir()
+    (tmp_path / "analise").mkdir()
+    topo = {"motivos_nota": [{"sinal": "+", "texto": "Ok"}, {"sinal": "-", "texto": "Pendente"},
+                             {"sinal": "-", "texto": "Outro"}]}
+    (tmp_path / "relatorio" / "topo.json").write_text(json.dumps(topo), encoding="utf-8")
+    script = Path(__file__).resolve().parents[1] / "agentes/analisador-edital/skills/score/scripts/score.py"
+    ok = subprocess.run([sys.executable, str(script), "--dados", str(tmp_path), "--validar"], capture_output=True, text=True)
+    assert ok.returncode == 0
+    (tmp_path / "analise" / "tecnica.json").write_text(
+        json.dumps({"conclusao": {"ressalvas": ["rodada limitada"]}}), encoding="utf-8")
+    ruim = subprocess.run([sys.executable, str(script), "--dados", str(tmp_path), "--validar"], capture_output=True, text=True)
+    assert ruim.returncode == 1

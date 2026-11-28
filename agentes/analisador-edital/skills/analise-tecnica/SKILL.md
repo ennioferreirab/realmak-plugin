@@ -23,7 +23,8 @@ description: Item `tecnica` (E2). Lê `cabecalho.tipo_objeto` de `analise/edital
    | ausente ou `edital.json` sem texto | Confira o objeto no edital e decida pela tabela; diga a escolha em `conclusao.resumo` |
 
 2. Leia o SKILL.md escolhido por inteiro e faça os passos dele. É skill do realmak-plugin: siga o [AGENTS.md §7](../../AGENTS.md#skills-do-realmak-plugin) para onde ler os documentos e gravar as entregas (pasta do processo = `analise/`; nada na conversa).
-3. Grave `analise/tecnica.json` no [contrato do card](../../referencias/card/CONTRATO.md), com `arquivos` listando os HTML da skill (`analise/analise-fornecimento.html`; na manutenção, o painel `analise/analise-manutencao.html` primeiro e o relatório de impressão `analise/analise-manutencao-relatorio.html`) e as planilhas `.xlsx`. Uma única `saida`.
+3. Em `conclusao`, não cite a rodada, a herança da habilitação nem `empresa_avaliada`: a seção Habilitação já mostra quais empresas foram analisadas. A ressalva é uma frase curta (até ~200 caracteres) do que importa para executar, por exemplo "Dimensionamento de carga e SLA pendentes: anexos I a XIII do TR fora do acervo". Sem códigos internos nem nomes de arquivo; `score.py --validar` confere.
+4. Grave `analise/tecnica.json` no [contrato do card](../../referencias/card/CONTRATO.md), com `arquivos` listando os HTML da skill (`analise/analise-fornecimento.html`; na manutenção, o painel `analise/analise-manutencao.html` primeiro e o relatório de impressão `analise/analise-manutencao-relatorio.html`) e as planilhas `.xlsx`. Uma única `saida`.
 
 ## Limites
 - Não repita o que a análise do edital já traz; parta dela.

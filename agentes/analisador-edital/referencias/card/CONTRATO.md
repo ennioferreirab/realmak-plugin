@@ -129,7 +129,7 @@ Todos opcionais; análise antiga sem eles continua válida e o card trata a aus�
  "arquivos": [{"rotulo": "", "caminho": ""}]}
 ```
 
-`itens` vale para fornecimento e para peças da manutenção; `escopo`, `equipe` e `sla` só para manutenção. `empresa_avaliada` (opcional aditivo) identifica o alias da empresa avaliada pela análise técnica, alinhado a `habilitacao.mais_aderente`. `cotacoes_online` é a pesquisa de preço por item na internet (preço real, link individual da oferta, data), que vinha do relatório antigo e passa a ser parte de `analisar-edital-fornecimento`.
+`itens` vale para fornecimento e para peças da manutenção; `escopo`, `equipe` e `sla` só para manutenção. `empresa_avaliada` (opcional aditivo) identifica o alias da empresa avaliada pela análise técnica, alinhado a `habilitacao.mais_aderente`. `conclusao.resumo` e `conclusao.ressalvas[]` não citam a rodada, a herança da habilitação nem `empresa_avaliada` (a seção Habilitação já mostra as empresas analisadas); cada ressalva é uma frase curta do que importa para executar, até ~200 caracteres, sem códigos internos nem nomes de arquivo. `cotacoes_online` é a pesquisa de preço por item na internet (preço real, link individual da oferta, data), que vinha do relatório antigo e passa a ser parte de `analisar-edital-fornecimento`.
 
 `precificacao.json` (`precificar-proposta-exequibilidade`; preços de peças por `cotar-pecas-materiais-licitacoes`):
 
@@ -176,6 +176,7 @@ Exemplo dos quatro arquivos: [exemplo/analise/](exemplo/analise/).
 
 Todos são opcionais para leitura de análises antigas. O analisador preenche quando houver base:
 
+- `relatorio/topo.json.motivos_nota`: "Por quê?" da nota, lista de 3 a 5 itens `{"sinal": "+"|"-", "texto": ""}`; `texto` com até 90 caracteres, frase curta no estado vigente da análise, sem códigos internos (`hab-016`, `H-18`, `G1`) nem nomes de arquivo (ex.: `{"sinal": "-", "texto": "Preço no limite: margem de 15% com peças e descontos por desempenho"}`). O `score.py` grava uma versão a cada execução (habilitação, técnica e preço) e o G3 a reescreve com os motivos finais. Ausente: o card mantém o texto genérico da síntese.
 - `relatorio/topo.json.sintese`: frase curta de decisão, até 200 caracteres, em linguagem direta, sem nomes de arquivos. O score fornece a síntese inicial pela habilitação, técnica e preço. No G3, atualize a frase para refletir a decisão final e as condições relevantes.
 - `edital.json.atencao[].titulo`: até 80 caracteres. `habilitacao[]` traz `id` estável por requisito e `rotulo` de até 40 caracteres.
 - `edital.json.cabecalho.portal_sessao`: objeto estruturado do portal da sessão pública (`{nome, url, id_no_portal, fonte}`) ou `null`, mantendo o campo texto livre `cabecalho.portal` inalterado. `nome` usa forma canônica curta (`Compras.gov.br`, `SISLOG`, `BLL`, `Licitações-e`, `BNC`, `Portal de Compras Públicas` ou portal próprio); `url` traz a página inicial `http(s)` do portal (ou `null`, sem buscar link direto da sessão); `id_no_portal` traz o número/código do certame no portal (ou `null`); `fonte` cita item/página do edital ou `"PNCP"`. Se o edital não informar o portal, usar os metadados do PNCP (`usuarioNome`, `numeroCompra`) com `fonte: "PNCP"`; se continuar não identificado, gravar `portal_sessao: null` e registrar aviso em `avisos[]` (nunca inventar).

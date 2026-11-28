@@ -252,6 +252,122 @@ def termo_lucro(prec, params, maximo):
     return 0, margem, f"Margem negativa ({pct(margem)})"
 
 
+NOMES_EMPRESA = {"realmak": "Realmak", "nortfort": "Nortfort", "aforca": "Aforça", "una": "Una"}
+MOTIVOS_MIN, MOTIVOS_MAX, MOTIVO_TEXTO_MAX, RESSALVA_MAX = 3, 5, 90, 200
+# Códigos internos e nomes de arquivo não aparecem em texto visível ao usuário.
+PADROES_INTERNOS = re.compile(
+    r"\b(?:hab-\d+|[HP]-\d+|G[123])\b|\b[\w./-]+\.(?:json|html|xlsx|md|pdf|docx?)\b", re.IGNORECASE)
+PADROES_BASTIDOR = re.compile(r"empresa_avaliada|rodada|herança|heranca", re.IGNORECASE)
+
+
+def _curto(texto, limite=MOTIVO_TEXTO_MAX):
+    texto = " ".join(str(texto).split()).rstrip(".")
+    return texto if len(texto) <= limite else texto[: limite - 1].rstrip(" ,;:") + "…"
+
+
+def _limpo(texto):
+    return isinstance(texto, str) and bool(texto.strip()) and not PADROES_INTERNOS.search(texto)
+
+
+def motivos_nota(hab, tec, prec, params, travas=(), avisos=()):
+    """3 a 5 motivos curtos da nota (`sinal` + ou -, `texto` até 90 caracteres), do estado atual."""
+    motivos = []
+    empresas = [e for e in (hab or {}).get("empresas") or [] if isinstance(e, dict)]
+    escolhida = next((e for e in empresas if e.get("empresa") == (hab or {}).get("mais_aderente")),
+                     empresas[0] if empresas else None)
+    aderencia = (escolhida or {}).get("aderencia")
+    nome = NOMES_EMPRESA.get((escolhida or {}).get("empresa"), "Nenhuma empresa")
+    if aderencia == "alta":
+        motivos.append(("+", f"{nome} atende bem à habilitação"))
+    elif aderencia == "media":
+        motivos.append(("-", f"{nome} atende parte da habilitação; há documentos a conferir"))
+    elif aderencia == "baixa":
+        motivos.append(("-", f"{nome} atende pouco da habilitação"))
+    elif aderencia == "nao_atende":
+        motivos.append(("-", "Nenhuma empresa do grupo atende à habilitação"))
+    else:
+        motivos.append(("-", "Habilitação ainda não analisada"))
+
+    conclusao = (tec or {}).get("conclusao") or {}
+    ressalvas = [r for r in conclusao.get("ressalvas") or [] if _limpo(r) and not PADROES_BASTIDOR.search(r)]
+    if (tec or {}).get("premissa_decisiva") is True:
+        motivos.append(("-", "Execução depende de premissa ainda sem confirmação"))
+    elif conclusao.get("viavel") == "sim":
+        motivos.append(("+", "Análise técnica indica que dá para executar"))
+    elif conclusao.get("viavel") == "com_ressalvas":
+        motivos.append(("-", ressalvas[0] if ressalvas else "Execução possível, com ressalvas técnicas"))
+    elif conclusao.get("viavel") == "nao":
+        motivos.append(("-", "Análise técnica indica que não dá para executar"))
+    else:
+        motivos.append(("-", "Análise técnica sem conclusão"))
+
+    prec = prec or {}
+    margem = prec.get("margem_pct")
+    minima = margem_minima(prec, params)
+    if not prec:
+        motivos.append(("-", "Preço ainda não calculado"))
+    elif prec.get("premissa_decisiva") is True:
+        motivos.append(("-", "Margem depende de premissa ainda sem confirmação"))
+    elif prec.get("exequivel") == "nao":
+        motivos.append(("-", "Preço inexequível no valor estimado"))
+    elif not numero(margem):
+        motivos.append(("-", "Margem ainda não calculada"))
+    elif margem >= minima and prec.get("exequivel") != "no_limite":
+        motivos.append(("+", f"Margem de {pct(margem)}, acima da mínima de {pct(minima)}"))
+    elif margem >= minima:
+        motivos.append(("-", f"Preço no limite: margem de {pct(margem)}, mínima de {pct(minima)}"))
+    else:
+        motivos.append(("-", f"Margem de {pct(margem)}, abaixo da mínima de {pct(minima)}"))
+
+    extras = []
+    for trava in travas:
+        extras.append(("-", trava["motivo"]))
+    if prec.get("tributos_pendente") is True:
+        extras.append(("-", "Alíquota tributária pendente de confirmação contábil"))
+    if (tec or {}).get("premissa_decisiva") is not True and len(ressalvas) > (
+            1 if conclusao.get("viavel") == "com_ressalvas" else 0):
+        extras.append(("-", ressalvas[1 if conclusao.get("viavel") == "com_ressalvas" else 0]))
+    motivos = motivos + [m for m in extras if m[1] not in {x[1] for x in motivos}]
+    return [{"sinal": s, "texto": _curto(t)} for s, t in motivos[:MOTIVOS_MAX]]
+
+
+def validar_motivos_nota(motivos):
+    """Problemas de `topo.json.motivos_nota` (lista vazia = ok)."""
+    if not isinstance(motivos, list) or not MOTIVOS_MIN <= len(motivos) <= MOTIVOS_MAX:
+        return [f"motivos_nota deve ser lista de {MOTIVOS_MIN} a {MOTIVOS_MAX} itens"]
+    problemas = []
+    for i, m in enumerate(motivos, 1):
+        if not isinstance(m, dict) or m.get("sinal") not in ("+", "-"):
+            problemas.append(f"motivo {i}: sinal deve ser + ou -")
+            continue
+        texto = m.get("texto")
+        if not isinstance(texto, str) or not texto.strip():
+            problemas.append(f"motivo {i}: texto vazio")
+        elif len(texto) > MOTIVO_TEXTO_MAX:
+            problemas.append(f"motivo {i}: texto com {len(texto)} caracteres (máximo {MOTIVO_TEXTO_MAX})")
+        elif PADROES_INTERNOS.search(texto):
+            problemas.append(f"motivo {i}: código interno ou nome de arquivo no texto")
+    return problemas
+
+
+def validar_ressalva_tecnica(tec):
+    """Problemas na conclusão técnica: sem bastidores da rodada, ressalvas curtas (lista vazia = ok)."""
+    conclusao = (tec or {}).get("conclusao") or {}
+    textos = [("resumo", conclusao.get("resumo"))] + [
+        (f"ressalva {i}", r) for i, r in enumerate(conclusao.get("ressalvas") or [], 1)]
+    problemas = []
+    for rotulo, texto in textos:
+        if not isinstance(texto, str):
+            continue
+        if PADROES_BASTIDOR.search(texto):
+            problemas.append(f"conclusão técnica ({rotulo}): bastidor da rodada ou campo interno no texto")
+        elif PADROES_INTERNOS.search(texto):
+            problemas.append(f"conclusão técnica ({rotulo}): código interno ou nome de arquivo no texto")
+        if rotulo != "resumo" and len(texto) > RESSALVA_MAX:
+            problemas.append(f"conclusão técnica ({rotulo}): {len(texto)} caracteres (máximo {RESSALVA_MAX})")
+    return problemas
+
+
 def nota_de(score, config):
     f = config["faixas_nota"]
     return 5 if score >= f["alta"] else 4 if score >= f["oportunidade"] else 2 if score >= f["media"] else 1
@@ -322,6 +438,7 @@ def calcular(pasta, params, fallbacks=(), hoje=None, agora=None):
     else:
         sintese = "Vale avaliar a disputa, considerando as condições de habilitação e preço."
     return {"score": score, "nota": nota, "rotulo": ROTULOS[nota], "termos": termos, "sintese": sintese,
+            "motivos_nota": motivos_nota(hab, tec, prec, params, travas, avisos),
             "trava": travas or None, "avisos": avisos, "hipotese_precificacao": hipotese,
             "tip_score": "\n".join(tip)}
 
@@ -332,6 +449,8 @@ def main():
     parser.add_argument("--dados", type=Path, help="pasta do agente na licitação (com analise/)")
     parser.add_argument("--saida", type=Path)
     parser.add_argument("--exemplo", action="store_true")
+    parser.add_argument("--validar", action="store_true",
+                        help="só valida topo.json (motivos_nota) e a conclusão de tecnica.json; sai 1 se houver problema")
     args = parser.parse_args()
     params, fallbacks = parametros(RAIZ)
     if args.exemplo:
@@ -344,6 +463,14 @@ def main():
         pasta = raiz / args.licitacao_id / "agents" / nome
     else:
         parser.error("informe licitacao_id, --dados ou --exemplo")
+    if args.validar:
+        try:
+            topo = json.loads((pasta / "relatorio" / "topo.json").read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            topo = None
+        problemas = validar_motivos_nota((topo if isinstance(topo, dict) else {}).get("motivos_nota")) + validar_ressalva_tecnica(ler(pasta, "tecnica"))
+        print(json.dumps({"ok": not problemas, "problemas": problemas}, ensure_ascii=False))
+        raise SystemExit(1 if problemas else 0)
     topo = calcular(pasta, params, fallbacks)
     if args.exemplo and not args.saida:
         print(json.dumps(topo, ensure_ascii=False, indent=2))

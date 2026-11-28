@@ -27,7 +27,9 @@ Quando `tecnica.json` ou `precificacao.json` tiver `premissa_decisiva: true`, tr
 Use `tributos_pct`, `margem_pct` e `margem_minima_pct` da precificação quando disponíveis. Exemplo: tributos de 19,29% e margem calculada de 4,82% entram na nota explicativa; use a margem mínima aplicada se vier da precificação. Assinale como hipótese apenas o valor padrão que precisou ser usado. Quando `precificacao.json` trouxer `tributos_pendente: true`, acrescente o aviso em `avisos` (usando `tributos_pendente_motivo` ou texto padrão de confirmação contábil) e sinalize `alíquota pendente` em `hipotese_precificacao`.
 
 ## Saída
-`relatorio/topo.json`: `score` (número), `nota`, `rotulo`, `termos[]` {`rotulo`, `pontos`, `maximo`, `motivo`}, `trava`, `avisos`, `hipotese_precificacao`, `tip_score`. Não é chance de vencer.
+`relatorio/topo.json`: `score` (número), `nota`, `rotulo`, `termos[]` {`rotulo`, `pontos`, `maximo`, `motivo`}, `motivos_nota`, `trava`, `avisos`, `hipotese_precificacao`, `tip_score`. Não é chance de vencer.
+
+`motivos_nota` (3 a 5 itens `{sinal: "+"|"-", texto}`, texto até 90 caracteres) é o "Por quê?" da nota no card. O script gera uma versão a cada execução, do estado atual da habilitação, da técnica e do preço; o G3 do gestor a reescreve com os motivos finais (ver GESTOR). Sem códigos internos nem nomes de arquivo. `python3 .../score.py --dados <pasta> --validar` confere `motivos_nota` e a conclusão de `tecnica.json` (sai com 1 se houver problema).
 
 ## Limites
 - O script só calcula; não reavalia conteúdo. Nenhuma skill grava score.
