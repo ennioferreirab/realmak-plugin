@@ -229,7 +229,8 @@ def test_validar_ressalva_tecnica():
 
 
 def test_cli_validar(tmp_path, capsys):
-    import subprocess, sys
+    import subprocess
+    import sys
     (tmp_path / "relatorio").mkdir()
     (tmp_path / "analise").mkdir()
     topo = {"motivos_nota": [{"sinal": "+", "texto": "Ok"}, {"sinal": "-", "texto": "Pendente"},
