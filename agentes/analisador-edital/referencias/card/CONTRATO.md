@@ -135,7 +135,7 @@ Em `precificacao.json`, `tributos_pct` e `margem_minima_pct` opcionais registram
 
 ### Pedido de precificação
 
-Quando o analista pede uma nova precificação no card, o daemon grava `fontes/pedido_precificacao.json` na pasta do agente antes de rodar a rodada parcial (`precificacao` e `score`) e o remove nas rodadas sem pedido. Percentuais em pontos percentuais, valores em reais:
+Quando o analista pede uma nova precificação no card, o daemon passa o pedido no prompt do item `precificacao` ("Pedido de precificação do usuário (JSON): {...}") e/ou grava `fontes/pedido_precificacao.json` na pasta do agente antes da rodada parcial (`precificacao` e `score`), removendo o arquivo nas rodadas sem pedido; a skill grava o JSON do prompt nesse arquivo para o script. Percentuais em pontos percentuais, valores em reais:
 
 ```json
 {"modo": "preco|desconto|margem|premissas", "preco_mensal": 0, "desconto_pct": 0, "margem_pct": 0,
