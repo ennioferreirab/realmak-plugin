@@ -182,3 +182,19 @@ def test_skill_agente_e_contrato_citam_o_pedido():
     assert "pedido_precificacao.json" in (raiz / "agentes/analisador-edital/AGENTS.md").read_text(encoding="utf-8")
     contrato = (raiz / "agentes/analisador-edital/referencias/card/CONTRATO.md").read_text(encoding="utf-8")
     assert "### Pedido de precificação" in contrato and '"anterior"' in contrato
+
+
+def test_cenarios_de_risco_anteriores_sao_reavaliados_no_preco_do_pedido():
+    base = atual()
+    custo_risco = 123_500.0  # conservador: custo de hoje + 23,5%
+    base["cenarios"] = [
+        {"nome": "Base, preço-alvo", "preco_global": 7_800_000.0, "margem_pct": margem(130_000, 100_000, 0.15), "exequivel": "sim"},
+        {"nome": "Conservador, no preço-alvo", "preco_global": 7_800_000.0, "margem_pct": margem(130_000, custo_risco, 0.15), "exequivel": "nao"},
+        {"nome": "Conservador, no teto", "preco_global": 10_140_000.0, "margem_pct": margem(169_000, custo_risco, 0.15), "exequivel": "nao"},
+    ]
+    res = ap.calcular(base, pedido(modo="desconto", desconto_pct=8))
+    risco = [c for c in res["cenarios"] if c["nome"] == "Conservador, no preço do pedido"]
+    assert len(risco) == 1  # o duplicado e o de custo igual ao de hoje não entram
+    assert risco[0]["margem_pct"] == pytest.approx(margem(155_480, custo_risco, 0.15), abs=0.01)
+    assert risco[0]["origem"] == "ia"
+    assert all(c["nome"] != "Base, preço-alvo" for c in res["cenarios"])
