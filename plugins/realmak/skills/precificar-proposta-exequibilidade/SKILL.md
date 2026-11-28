@@ -20,6 +20,31 @@ Defina também **qual empresa do grupo vai disputar** (`aforca`, `realmak`, `una
 
 Se o trabalho for feito na plataforma de licitações, leia a skill `licitacao` para abrir a licitação, achar a análise, anexar os arquivos e registrar as pendências.
 
+## Pedido de precificação vindo do card
+
+No fluxo do agente, se existir `fontes/pedido_precificacao.json`, a rodada é um **pedido do analista** ("Nova precificação" no card): aplique o pedido sobre a precificação atual, sem refazer custos, equipe nem as outras fases. Sem esse arquivo, ignore esta seção.
+
+O pedido tem `modo` (`preco`, `desconto`, `margem` ou `premissas`), os números do modo (`preco_mensal`, `desconto_pct`, `margem_pct` ou `premissas` com `folha_pct`, `pecas_fator`, `tributos_pct`, `margem_pct`), `atualizar_planilha`, `gerar_proposta`, `buscar_cotacoes`, `recado`, `pedido_por` e `pedido_em`. Percentuais em pontos percentuais, `pecas_fator` como multiplicador.
+
+1. **Parta do `analise/precificacao.json` atual.** Sem ele (ou sem custo, tributos ou preço mensal), não há base: grave a pendência e não invente número.
+2. **Calcule com o script, não de cabeça:**
+
+   ```bash
+   python scripts/aplicar_pedido.py analise/precificacao.json fontes/pedido_precificacao.json analise/precificacao.json
+   ```
+
+   - `preco`: o preço mensal informado.
+   - `desconto`: valor estimado × (1 − desconto) ÷ meses da vigência.
+   - `margem`: preço = custo ÷ (1 − tributos − margem).
+   - `premissas`: recalcula o custo (folha, peças, tributos) e acha o preço pela margem.
+   - A margem é sempre (preço × (1 − tributos) − custo) ÷ preço.
+3. **O que o script já grava:** o preço do pedido vira o preço-alvo (`preco_mensal`, `preco_global`, `margem_pct`, `exequivel`, componentes de tributos e margem); o cenário do pedido (`origem: "pedido"`); o `Preço-alvo anterior` (`origem: "anterior"`, avaliado com o custo de agora); a margem mínima e o limite de 75% do valor orçado como referências; a sensibilidade refeita; `piso_sugerido`; o eco em `pedido`; `avisos_pedido`; e um `resumo` novo. Inexequível não se esconde: preço abaixo de 75% do valor orçado ou margem negativa vira `exequivel: "nao"` com o aviso. O script aceita só o que consegue calcular e recusa o resto com mensagem.
+4. **Depois do script, você:** leia o `recado` e ajuste só o que ele pedir dentro do cálculo (por exemplo, incluir um cenário conservador com custo comprovado). Confira o `resumo` e a linha de vigência. Não toque nas outras saídas da análise.
+5. **Só o que foi marcado:**
+   - `atualizar_planilha: true`: ajuste o `dados.json` da planilha com `--dados dados.json --dados-saida dados.json` no mesmo comando do passo 2 e rode `preencher_planilha.py`. Com `false`, não gere nem altere a planilha.
+   - `gerar_proposta: true`: refaça a proposta de preços com o novo preço. O documento com preço continua pendente até o lance: `pendente: true`, motivo `Gerada com o preço de referência; refazer com o lance final`. Com `false`, não gere.
+   - `buscar_cotacoes: true`: busque cotações novas de peças (`cotar-pecas-materiais-licitacoes`) e refaça o custo com elas antes do passo 2. Com `false`, use as já gravadas.
+
 ## Fontes de preço
 
 | Preciso de | Onde buscar |
