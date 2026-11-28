@@ -12,8 +12,10 @@ O agente grava em `licitacoes/<id>/agents/analisador-edital/analise/`. Toda list
    "valor_estimado": 0, "valor_sigiloso": false, "valor_estimado_fonte": "", "valor_estimado_escopo": "global|lote|item",
    "criterio": "", "modo_disputa": "", "portal": "", "link": "",
    "portal_sessao": {"nome": "", "url": "", "id_no_portal": "", "fonte": ""}},
- "atencao": [{"titulo": "", "ponto": "", "gravidade": "alta|media|baixa", "fonte": "", "o_que_fazer": ""}],
- "prazos": [{"prazo": "", "data": "", "fonte": "", "observacao": "", "grupo": "sessao|validade|contrato|outros"}],
+ "convocacao": {"modo": "separada|conjunta", "fonte": ""},
+ "atencao": [{"titulo": "", "ponto": "", "gravidade": "alta|media|baixa", "fonte": "", "o_que_fazer": "",
+   "situacao": "aberto|resolvido", "resolucao": "", "destino": {"tipo": "exigencia|precificacao|tecnica|edital|etapa", "ref": ""}}],
+ "prazos": [{"prazo": "", "data": "", "fonte": "", "observacao": "", "grupo": "sessao|validade|contrato|outros", "momento": ""}],
  "vigencia": {"tipo": "contrato|ata", "meses": 12, "prorrogavel_ate_meses": 60, "conta_a_partir_de": "assinatura", "texto": "", "fonte": "",
    "mecanismo_correcao": "reajuste_indice|repactuacao|ambos|omisso|vedado|null", "indice": "", "data_base_orcamento": ""},
  "habilitacao": [{"id": "", "rotulo": "", "grupo": "juridica|fiscal|trabalhista|economico_financeira|tecnica", "exigencia": "", "fonte": "", "observacao": ""}],
@@ -38,7 +40,7 @@ Se houver diferença material na ordenação, indique em `mais_aderente` a prime
 {"versao": 1, "gerado_em": "", "mais_aderente": "aforca|realmak|una|nortfort|null", "resultado": "",
  "empresas": [{"empresa": "aforca|realmak|una|nortfort", "aderencia": "alta|media|baixa|nao_atende", "resumo": "",
    "exigencias": [{"id": "", "rotulo": "", "risco_principal": false, "exigencia": "", "fonte": "", "situacao": "atende|parcial|nao_atende|verificar", "prova": "", "validade": "",
-    "grupo": "juridica|fiscal|trabalhista|economico_financeira|tecnica", "etapa_envio": "sessao|proposta|habilitacao", "ordem_edital": 1, "item_edital": "", "bloqueia": false, "momento": "ate_convocacao|diligencia|contrato|orientacao", "risco_inabilitacao": false, "motivo_bloqueio": "", "motivo": "",
+    "depende_lance": false, "grupo": "juridica|fiscal|trabalhista|economico_financeira|tecnica", "etapa_envio": "sessao|proposta|habilitacao", "ordem_edital": 1, "item_edital": "", "bloqueia": false, "momento": "ate_convocacao|diligencia|contrato|orientacao", "risco_inabilitacao": false, "motivo_bloqueio": "", "motivo": "",
     "assinaturas": [{"nome": "", "papel": "", "pagina": 1, "local": "", "como_assinar": "", "assinado": true, "forma": "modelo|retornado", "conferencia": ""}],
     "acao": {"tipo": "emitir|consultar|localizar_prova|decidir", "onde": "", "o_que": "", "quem": "", "ate": ""}}],
    "pendencias": [""]}],
@@ -70,10 +72,10 @@ Esta seção é a fonte única de classificação de bloqueio para `analisar-hab
 
 - **`bloqueia: true` (Bloqueia a disputa):** somente o que impede cadastrar a proposta e dar lance na sessão: empresa impedida/suspensa ou sem cadastro/credenciamento ativo no portal; proposta inicial sem preço aprovado ou fora do modelo exigido no cadastro; declarações obrigatórias marcadas no sistema no cadastro da proposta **somente** se houver fato comprovado que impeça declarar com veracidade (a falta de arquivo sozinha não bloqueia); garantia de proposta ou vistoria **obrigatória** não cumpridas antes da sessão; amostra/documento exigido junto com a proposta inicial.
 - **`bloqueia: false` + `momento` + `risco_inabilitacao`:** todo o resto.
-  - `momento`: `"ate_convocacao"` (habilitação a anexar quando convocado: certidões, declarações, assinatura do RT, vínculo do RT), `"diligencia"` (só se o pregoeiro pedir), `"contrato"` (vencedor, antes do contrato/execução: visto CREA de outro estado, garantia) ou `"orientacao"` (dica "se acontecer X, faça Y").
+  - `momento`: `"ate_convocacao"` (habilitação a anexar quando convocado: certidões, declarações, assinatura do RT, vínculo do RT), `"diligencia"` (só se o pregoeiro pedir), `"contrato"` (etapa **Contrato e execução**, obrigações do vencedor: visto CREA de outro estado, garantia, ART, PMOC, credenciamento no fabricante) ou `"orientacao"` (dica "se acontecer X, faça Y"). Orientação e diligência levam o `etapa_envio` da etapa que pode originá-las (ex.: a diligência sobre a CAO fica em `"habilitacao"`), nunca na de contrato.
   - `risco_inabilitacao: true` quando, se não resolvido até o momento, leva à inabilitação (ex.: certidão de falência vencida na sessão, falta da assinatura do RT, vínculo sem prova).
 - **`situacao: "atende"` nunca bloqueia** (`bloqueia: false`). Fim do "na dúvida, bloqueia": na dúvida, use `bloqueia: false`, `risco_inabilitacao: true` e `motivo_bloqueio` começando pelo momento + `"verificar (<item>)"`.
-- **`motivo_bloqueio`** começa sempre pelo momento (`"Antes da sessão —"`, `"Até 2 h após a convocação —"`, `"Em diligência —"`, `"Orientação —"`, `"Antes do contrato —"`) e cita a cláusula do edital.
+- **`motivo_bloqueio`** começa sempre pelo momento (`"Antes da sessão —"`, `"Na convocação —"`, `"Em diligência —"`, `"Orientação —"`, `"Antes do contrato —"`) e cita a cláusula do edital.
 - **Sem duplicar ações:** nunca repetir a mesma ação em dois itens. Uma exigência só vira dois itens quando são ações distintas com conclusão própria (ex.: assinar declaração de indicação do RT × comprovar vínculo do RT). Vários arquivos da mesma ação usam o rótulo exato da exigência de `habilitacao.json` em `exigencia`.
 - **Controle de fluxo do agente:** `bloqueia` de pergunta/execução do gestor (`GESTOR.md`, `AGENTS.md`) é controle de fluxo interno e nunca vai para `exigencias[].bloqueia`.
 
@@ -94,6 +96,19 @@ Cada `analise/habilitacao/<alias>.json` usa o mesmo envelope v1, com apenas a em
 Se o item da empresa não concluir nesta rodada, o daemon pode entregar a última avaliação válida (`empresas[]` não vazio) no parcial `analise/habilitacao/<alias>.json`, com `rodada_anterior: {avaliado_em, motivo}` na raiz. Preserve os pareceres, provas, ações e cobertura desse parcial. Inclua a empresa na avaliação de `mais_aderente` pelos mesmos critérios e indique em `empresas[].resultado` que a avaliação vem da rodada anterior, com a data quando disponível.
 
 Somente para empresas cujo item não concluiu e que não têm avaliação válida entregue, recrie as linhas `verificar` a partir do edital, com grupo e lacuna documental. Em ambos os casos, registre a falha operacional da rodada atual em `pesquisa_incompleta`, sem substituir uma avaliação válida por uma lacuna.
+
+### Campos da disposição v2 do card
+
+Todos opcionais; análise antiga sem eles continua válida e o card trata a ausência (etapas separadas, ponto de atenção aberto, nenhum item "já pode adiantar"). Combinado com o realmak-crm em 28/11/2026. O script `analisar-edital/scripts/validar_card.py` confere estas regras (`python3 validar_card.py <pasta analise/>`; sai com 1 e lista o que corrigir).
+
+- `edital.json.convocacao`: `{modo, fonte}`. `"separada"`: o pregoeiro pede primeiro a proposta ajustada e só depois de aceita pede a habilitação (ex.: Edital 8.1 e 10.1/10.3). `"conjunta"`: proposta e habilitação no mesmo pedido; o card junta as etapas 2 e 3. `fonte` é o item do edital. Sem base no edital, `null` (nunca inventar).
+- `edital.json.atencao[]` (o que o card mostra em "Riscos do edital"):
+  - `situacao`: `"aberto"` (pede ação ou decisão; padrão se ausente) ou `"resolvido"` (já atendido ou virou orientação).
+  - `resolucao`: frase curta de até 160 caracteres, obrigatória quando resolvido (ex.: `"Atende: CAO de 1.140 TR"`).
+  - `destino`: `{tipo, ref}`, obrigatório quando resolvido e recomendado nos abertos. `tipo` em `"exigencia"` (`ref` = `id` da exigência, o `hab-NNN` de `habilitacao[]`), `"etapa"` (`ref` = `"sessao"|"proposta"|"habilitacao"|"contrato"`), `"precificacao"`, `"tecnica"` ou `"edital"` (`ref` vazio; a tela vai à seção). O card mostra os abertos, recolhe os resolvidos ("Resolvidos · N") e liga cada um ao destino.
+- `habilitacao.json.empresas[].exigencias[].depende_lance` (booleano, padrão `false`): `true` no que depende do preço final (proposta ajustada, planilha de composição de custos, qualquer anexo com preço). O card mostra "Já pode adiantar" nos itens a fazer com `depende_lance` falso. O mesmo campo vai nos `itens[]` de `agents/montagem-proposta/indice-envio.json`, e o vínculo exigência↔arquivo segue pelo rótulo `exigencia`. A montagem e a conferência preservam o campo; item com `depende_lance: true` só confirma com o lance informado por uma pessoa (regra de `pendente: true` e motivo "Gerada com o preço de referência; refazer com o lance final", sem mudar).
+- Sem micro-prazos (Ennio, 28/11/2026): `prazos[]` e o prazo de etapa trazem data só para a sessão e para prazos que o edital fixa em calendário. Depois da convocação não há prazo em horas no card: o texto vira momento, no campo opcional `prazos[].momento` (`"quando o pregoeiro pedir"`, `"quando a proposta for aceita"`), com `data` vazia. O prazo em horas, se existir, fica em `observacao` ou na `fonte`, nunca como prazo de etapa.
+- Etapa 4 do card = **Contrato e execução** (`momento: "contrato"`): obrigações do vencedor depois do resultado. A orientação de diligência fica junto à etapa que pode originá-la (ver `momento`, acima).
 
 ### Pesquisa de peças
 

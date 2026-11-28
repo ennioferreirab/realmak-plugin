@@ -21,13 +21,18 @@ plano.json:
       "assinaturas": [{"nome": "Fulano", "papel": "Representante", "assinado": true, "forma": "modelo"}],
       "status": "ok",
       "obs": "",
-      "nao_enviar": false
+      "nao_enviar": false,
+      "depende_lance": false,
+      "lance_informado": false
     }
   ]
 }
 etapa_envio: "sessao" (para participar da sessão), "proposta" (proposta e anexos) ou "habilitacao" (padrão), nessa ordem.
 Itens sem fontes entram apenas no indice-envio.json (intermediário), como pendência.
 Passo manual no portal (declarações do sistema, cadastro da proposta, "Enviar anexo") é ignorado em qualquer etapa: não vira item nem aviso.
+depende_lance: true nos itens que dependem do preço final (proposta ajustada, planilha, anexo com preço). Sem o campo, o
+script infere pelo rótulo nos itens da etapa proposta. O item só sai OK com lance_informado: true; sem ele fica PENDENTE
+com o motivo "Gerada com o preço de referência; refazer com o lance final". O campo vai para o indice_json.
 Não gera "00 - INDICE DE ENVIO.pdf" nem usa prefixos internos (H-xx, P-xx) nos nomes de arquivos.
 """
 
@@ -68,6 +73,20 @@ PASSO_PORTAL_RE = re.compile(
     r"|\benviar\s+anexo\b",
     re.IGNORECASE,
 )
+
+
+# Documento da etapa proposta que leva o preço final (mesma regra de analisar-edital/scripts/validar_card.py).
+DEPENDE_LANCE_RE = re.compile(r"proposta|planilha|composi[cç][aã]o|pre[cç]o|lance|custos", re.IGNORECASE)
+MOTIVO_LANCE = "Gerada com o preço de referência; refazer com o lance final"
+
+
+def depende_do_lance(item: dict, etapa: str) -> bool:
+    if isinstance(item.get("depende_lance"), bool):
+        return item["depende_lance"]
+    if etapa != "proposta":
+        return False
+    texto = " ".join(str(item.get(c) or "") for c in ("exigencia", "nome"))
+    return bool(DEPENDE_LANCE_RE.search(texto))
 
 
 def passo_manual_portal(item: dict) -> bool:
@@ -152,6 +171,8 @@ def montar(plano: dict) -> dict:
                 "momento": item.get("momento"),
                 "risco_inabilitacao": item.get("risco_inabilitacao"),
                 "motivo_bloqueio": item.get("motivo_bloqueio"),
+                "depende_lance": depende_do_lance(item, etapa),
+                "lance_informado": item.get("lance_informado") is True,
             }
             assinaturas = item.get("assinaturas") or []
             faltam_assinar = [a.get("nome") or "?" for a in assinaturas if not a.get("assinado")]
@@ -160,6 +181,11 @@ def montar(plano: dict) -> dict:
                 linha["status"] = "pendente"
                 if not linha.get("obs"):
                     linha["obs"] = "Falta a assinatura de " + ", ".join(faltam_assinar)
+
+            if linha["depende_lance"] and item.get("lance_informado") is not True:
+                linha["status"] = "pendente"
+                if not linha.get("obs"):
+                    linha["obs"] = MOTIVO_LANCE
 
             fontes = item.get("fontes") or []
             if fontes:
@@ -208,6 +234,12 @@ def montar(plano: dict) -> dict:
                     "situacao": "OK" if item_linha["status"] == "ok" else "PENDENTE",
                     "motivo": item_linha.get("obs") or "",
                     **({"nao_enviar": True} if item_linha.get("nao_enviar") else {}),
+                    **({"depende_lance": True} if item_linha.get("depende_lance") else {}),
+                    **(
+                        {"lance_informado": True}
+                        if item_linha.get("depende_lance") and item_linha.get("lance_informado")
+                        else {}
+                    ),
                     **(
                         {"bloqueia": bool(item_linha["bloqueia"])}
                         if item_linha.get("bloqueia") is not None

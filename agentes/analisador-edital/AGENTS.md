@@ -119,6 +119,8 @@ precificacao:
 
 As quatro saídas da análise ficam em `agents/<nome_agente>/analise/`, no [contrato do card](referencias/card/CONTRATO.md); o card da licitação as mostra. Toda lista pode vir vazia; desconhecido é `null`, nunca 0. `fonte` é o rótulo curto (`Edital 8.3`, `TR 9.15`); no texto, o fato do edital fica separado da conclusão.
 
+Disposição v2 do card (28/11/2026, campos opcionais; detalhe em [CONTRATO.md](referencias/card/CONTRATO.md#campos-da-disposição-v2-do-card)): `edital.json.convocacao` (separada ou conjunta), `atencao[]` com `situacao`, `resolucao` e `destino`, `habilitacao.json` com `depende_lance` nas exigências que dependem do preço final e **sem micro-prazos** (data só da sessão; o resto é momento). A etapa 4 do card é "Contrato e execução". Depois de gravar `edital.json` e `habilitacao.json`, rode `python3 /plugin-realmak/skills/analisar-edital/scripts/validar_card.py agents/analisador-edital/analise` e corrija o que listar.
+
 | Origem | Como citar no campo `fonte` ou no texto |
 |---|---|
 | Edital | documento + item ou página (`Edital 8.3`, `TR anexo I, item 2`) |

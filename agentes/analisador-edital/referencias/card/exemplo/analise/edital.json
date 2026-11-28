@@ -22,18 +22,33 @@
    "fonte": "Edital 1.1"
   }
  },
+ "convocacao": {
+  "modo": "separada",
+  "fonte": "Edital 7.4 e 8.1"
+ },
  "atencao": [
   {
-   "ponto": "Catálogo do produto exigido junto com a proposta, com prazo de 2 horas após a convocação",
+   "ponto": "Catálogo do produto exigido junto com a proposta, quando o pregoeiro pedir",
    "gravidade": "alta",
    "fonte": "Edital 7.4",
-   "o_que_fazer": "Separar ficha técnica do fabricante antes da sessão"
+   "o_que_fazer": "Separar ficha técnica do fabricante antes da sessão",
+   "situacao": "aberto",
+   "destino": {
+    "tipo": "etapa",
+    "ref": "proposta"
+   }
   },
   {
    "ponto": "Validade mínima de 12 meses na entrega",
    "gravidade": "media",
    "fonte": "TR 5.3",
-   "o_que_fazer": "Confirmar data de fabricação com o fornecedor"
+   "o_que_fazer": "Confirmar data de fabricação com o fornecedor",
+   "situacao": "resolvido",
+   "resolucao": "Atende: fornecedor confirma fabricação recente",
+   "destino": {
+    "tipo": "tecnica",
+    "ref": ""
+   }
   }
  ],
  "prazos": [
@@ -41,13 +56,23 @@
    "prazo": "Sessão pública",
    "data": "2026-12-02T09:00",
    "fonte": "Edital 1.1",
-   "observacao": ""
+   "observacao": "",
+   "momento": ""
   },
   {
    "prazo": "Limite para impugnação",
    "data": "2026-11-27",
    "fonte": "Edital 10.1",
-   "observacao": "feriados locais não conferidos"
+   "observacao": "feriados locais não conferidos",
+   "momento": ""
+  },
+  {
+   "prazo": "Envio do catálogo",
+   "data": "",
+   "fonte": "Edital 7.4",
+   "observacao": "",
+   "grupo": "sessao",
+   "momento": "quando o pregoeiro pedir"
   }
  ],
  "vigencia": {
