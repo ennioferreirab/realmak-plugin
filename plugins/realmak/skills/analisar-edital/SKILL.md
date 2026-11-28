@@ -71,7 +71,7 @@ Portal: <Compras.gov.br / outro>. Link: <link da licitação, se houver>
 
 ## Atenção
 
-<De 1 a 5 pontos que podem inabilitar a empresa ou tornar a proposta inviável. Do mais grave ao menos grave. Cada um com fonte e o que fazer.>
+<De 1 a 5 pontos que podem inabilitar a empresa ou tornar a proposta inviável. Do mais grave ao menos grave. Cada um com fonte e o que fazer. O que já está atendido ou virou orientação entra como resolvido, com a frase que o resolve.>
 
 ## Prazos
 
@@ -139,7 +139,9 @@ A seção Habilitação lista o que o edital exige. No JSON do card, separe em `
 - **Recurso:** a intenção é registrada na sessão. As razões têm 3 dias úteis, e o prazo abre no fim do certame.
 - **Vigência do contrato ou da ata:** procure sempre no edital, no termo de referência e na minuta de contrato ou de ata o prazo de vigência, a possibilidade de prorrogação, o marco inicial (ex.: assinatura, ordem de serviço, publicação do extrato) e o critério de correção de preços (`mecanismo_correcao`: `"reajuste_indice"`, `"repactuacao"`, `"ambos"`, `"omisso"`, `"vedado"` ou `null`; `indice`: apenas a sigla curta como `"IPCA"`, `"INPC"`, `"IST"`, `"CCT + IPCA"` ou `null`, sem parênteses nem explicação — o detalhe fica em `texto`; `data_base_orcamento` em `AAAA-MM-DD`, texto curto ou `null`), citando a cláusula em `fonte` e `texto`. Em ata de registro de preços, registre a validade da ata (`tipo: "ata"`). Converta prazo em dias para meses apenas quando for exato (ex.: 365 dias = 12 meses); fora disso, deixe `meses` em `null` e explique no texto literal curto. Se nenhum documento trouxer a vigência, registre `null` — nunca invente.
 - Mostre as datas no horário de Brasília.
-- **Prazos sem data fixa (`prazos[].grupo`):** no JSON do card (`edital.json`), classifique cada prazo no campo opcional `grupo`: `"sessao"` (depende da convocação na sessão, ex.: envio de proposta/documentos em 2h), `"validade"` (validade da proposta), `"contrato"` (só se vencer: assinatura do contrato, garantia, visto em conselho, mobilização/execução) ou `"outros"`.
+- **Prazos sem data fixa (`prazos[].grupo`):** no JSON do card (`edital.json`), classifique cada prazo no campo opcional `grupo`: `"sessao"` (depende da convocação na sessão, ex.: envio de proposta/documentos depois da convocação), `"validade"` (validade da proposta), `"contrato"` (só se vencer: assinatura do contrato, garantia, visto em conselho, mobilização/execução) ou `"outros"`.
+- **Sem micro-prazos no card:** só a sessão (e o que o edital fixa em calendário) leva data em `prazos[]`. O prazo em horas depois da convocação (ex.: 2 h para enviar a proposta ajustada) não vira prazo de etapa: grave `data: ""` e o texto do momento em `momento` (`"quando o pregoeiro pedir"`, `"quando a proposta for aceita"`); o prazo em horas fica só na `observacao`, para a análise, e nunca em `prazo` nem em `data`.
+- **Convocação separada ou conjunta:** leia como o edital manda enviar a proposta ajustada e a habilitação e grave `convocacao` (`modo` `"separada"` quando o pregoeiro pede primeiro a proposta ajustada e só depois de aceita pede a habilitação, `"conjunta"` quando pede tudo no mesmo ato; `fonte` com os itens, ex.: `Edital 8.1 e 10.1/10.3`). Sem base no edital, `null`.
 - **Momento de cobrança das exigências:** registre em cada exigência **quando** ela é cobrada pelo edital (na proposta inicial antes da sessão, na convocação após lances, em diligência ou apenas do vencedor antes do contrato/execução). A classificação de bloqueio da disputa fica na habilitação (`CONTRATO.md`).
 
 ## Pontos de atenção
@@ -193,6 +195,8 @@ Classifique por lote conforme parcelas, finalidade, regime de execução e crit�
 ## Campos opcionais do card
 
 Para cada `atencao[]`, escreva `titulo` de até 80 caracteres. Na pauta `habilitacao[]`, atribua `id` pela ordem dos documentos (`hab-001`, `hab-002`, etc.) e `rotulo` de até 40 caracteres. Preserve o identificador de requisito inalterado quando revisar a mesma pauta.
+
+Em cada `atencao[]`, preencha também `situacao`: `"aberto"` quando pede ação ou decisão da equipe, `"resolvido"` quando já está atendido (ex.: a empresa tem a CAO exigida) ou virou orientação de uma etapa. Todo ponto resolvido leva `resolucao` (frase curta, até 160 caracteres, ex.: `"Atende: CAO de 1.140 TR"`) e `destino` `{tipo, ref}`: `"exigencia"` com o `id` da pauta `habilitacao[]` (ex.: `hab-012`), `"etapa"` com `"sessao"|"proposta"|"habilitacao"|"contrato"`, ou `"precificacao"`, `"tecnica"` e `"edital"` com `ref` vazio. Nos pontos abertos o `destino` aponta onde a equipe resolve. Se a habilitação das empresas ainda não foi analisada, não declare resolvido por atendimento de empresa: deixe `"aberto"`. Depois de gravar `edital.json`, rode `python3 /plugin-realmak/skills/analisar-edital/scripts/validar_card.py <pasta analise/>` e corrija o que listar (convocação, atenção, micro-prazos).
 
 No cabeçalho (`cabecalho`), mantenha o campo texto livre `portal` e preencha também:
 - `portal_sessao` (`{nome, url, id_no_portal, fonte}` ou `null` com aviso em `avisos` quando não identificado), seguindo as regras de [Portal da sessão pública](#portal-da-sessão-pública).

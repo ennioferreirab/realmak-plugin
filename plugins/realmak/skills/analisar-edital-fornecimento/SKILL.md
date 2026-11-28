@@ -174,6 +174,7 @@ Enquanto houver itens em "A confirmar" que mudem o resultado, a conclusão é "A
 - **Tema normativo.** Confirme a redação vigente da norma em fonte oficial na data do trabalho. Não prometa resultado do certame.
 - **Originais.** Não altere os documentos recebidos. Trabalhe em cópias.
 - **Momento de cobrança.** Indique sempre em que fase cada exigência técnica/comercial é cobrada pelo edital (proposta inicial, convocação/habilitação, diligência ou apenas do vencedor antes do contrato/execução).
+- **Sem micro-prazos no card.** Prazo em horas depois da convocação (ex.: 2 h) não vira prazo de etapa em nenhum JSON do card: registre o momento ("quando o pregoeiro pedir") e deixe o prazo em horas só no texto da exigência. Quando o ponto de atenção do edital já estiver atendido pela análise, diga isso na conclusão ou nas ressalvas, com a frase curta que o resolve, para o edital marcá-lo como resolvido (`atencao[].situacao`, ver `CONTRATO.md`).
 - **Passo manual no portal nunca vira exigência, item nem aviso, em nenhuma etapa (sessão, proposta, habilitação):** clicar, marcar ou cadastrar no portal (declarações do sistema, cadastro da proposta, envio pelo "Enviar anexo") fica fora; só entram documentos que a plataforma prepara ou confere.
 
 ## Pronto quando
