@@ -226,6 +226,29 @@ def calcular(atual, pedido, agora=None):
                          "preco_global": round(limite_global, 2), "margem_pct": round(m_lim, 2),
                          "exequivel": "no_limite" if m_lim >= 0 else "nao"})
 
+    # Cenários de risco da rodada anterior (conservador, crítico...): o custo deles sai da própria margem gravada
+    # (custo = preço x (1 - tributos - margem)) e é avaliado de novo no preço do pedido. Os que têm o custo de hoje
+    # (base, piso, teto) já estão cobertos pelos cenários fixos acima.
+    vistos = set()
+    for velho in atual.get("cenarios") or []:
+        if not isinstance(velho, dict) or velho.get("origem") in ("pedido", "anterior"):
+            continue
+        pg, mg, nome = velho.get("preco_global"), velho.get("margem_pct"), str(velho.get("nome") or "").strip()
+        if not nome or not all(isinstance(v, (int, float)) and not isinstance(v, bool) for v in (pg, mg)) or pg <= 0:
+            continue
+        custo_velho = pg / meses * (1 - float(tributos_pct) / 100 - mg / 100)
+        if abs(custo_velho - float(custo_atual)) <= 0.01 * float(custo_atual):
+            continue
+        custo_risco = custo_velho + (custo - float(custo_atual))  # acompanha a mudança de custo do pedido
+        base = nome.split(",")[0].strip()
+        if (base, round(custo_risco / 100)) in vistos:
+            continue
+        vistos.add((base, round(custo_risco / 100)))
+        m_risco = margem_do_preco(preco, custo_risco, tributos / 100)
+        cenarios.append({"nome": f"{base}, no preço do pedido", "preco_mensal": round(preco, 2),
+                         "preco_global": round(preco_global, 2), "margem_pct": round(m_risco, 2),
+                         "exequivel": classificar(m_risco, preco_global, valor_estimado, margem_minima)[0], "origem": "ia"})
+
     sens = []
     if mo is not None:
         base_mo = novo_mo if modo == "premissas" and novo_mo is not None else mo
